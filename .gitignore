@@ -1,0 +1,32 @@
+# CMake build directory
+cmake-build-*
+
+# CLion specific files
+.idea/
+*.iml
+*.xml
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+
+# Build output files
+*.o
+*.exe
+*.out
+*.a
+*.so
+*.dylib
+*.dll
+
+# Other temporary files
+*.log
+*.tmp
+*.swp
+*.DS_Store
+Thumbs.db
+
+# Backup files
+*~
