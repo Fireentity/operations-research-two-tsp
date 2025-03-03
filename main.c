@@ -18,7 +18,8 @@ void parse_command_line(const int argc, char **argv, TspParams *params) {
     }
 
     for (int i = 1; i < argc; i++) {
-        parse_flag(argv[i], params);
+        parse_flag(argv[i], argv[i+1], params);
+        i++;
     }
 }
 
@@ -27,6 +28,8 @@ int main(const int argc, char *argv[]) {
     parse_command_line(argc, argv, &params);
 
     const double start_seconds = second();
+
+    printf("%ld", params.number_of_nodes);
 
     // Generate random points using the parsed parameters.
     const Node *nodes = generate_random_points(params.rectangle, params.number_of_nodes, params.seed);

@@ -20,6 +20,6 @@ typedef struct {
     long help;
 } TspParams;
 
-ParsingResult parse_flag(const char *argv, TspParams *params);
+ParsingResult parse_flag(const char *flag, const char *value, TspParams *params);
 
 #endif
