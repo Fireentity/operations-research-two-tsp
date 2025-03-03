@@ -15,12 +15,12 @@ long parse_long(const char *str, int *error) {
     return val;
 }
 
-bool parse_arg(const char *argv, const char *flag, long &arg) {
+bool parse_arg(const char *argv, const char *flag, long *arg) {
     if (strcmp(argv, flag) != 0) {
         return 1;
     }
     int err;
-    arg = parse_long(argv, &err);
+    *arg = parse_long(argv, &err);
     return err ? false : true;
 }
 
@@ -36,7 +36,7 @@ ParsingResult parse_flag(const char *argv, TspParams *params) {
     const int size = sizeof(tsp_flags) / sizeof(tsp_flags[0]);
 
     for (int i = 0; i < size; i++) {
-        if (!parse_arg(argv, tsp_flags[i].label, *tsp_flags[i].value)) {
+        if (!parse_arg(argv, tsp_flags[i].label, tsp_flags[i].value)) {
             return PARSING_ERROR;
         }
     }
