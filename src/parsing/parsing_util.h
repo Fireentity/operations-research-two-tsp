@@ -1,6 +1,8 @@
 #ifndef PARSING_UTIL_H
 #define PARSING_UTIL_H
 
+#include <stdbool.h>
+
 typedef enum {
     SUCCESS,
     PARSING_ERROR,
@@ -22,9 +24,12 @@ typedef struct {
 
 typedef struct {
     const char *label;
-    long* (*getValue)(TspParams *params);
+    ParsingResult (*parse)(const char * arg, TspParams *params);
 } CommandLineFlag;
 
 ParsingResult parse_flag(const char *flag, const char *value, TspParams *params);
+ParsingResult parse_long(const char *arg,long* parsed);
+ParsingResult parse_float(const char *arg, float* parsed);
+ParsingResult parse_bool(const char *arg, bool* parsed);
 
 #endif
