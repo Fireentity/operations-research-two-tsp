@@ -12,6 +12,7 @@ set(SOURCES
         src/chrono.c
         src/tsp_utilities.c
         src/parsing/parsing_util.c
+        src/parsing/parsing_util.h
 )
 
 # Definisci l'eseguibile

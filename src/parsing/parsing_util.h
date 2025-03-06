@@ -19,7 +19,7 @@ typedef struct {
     long number_of_nodes;
     long seed;
     Rectangle rectangle;
-    long help;
+    bool help;
 } TspParams;
 
 typedef struct {

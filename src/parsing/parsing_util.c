@@ -1,9 +1,10 @@
 #include "parsing_util.h"
-#include
+#include "constants.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 ParsingResult parse_long(const char *arg, long *parsed) {
     char *end;
@@ -42,7 +43,7 @@ ParsingResult parse_flag(const char *flag, const char *value, TspParams *params)
     printf("%s\n", value);
 
     for (int i = 0; i < size; i++) {
-        ParsingResult result = tsp_flags[i].parse(value,params)
+        ParsingResult result = tsp_flags[i].parse(value,params);
         if(result != SUCCESS){
           return result;
         }
