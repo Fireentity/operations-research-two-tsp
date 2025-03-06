@@ -25,6 +25,7 @@ typedef struct {
 typedef struct {
     const char *label;
     ParsingResult (*parse)(const char * arg, TspParams *params);
+    const bool mandatory;
 } CommandLineFlag;
 
 ParsingResult parse_flag(const char *flag, const char *value, TspParams *params);

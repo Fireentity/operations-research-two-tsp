@@ -10,7 +10,8 @@ include_directories(src/constants src/parsing)
 set(SOURCES
         src/main.c
         src/chrono.c
-        src/tsp_utilities.c
+        src/tsp/tsp_utilities.c
+        src/tsp/tsp_utilities.h
         src/parsing/parsing_util.c
         src/parsing/parsing_util.h
 )
@@ -22,4 +23,5 @@ add_executable(tsp_solver ${SOURCES})
 target_include_directories(tsp_solver PRIVATE
         ${CMAKE_SOURCE_DIR}/src/constants
         ${CMAKE_SOURCE_DIR}/src/parsing
+        ${CMAKE_SOURCE_DIR}/src/tsp
 )
