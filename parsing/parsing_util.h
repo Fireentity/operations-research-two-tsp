@@ -20,6 +20,11 @@ typedef struct {
     long help;
 } TspParams;
 
+typedef struct {
+    const char *label;
+    long* (*getValue)(TspParams *params);
+} CommandLineFlag;
+
 ParsingResult parse_flag(const char *flag, const char *value, TspParams *params);
 
 #endif
