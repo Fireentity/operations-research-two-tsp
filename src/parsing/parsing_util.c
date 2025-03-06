@@ -9,7 +9,7 @@
 ParsingResult parse_long(const char *arg, long *parsed) {
     char *end;
     errno = 0;
-    long val = strtol(arg, &end, 10);
+    const long val = strtol(arg, &end, 10);
     if (errno || *end != '\0') return PARSING_ERROR;
     *parsed = val;
     return SUCCESS;
@@ -18,7 +18,7 @@ ParsingResult parse_long(const char *arg, long *parsed) {
 ParsingResult parse_float(const char *arg, float *parsed) {
     char *end;
     errno = 0;
-    float val = strtof(arg, &end);
+    const float val = strtof(arg, &end);
     if (errno || *end != '\0') return PARSING_ERROR;
     *parsed = val;
     return SUCCESS;
@@ -43,7 +43,7 @@ ParsingResult parse_flag(const char *flag, const char *value, TspParams *params)
     printf("%s\n", value);
 
     for (int i = 0; i < size; i++) {
-        ParsingResult result = tsp_flags[i].parse(value,params);
+        const ParsingResult result = tsp_flags[i].parse(value,params);
         if(result != SUCCESS){
           return result;
         }

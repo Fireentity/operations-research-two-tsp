@@ -31,9 +31,12 @@ void parse_command_line(const int argc, char **argv, TspParams *params) {
         exit(1);
     }
 
-    for (int i = 1; i < argc; i++) {
-        parse_flag(argv[i], argv[i+1], params);
-        i++;
+    for (int i = 1; i < argc-1; i++) {
+        if (argc-i>0)
+        {
+            parse_flag(argv[i], argv[i+1], params);
+            i++;
+        }
     }
 }
 
