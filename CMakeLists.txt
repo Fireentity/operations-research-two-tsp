@@ -10,16 +10,17 @@ include_directories(src/constants src/parsing)
 set(SOURCES
         src/main.c
         src/chrono.c
-        src/parsing_util.c
-        src/constants.c
-        include/parsing_util.h
         include/constants.h
-        src/nearest_neighbor.c
         include/tsp_instance.h
         include/tsp_solution.h
         include/tsp_params.h
-        src/tsp_instance.cpp
-        src/tsp_solution.cpp
+        src/tsp_params.c
+        src/tsp_instance.c
+        src/tsp_solution.c
+        include/math_util.h
+        src/math_util.c
+        include/enums.h
+        src/enums.c
 )
 
 # Definisci l'eseguibile

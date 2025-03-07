@@ -31,34 +31,34 @@ struct TspInstance
     Node* nodes;
 };
 
-long get_number_of_nodes(const struct TspInstance* instance)
+long get_number_of_nodes(const TspInstance* instance)
 {
     return instance->number_of_nodes;
 }
 
 
-const double* const get_edge_cost_array(const struct TspInstance* instance)
+const double* get_edge_cost_array(const TspInstance* instance)
 {
     return instance->edge_cost_matrix;
 }
 
-void fill_edge_cost_matrix(const struct TspInstance* instance)
+void fill_edge_cost_matrix(const TspInstance* instance)
 {
-    const int number_of_nodes = instance->number_of_nodes;
+    const long number_of_nodes = instance->number_of_nodes;
     for (int i = 0; i < number_of_nodes; i++)
     {
         for (int j = 0; j < number_of_nodes; j++)
         {
-            const double dx = instance->nodes[i].x - instance->nodes[j].x;
-            const double dy = instance->nodes[i].y - instance->nodes[j].y;
-            instance->edge_cost_matrix[i * number_of_nodes + j] = sqrt(dx * dx + dy * dy);
+            const long dx = instance->nodes[i].x - instance->nodes[j].x;
+            const long dy = instance->nodes[i].y - instance->nodes[j].y;
+            instance->edge_cost_matrix[i * number_of_nodes + j] = sqrt((double)(dx * dx + dy * dy));
         }
     }
 }
 
-double calculate_solution_cost(const struct TspInstance* instance)
+double calculate_solution_cost(const TspInstance* instance)
 {
-    const int number_of_nodes = instance->number_of_nodes;
+    const long number_of_nodes = instance->number_of_nodes;
     double cost = 0.0;
     for (int i = 0; i < number_of_nodes - 1; i++)
         cost += instance->edge_cost_matrix[i * number_of_nodes + (i + 1)];
@@ -68,7 +68,7 @@ double calculate_solution_cost(const struct TspInstance* instance)
 
 TspInstance* initialize_random_tsp_instance(const TspParams* params)
 {
-    const int number_of_nodes = params->number_of_nodes;
+    const long number_of_nodes = params->number_of_nodes;
     srand(params->seed);
     Node* nodes = malloc(number_of_nodes * sizeof(Node));
     if (!nodes)
@@ -81,7 +81,7 @@ TspInstance* initialize_random_tsp_instance(const TspParams* params)
         nodes[i].x = params->generation_area.x_square + rand() % (params->generation_area.square_side + 1);
         nodes[i].y = params->generation_area.y_square + rand() % (params->generation_area.square_side + 1);
     }
-    struct TspInstance* instance = malloc(sizeof(TspInstance));
+    TspInstance* instance = malloc(sizeof(TspInstance));
     instance->number_of_nodes = number_of_nodes;
     instance->nodes = nodes;
     instance->edge_cost_matrix = calloc(number_of_nodes * number_of_nodes, sizeof(double));
