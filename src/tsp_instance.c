@@ -56,16 +56,6 @@ void fill_edge_cost_matrix(const TspInstance* instance)
     }
 }
 
-double calculate_solution_cost(const TspInstance* instance)
-{
-    const long number_of_nodes = instance->number_of_nodes;
-    double cost = 0.0;
-    for (int i = 0; i < number_of_nodes - 1; i++)
-        cost += instance->edge_cost_matrix[i * number_of_nodes + (i + 1)];
-    cost += instance->edge_cost_matrix[(number_of_nodes - 1) * number_of_nodes + 0];
-    return cost;
-}
-
 TspInstance* initialize_random_tsp_instance(const TspParams* params)
 {
     const long number_of_nodes = params->number_of_nodes;

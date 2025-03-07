@@ -31,3 +31,5 @@ target_include_directories(tsp_solver PRIVATE
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/src
 )
+
+target_link_libraries(tsp_solver PRIVATE m)
