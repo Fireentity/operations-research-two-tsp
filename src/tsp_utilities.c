@@ -3,8 +3,41 @@
 #include <math.h>
 #include "tsp_utilities.h"
 #include "parsing_util.h"
+#include "constants.h"
 
-#define EPSILON 1e-6
+typedef struct {
+    long number_of_nodes;
+    long seed;
+    Rectangle generation_area;
+    bool help;
+} TspParams;
+
+/**
+ * @struct TspInstance
+ * @brief Represents an instance of the Traveling Salesman Problem (TSP).
+ *
+ * This structure holds all the necessary data for solving a TSP instance.
+ *
+ * @var TspInstance::cost
+ * The total cost of the current tour.
+ *
+ * @var TspInstance::number_of_nodes
+ * The total number of nodes in the problem.
+ *
+ * @var TspInstance::nodes
+ * Pointer to an array of nodes, each containing coordinates.
+ *
+ * @var TspInstance::solution
+ * Pointer to an array of indices representing the tour.
+ * The first node is duplicated at the end of the array to simplify
+ * the evaluation of the last edge connecting the last node back to the start.
+ */
+typedef struct
+{
+    const double** edge_cost_matrix;
+    const long number_of_nodes;
+    const Node *const nodes;
+} TspInstance;
 
 double euclidean_distance(const Node a, const Node b)
 {
@@ -24,44 +57,6 @@ double calculate_solution_cost(const TspInstance* instance)
         );
     }
     return cost;
-}
-
-TspInstance* initialize_tsp_instance(const Rectangle rect, const long number_of_nodes, const long seed = 0)
-{
-    srand(seed);
-    Node* nodes = malloc(number_of_nodes * sizeof(Node));
-    if (!nodes)
-    {
-        fprintf(stderr, "Allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < number_of_nodes; i++)
-    {
-        nodes[i].x = rect.x_square + rand() % (rect.square_side + 1);
-        nodes[i].y = rect.y_square + rand() % (rect.square_side + 1);
-    }
-    TspInstance* instance = malloc(sizeof(TspInstance));
-    instance->number_of_nodes = number_of_nodes;
-    instance->nodes = nodes;
-    instance->solution = calloc(number_of_nodes,sizeof(int));
-    return nodes;
-}
-
-Node* generate_random_nodes(const Rectangle rect, const long number_of_nodes, const long seed)
-{
-    srand(seed);
-    Node* nodes = malloc(number_of_nodes * sizeof(Node));
-    if (!nodes)
-    {
-        fprintf(stderr, "Allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < number_of_nodes; i++)
-    {
-        nodes[i].x = rect.x_square + rand() % (rect.square_side + 1);
-        nodes[i].y = rect.y_square + rand() % (rect.square_side + 1);
-    }
-    return nodes;
 }
 
 bool check_solution_feasibility(const TspInstance* instance)

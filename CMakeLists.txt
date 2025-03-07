@@ -10,10 +10,16 @@ include_directories(src/constants src/parsing)
 set(SOURCES
         src/main.c
         src/chrono.c
-        src/tsp/tsp_utilities.c
-        src/tsp/tsp_utilities.h
-        src/parsing/parsing_util.c
-        src/parsing/parsing_util.h
+        src/parsing_util.c
+        src/constants.c
+        include/parsing_util.h
+        include/constants.h
+        src/nearest_neighbor.c
+        include/tsp_instance.h
+        include/tsp_solution.h
+        include/tsp_params.h
+        src/tsp_instance.cpp
+        src/tsp_solution.cpp
 )
 
 # Definisci l'eseguibile
@@ -21,7 +27,6 @@ add_executable(tsp_solver ${SOURCES})
 
 # Aggiungi gli header pubblici per evitare include con path relativi nei sorgenti
 target_include_directories(tsp_solver PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/constants
-        ${CMAKE_SOURCE_DIR}/src/parsing
-        ${CMAKE_SOURCE_DIR}/src/tsp
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/src
 )

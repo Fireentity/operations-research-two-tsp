@@ -48,7 +48,7 @@ int main(const int argc, char *argv[]) {
     printf("%ld", params.number_of_nodes);
 
     // Generate random points using the parsed parameters.
-    const Node *nodes = generate_random_nodes(params.rectangle, params.number_of_nodes, params.seed);
+    const Node *nodes = generate_random_nodes(params.generation_area, params.number_of_nodes, params.seed);
 
     for (int i = 0; i < params.number_of_nodes; i++) {
         printf("Node[%d]\t(%ld,%ld)\n", i, nodes[i].x, nodes[i].y);
