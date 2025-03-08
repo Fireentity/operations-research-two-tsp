@@ -69,7 +69,7 @@ ParsingResult parse_flag_with_value(const CommandFlag* param,
     const char* label = argv[*index];
     const char* value = argv[*index + 1];
 
-    if (!strcmp(param->label, label))
+    if (strcmp(param->label, label) != 0)
     {
         return PARSE_NON_MATCHING_LABEL;
     }
@@ -85,12 +85,11 @@ ParsingResult parse_flag_without_value(const CommandFlag* param,
 {
     const char* label = argv[*index];
 
-    if (!strcmp(param->label, label))
+    if (strcmp(param->label, label) != 0)
     {
         return PARSE_NON_MATCHING_LABEL;
     }
     const ParsingResult result = param->parse_without_value(params);
-    if (result != PARSE_SUCCESS) (*index)++;
     return result;
 }
 
