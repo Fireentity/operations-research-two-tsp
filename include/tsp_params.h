@@ -22,13 +22,13 @@ typedef struct
 
 typedef struct CommandFlag CommandFlag;
 
-const CommandFlag* initialize_command_flag_with_value(
+const CommandFlag* init_command_flag_with_value(
     const char* label,
     ParsingResult (*param_supplier)(TspParams* self, const char* arg),
     bool mandatory
 );
 
-const CommandFlag* initialize_command_flag_without_value(
+const CommandFlag* init_command_flag_without_value(
     const char* label,
     ParsingResult (*parse)(TspParams* self),
     bool mandatory

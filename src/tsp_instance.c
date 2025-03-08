@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 /**
  * @struct TspInstance
@@ -25,62 +26,59 @@
  * The first node is duplicated at the end of the array to simplify
  * the evaluation of the last edge connecting the last node back to the start.
  */
-struct TspInstance
-{
-    double* edge_cost_array;
+struct TspInstance {
+    double *edge_cost_array;
     long number_of_nodes;
-    Node* nodes;
+    Node *nodes;
 };
 
-long get_number_of_nodes(const TspInstance* instance)
-{
+long get_number_of_nodes(const TspInstance *instance) {
     return instance->number_of_nodes;
 }
 
 
-const double* get_edge_cost_array(const TspInstance* instance)
-{
+const double *get_edge_cost_array(const TspInstance *instance) {
     return instance->edge_cost_array;
 }
 
-void fill_edge_cost_matrix(const TspInstance* instance)
-{
+void fill_edge_cost_matrix(const TspInstance *instance) {
     const long number_of_nodes = instance->number_of_nodes;
-    for (int i = 0; i < number_of_nodes; i++)
-    {
-        for (int j = 0; j < number_of_nodes; j++)
-        {
+    for (int i = 0; i < number_of_nodes; i++) {
+        for (int j = 0; j < number_of_nodes; j++) {
+
             const long dx = instance->nodes[i].x - instance->nodes[j].x;
             const long dy = instance->nodes[i].y - instance->nodes[j].y;
-            instance->edge_cost_array[i * number_of_nodes + j] = sqrt((double)(dx * dx + dy * dy));
+            instance->edge_cost_array[i * number_of_nodes + j] = sqrt((double) (dx * dx + dy * dy));
         }
     }
 }
 
-const TspInstance* initialize_random_tsp_instance(const TspParams* params)
-{
+const TspInstance *init_random_tsp_instance(const TspParams *params) {
     const unsigned int number_of_nodes = params->number_of_nodes;
     srand(params->seed);
-    Node* nodes = malloc(number_of_nodes * sizeof(Node));
+    Node *nodes = malloc(number_of_nodes * sizeof(Node));
     check_alloc(nodes);
-    if (!nodes)
-    {
-        fprintf(stderr, "Allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < number_of_nodes; i++)
-    {
+
+    for (int i = 0; i < number_of_nodes; i++) {
         //TODO Con questo metodo i nodi non possono avere la virgola pensare di passare a nodi non interi
         nodes[i].x = params->generation_area.x_square + rand() % (params->generation_area.square_side + 1);
         nodes[i].y = params->generation_area.y_square + rand() % (params->generation_area.square_side + 1);
     }
-    TspInstance* instance = malloc(sizeof(TspInstance));
-    check_alloc(instance);
-    instance->number_of_nodes = number_of_nodes;
-    instance->nodes = nodes;
-    instance->edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));
-    check_alloc(instance->edge_cost_array);
-    fill_edge_cost_matrix(instance);
+
+    TspInstance *instance_ptr = malloc(sizeof(TspInstance));
+    check_alloc(instance_ptr);
+
+    const TspInstance instance = {
+            .number_of_nodes = number_of_nodes,
+            .nodes = nodes,
+            .edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double)),
+    };
+
+    check_alloc(instance.edge_cost_array);
+
+    memcpy(instance_ptr, &instance, sizeof(instance));
+
+    fill_edge_cost_matrix(instance_ptr);
 
     for (size_t i = 0; i < number_of_nodes; i++)
         printf("Node[%zu]: x = %ld, y = %ld\n", i, nodes[i].x, nodes[i].y);
@@ -88,10 +86,10 @@ const TspInstance* initialize_random_tsp_instance(const TspParams* params)
     printf("Edge Cost Matrix:\n");
     for (long i = 0; i < number_of_nodes; i++) {
         for (long j = 0; j < number_of_nodes; j++) {
-            printf("%.2f ", instance->edge_cost_array[i * number_of_nodes + j]);
+            printf("%.2f ", instance_ptr->edge_cost_array[i * number_of_nodes + j]);
         }
         printf("\n");
     }
 
-    return instance;
+    return instance_ptr;
 }

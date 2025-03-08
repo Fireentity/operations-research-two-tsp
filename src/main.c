@@ -49,19 +49,19 @@ int main(const int argc, const char* argv[])
 {
     TspParams params;
     const CommandFlag* tsp_flags[] = {
-        initialize_command_flag_with_value("--nodes", set_nodes,true),
-        initialize_command_flag_with_value("--seed", set_seed,false),
-        initialize_command_flag_with_value("--x-square", set_x_square,true),
-        initialize_command_flag_with_value("--y-square", set_y_square,true),
-        initialize_command_flag_with_value("--square-side", set_square_side,true),
-        initialize_command_flag_without_value("--help", set_help,false)
+            init_command_flag_with_value("--nodes", set_nodes, true),
+            init_command_flag_with_value("--seed", set_seed, false),
+            init_command_flag_with_value("--x-square", set_x_square, true),
+            init_command_flag_with_value("--y-square", set_y_square, true),
+            init_command_flag_with_value("--square-side", set_square_side, true),
+            init_command_flag_without_value("--help", set_help, false)
     };
 
     parse_command_line(tsp_flags, 6, argc, argv, &params);
 
     //const double start_seconds = second();
-    const TspInstance* instance = initialize_random_tsp_instance(&params);
-    const TspSolution* solution = initialize_solution(instance);
+    const TspInstance* instance = init_random_tsp_instance(&params);
+    const TspSolution* solution = init_solution(instance);
     const FeasibilityResult result = solve_with_nearest_neighbor(solution);
 
     if (result != FEASIBLE)
@@ -71,7 +71,7 @@ int main(const int argc, const char* argv[])
     }
 
 
-    printf("%s", ENUM_TO_STRING(result));
+    printf("%d", result);
 
     return 0;
 }

@@ -9,13 +9,11 @@
 struct CommandFlag
 {
     const char* const label;
-
     union
     {
         ParsingResult (*const parse_with_value)(TspParams* self, const char* arg);
         ParsingResult (*const parse_without_value)(TspParams* self);
     };
-
     ParsingResult (*const parse_flag)(const CommandFlag* param, const char** argv, TspParams* params, int* index);
     const bool mandatory;
 };
@@ -23,10 +21,10 @@ struct CommandFlag
 ParsingResult parse_flag_with_value(const CommandFlag* param, const char** argv, TspParams* params, int* index);
 ParsingResult parse_flag_without_value(const CommandFlag* param, const char** argv, TspParams* params, int* index);
 
-const CommandFlag* initialize_command_flag_with_value(
+const CommandFlag* init_command_flag_with_value(
     const char* label,
-    ParsingResult (*const param_supplier)(TspParams* self, const char* arg),
-    const bool mandatory
+    ParsingResult ( *param_supplier)(TspParams* self, const char* arg),
+    bool mandatory
 )
 {
     const CommandFlag flag = {
@@ -41,10 +39,10 @@ const CommandFlag* initialize_command_flag_with_value(
     return flag_ptr;
 }
 
-const CommandFlag* initialize_command_flag_without_value(
+const CommandFlag* init_command_flag_without_value(
     const char* label,
-    ParsingResult (*const parse)(TspParams* self),
-    const bool mandatory
+    ParsingResult ( *parse)(TspParams* self),
+    bool mandatory
 )
 {
     const CommandFlag flag = {
@@ -53,6 +51,7 @@ const CommandFlag* initialize_command_flag_without_value(
         .mandatory = mandatory,
         .parse_flag = parse_flag_without_value
     };
+
     CommandFlag* flag_ptr = malloc(sizeof(CommandFlag));
     check_alloc(flag_ptr);
     memcpy(flag_ptr, &flag, sizeof(CommandFlag));

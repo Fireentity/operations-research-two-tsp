@@ -20,6 +20,12 @@ typedef enum
     FEASIBLE,
 } FeasibilityResult;
 
+const char* parsing_result_to_string(ParsingResult result);
+
+
+
+const char* feasibility_result_to_string(FeasibilityResult result);
+
 #define ENUM_TO_STRING(x) #x
 
 #endif // ENUMS_H

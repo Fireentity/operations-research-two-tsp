@@ -11,7 +11,7 @@ typedef struct
 
 typedef struct TspInstance TspInstance;
 
-const TspInstance* initialize_random_tsp_instance(const TspParams* params);
+const TspInstance* init_random_tsp_instance(const TspParams* params);
 const double* get_edge_cost_array(const TspInstance* instance);
 long get_number_of_nodes(const TspInstance* instance);
 
