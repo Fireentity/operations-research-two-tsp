@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
 #include "tsp_instance.h"
 #include "tsp_solution.h"
 
@@ -30,8 +28,14 @@ ParsingResult parse_command_line(
         {
             // Parse the flag with its associated value.
             const ParsingResult result = parse_flag(tsp_flags[i], argv, params, &current_argv_parameter);
-            if (result == PARSE_SUCCESS && is_command_flag_mandatory(tsp_flags[i]))
+            if (result == PARSE_SUCCESS)
+            {
+                if (is_command_flag_mandatory(tsp_flags[i]))
+                {
                     parsed_mandatory_flags++;
+                }
+                break;
+            }
         }
     }
 
@@ -47,9 +51,9 @@ int main(const int argc, const char* argv[])
     const CommandFlag* tsp_flags[] = {
         initialize_command_flag_with_value("--nodes", set_nodes,true),
         initialize_command_flag_with_value("--seed", set_seed,false),
-        initialize_command_flag_with_value("--x_square", set_x_square,true),
-        initialize_command_flag_with_value("--y_square", set_y_square,true),
-        initialize_command_flag_with_value("--square_side", set_square_side,true),
+        initialize_command_flag_with_value("--x-square", set_x_square,true),
+        initialize_command_flag_with_value("--y-square", set_y_square,true),
+        initialize_command_flag_with_value("--square-side", set_square_side,true),
         initialize_command_flag_without_value("--help", set_help,false)
     };
 
@@ -62,7 +66,7 @@ int main(const int argc, const char* argv[])
 
     if (result != FEASIBLE)
     {
-        fprintf(stderr, "Nearest Neighbor generated an unfeasible solution : %s\n", ENUM_TO_STRING(result));
+        printf("Nearest Neighbor generated an unfeasible solution : %d\n", result);
         exit(EXIT_FAILURE);
     }
 
