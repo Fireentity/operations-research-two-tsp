@@ -29,25 +29,22 @@ double calculate_solution_cost(const TspSolution* solution)
     );
 }
 
-//TODO controllare se questa funzione deve ritornare un puntatore costante
-TspSolution* init_solution(const TspInstance* instance)
+const TspSolution* init_solution(const TspInstance* instance)
 {
     const long number_of_nodes = get_number_of_nodes(instance);
 
-    TspSolution* solution_ptr = malloc(sizeof(TspSolution));
-    check_alloc(solution_ptr);
-
-    int* tour = calloc(number_of_nodes+1, sizeof(int));
+    int* tour = calloc(number_of_nodes + 1, sizeof(int));
     check_alloc(tour);
-
     for (int i = 0; i < number_of_nodes; i++)
         tour[i] = i;
     tour[number_of_nodes] = tour[0];
 
+    TspSolution* solution_ptr = malloc(sizeof(TspSolution));
+    check_alloc(solution_ptr);
     const TspSolution solution = {
-            .cost = calculate_tour_cost(tour, number_of_nodes, get_edge_cost_array(instance)),
-            .tour = tour,
-            .instance = instance
+        .cost = calculate_tour_cost(tour, number_of_nodes, get_edge_cost_array(instance)),
+        .tour = tour,
+        .instance = instance
     };
     memcpy(solution_ptr, &solution, sizeof(solution));
 
@@ -133,4 +130,9 @@ FeasibilityResult solve_with_nearest_neighbor(const TspSolution* solution)
         return result;
     }
     return FEASIBLE;
+}
+
+void plot_solution(const TspSolution* sol)
+{
+    plot_tour(sol->tour, sol->instance);
 }

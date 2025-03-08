@@ -1,106 +1,15 @@
 #include "tsp_params.h"
 #include "parsing_util.h"
 #include "enums.h"
-#include "c_util.h"
+#include "flag.h"
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
 
-struct CommandFlag
-{
-    const char* const label;
-    union
-    {
-        ParsingResult (*const parse_with_value)(TspParams* self, const char* arg);
-        ParsingResult (*const parse_without_value)(TspParams* self);
-    };
-    ParsingResult (*const parse_flag)(const CommandFlag* param, const char** argv, TspParams* params, int* index);
-    const bool mandatory;
-};
-
-ParsingResult parse_flag_with_value(const CommandFlag* param, const char** argv, TspParams* params, int* index);
-ParsingResult parse_flag_without_value(const CommandFlag* param, const char** argv, TspParams* params, int* index);
-
-const CommandFlag* init_command_flag_with_value(
-    const char* label,
-    ParsingResult ( *param_supplier)(TspParams* self, const char* arg),
-    bool mandatory
-)
-{
-    const CommandFlag flag = {
-        .label = label,
-        .parse_with_value = param_supplier,
-        .mandatory = mandatory,
-        .parse_flag = parse_flag_with_value
-    };
-    CommandFlag* flag_ptr = malloc(sizeof(CommandFlag));
-    check_alloc(flag_ptr);
-    memcpy(flag_ptr, &flag, sizeof(CommandFlag));
-    return flag_ptr;
-}
-
-const CommandFlag* init_command_flag_without_value(
-    const char* label,
-    ParsingResult ( *parse)(TspParams* self),
-    bool mandatory
-)
-{
-    const CommandFlag flag = {
-        .label = label,
-        .parse_without_value = parse,
-        .mandatory = mandatory,
-        .parse_flag = parse_flag_without_value
-    };
-
-    CommandFlag* flag_ptr = malloc(sizeof(CommandFlag));
-    check_alloc(flag_ptr);
-    memcpy(flag_ptr, &flag, sizeof(CommandFlag));
-    return flag_ptr;
-}
-
-bool is_command_flag_mandatory(const CommandFlag* command_flag)
-{
-    return command_flag->mandatory;
-}
-
-ParsingResult parse_flag_with_value(const CommandFlag* param,
-                                    const char** argv,
-                                    TspParams* params,
-                                    int* index)
-{
-    const char* label = argv[*index];
-    const char* value = argv[*index + 1];
-
-    if (strcmp(param->label, label) != 0)
-    {
-        return PARSE_NON_MATCHING_LABEL;
-    }
-    const ParsingResult result = param->parse_with_value(params, value);
-    if (result == PARSE_SUCCESS) (*index)++;
-    return result;
-}
-
-ParsingResult parse_flag_without_value(const CommandFlag* param,
-                                       const char** argv,
-                                       TspParams* params,
-                                       int* index)
-{
-    const char* label = argv[*index];
-
-    if (strcmp(param->label, label) != 0)
-    {
-        return PARSE_NON_MATCHING_LABEL;
-    }
-    const ParsingResult result = param->parse_without_value(params);
-    return result;
-}
-
-ParsingResult parse_flag(const CommandFlag* param,
+ParsingResult parse_flag(const Flag* flag,
                          const char** argv,
                          TspParams* params,
                          int* index)
 {
-    return param->parse_flag(param, argv, params, index);
+    return flag->parse(flag, argv, params, index);
 }
 
 ParsingResult set_nodes(TspParams* self, const char* arg)

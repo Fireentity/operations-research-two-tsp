@@ -4,7 +4,7 @@ project(operations-research-two-tsp C)
 set(CMAKE_C_STANDARD 99)
 
 # Aggiungi directory di inclusione senza usare path relativi nei file sorgente
-include_directories(src/constants src/parsing)
+include_directories(src/flag include/flag)
 
 # Aggiungi i file sorgenti
 set(SOURCES
@@ -25,6 +25,11 @@ set(SOURCES
         include/c_util.h
         src/c_util.c
         src/enums.c
+        include/flag/empty_flag.h
+        include/flag/flag.h
+        include/flag/single_flag.h
+        src/flag/empty_flag.c
+        src/flag/single_flag.c
 )
 
 # Definisci l'eseguibile

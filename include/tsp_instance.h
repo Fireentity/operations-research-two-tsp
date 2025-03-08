@@ -14,5 +14,6 @@ typedef struct TspInstance TspInstance;
 const TspInstance* init_random_tsp_instance(const TspParams* params);
 const double* get_edge_cost_array(const TspInstance* instance);
 long get_number_of_nodes(const TspInstance* instance);
+void plot_tour(const int* tour, const TspInstance* instance);
 
 #endif //TSP_INSTANCE_H
