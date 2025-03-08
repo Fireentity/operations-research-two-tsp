@@ -1,6 +1,7 @@
 #include "tsp_params.h"
 #include "parsing_util.h"
 #include "enums.h"
+#include "c_util.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +36,7 @@ const CommandFlag* initialize_command_flag_with_value(
         .parse_flag = parse_flag_with_value
     };
     CommandFlag* flag_ptr = malloc(sizeof(CommandFlag));
+    check_alloc(flag_ptr);
     memcpy(flag_ptr, &flag, sizeof(CommandFlag));
     return flag_ptr;
 }
@@ -52,6 +54,7 @@ const CommandFlag* initialize_command_flag_without_value(
         .parse_flag = parse_flag_without_value
     };
     CommandFlag* flag_ptr = malloc(sizeof(CommandFlag));
+    check_alloc(flag_ptr);
     memcpy(flag_ptr, &flag, sizeof(CommandFlag));
     return flag_ptr;
 }

@@ -1,4 +1,5 @@
 #include "tsp_instance.h"
+#include "c_util.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,11 +57,12 @@ void fill_edge_cost_matrix(const TspInstance* instance)
     }
 }
 
-TspInstance* initialize_random_tsp_instance(const TspParams* params)
+const TspInstance* initialize_random_tsp_instance(const TspParams* params)
 {
     const unsigned int number_of_nodes = params->number_of_nodes;
     srand(params->seed);
     Node* nodes = malloc(number_of_nodes * sizeof(Node));
+    check_alloc(nodes);
     if (!nodes)
     {
         fprintf(stderr, "Allocation error\n");
@@ -73,9 +75,11 @@ TspInstance* initialize_random_tsp_instance(const TspParams* params)
         nodes[i].y = params->generation_area.y_square + rand() % (params->generation_area.square_side + 1);
     }
     TspInstance* instance = malloc(sizeof(TspInstance));
+    check_alloc(instance);
     instance->number_of_nodes = number_of_nodes;
     instance->nodes = nodes;
     instance->edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));
+    check_alloc(instance->edge_cost_array);
     fill_edge_cost_matrix(instance);
 
     for (size_t i = 0; i < number_of_nodes; i++)

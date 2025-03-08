@@ -22,6 +22,7 @@ set(SOURCES
         include/enums.h
         src/parsing_util.c
         include/parsing_util.h
+        include/c_util.h
 )
 
 # Definisci l'eseguibile

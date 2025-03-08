@@ -6,6 +6,7 @@
 #include "math_util.h"
 #include "constants.h"
 #include "enums.h"
+#include "c_util.h"
 
 struct TspSolution
 {
@@ -32,8 +33,12 @@ double calculate_solution_cost(const TspSolution* solution)
 TspSolution* initialize_solution(const TspInstance* instance)
 {
     const long number_of_nodes = get_number_of_nodes(instance);
+
     TspSolution* solution = malloc(sizeof(TspSolution));
+    check_alloc(solution);
+
     int* tour = calloc(number_of_nodes+1, sizeof(int));
+    check_alloc(tour);
     for (int i = 0; i < number_of_nodes; i++)
         tour[i] = i;
     tour[number_of_nodes] = tour[0];
