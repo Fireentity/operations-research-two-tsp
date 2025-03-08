@@ -13,22 +13,26 @@ ParsingResult parse_command_line(
     const char** argv,
     TspParams* params)
 {
+    if (argc < 2)
+        return PARSE_USAGE_ERROR;
+
     int mandatory_flags = 0;
     for (int i = 0; i < tsp_flag_size; i++)
     {
         if (is_command_flag_mandatory(tsp_flags[i])) mandatory_flags++;
     }
 
-    if (argc < 2)
-        return PARSE_USAGE_ERROR;
-
     int parsed_mandatory_flags = 0;
     // Iterate through flags; stop at argc - 1 to ensure a following argument exists.
-    for (int i = 1; i < argc - 1; i++)
+    for (int current_argv_parameter = 1; current_argv_parameter < argc; current_argv_parameter++)
     {
-        // Parse the flag with its associated value.
-        parse_flag(tsp_flags[i], argv, params, &i);
-        if (is_command_flag_mandatory(tsp_flags[i])) parsed_mandatory_flags++;
+        for (int i = 0; i < tsp_flag_size; i++)
+        {
+            // Parse the flag with its associated value.
+            const ParsingResult result = parse_flag(tsp_flags[i], argv, params, &current_argv_parameter);
+            if (result == PARSE_SUCCESS && is_command_flag_mandatory(tsp_flags[i]))
+                    parsed_mandatory_flags++;
+        }
     }
 
     if (parsed_mandatory_flags != mandatory_flags)
@@ -52,7 +56,7 @@ int main(const int argc, const char* argv[])
     parse_command_line(tsp_flags, 6, argc, argv, &params);
 
     //const double start_seconds = second();
-    TspInstance* instance = initialize_random_tsp_instance(&params);
+    const TspInstance* instance = initialize_random_tsp_instance(&params);
     const TspSolution* solution = initialize_solution(instance);
     const FeasibilityResult result = solve_with_nearest_neighbor(solution);
 

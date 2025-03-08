@@ -28,7 +28,8 @@ double calculate_solution_cost(const TspSolution* solution)
     );
 }
 
-TspSolution* initialize_solution(TspInstance* instance)
+//TODO controllare se questa funzione deve ritornare un puntatore costante
+TspSolution* initialize_solution(const TspInstance* instance)
 {
     TspSolution* solution = malloc(sizeof(TspSolution));
     int* tour = calloc(get_number_of_nodes(instance), sizeof(int));
