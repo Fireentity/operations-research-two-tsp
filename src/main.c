@@ -1,61 +1,52 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include "tsp_instance.h"
 #include "tsp_solution.h"
 
 // Function to parse the command-line arguments using flags.
-void parse_command_line(
-    const TspParam* tsp_flags,
+ParsingResult parse_command_line(
+    const CommandFlag** tsp_flags,
     const int tsp_flag_size,
     const int argc,
-    char** argv,
+    const char** argv,
     TspParams* params)
 {
-    if (argc < 2)
+    int mandatory_flags = 0;
+    for (int i = 0; i < tsp_flag_size; i++)
     {
-        fprintf(stderr,
-                "Usage: %s [OPTION]...\n"
-                "Generates and solves Traveling Salesman Problem (TSP) instances with specified parameters.\n"
-                "\n"
-                "Examples:\n"
-                "  tsp_solver --nodes 10 --seed 42 --x-square 5 --y-square 5 --square-side 10\n"
-                "  tsp_solver --nodes 20 --seed 99 --x-square 3 --y-square 3 --square-side 15\n"
-                "\n"
-                "Mandatory options:\n"
-                "      --nodes=N               specify number of nodes (N must be > 0)\n"
-                "      --seed=N                set random seed for reproducibility\n"
-                "      --x-square=N            define x-coordinate of the square\n"
-                "      --y-square=N            define y-coordinate of the square\n"
-                "      --square-side=N         set side length of the square\n"
-                "\n"
-                "Other options:\n"
-                "  -?, --help                 display this help message\n"
-                "      --version              output version information\n",
-                argv[0]);
-
-        exit(1);
+        if (is_command_flag_mandatory(tsp_flags[i])) mandatory_flags++;
     }
 
+    if (argc < 2)
+        return PARSE_USAGE_ERROR;
+
+    int parsed_mandatory_flags = 0;
+    // Iterate through flags; stop at argc - 1 to ensure a following argument exists.
     for (int i = 1; i < argc - 1; i++)
     {
-        if (argc - i > 0)
-        {
-            parse_flag(tsp_flags, tsp_flag_size, argv[i], argv[i + 1], params);
-            i++;
-        }
+        // Parse the flag with its associated value.
+        parse_flag(tsp_flags[i], argv, params, &i);
+        if (is_command_flag_mandatory(tsp_flags[i])) parsed_mandatory_flags++;
     }
+
+    if (parsed_mandatory_flags != mandatory_flags)
+        return PARSE_MISSING_MANDATORY_FLAG;
+
+    return PARSE_SUCCESS;
 }
 
-int main(const int argc, char* argv[])
+int main(const int argc, const char* argv[])
 {
     TspParams params;
-    const TspParam tsp_flags[] = {
-        {.label = "--nodes", .parse = set_nodes, .mandatory = true},
-        {.label = "--seed", .parse = set_seed, .mandatory = false},
-        {.label = "--x_square", .parse = set_x_square, .mandatory = true},
-        {.label = "--y_square", .parse = set_y_square, .mandatory = true},
-        {.label = "--square_side", .parse = set_square_side, .mandatory = true},
-        {.label = "--help", .parse = set_help, .mandatory = false},
+    const CommandFlag* tsp_flags[] = {
+        initialize_command_flag_with_value("--nodes", set_nodes,true),
+        initialize_command_flag_with_value("--seed", set_seed,false),
+        initialize_command_flag_with_value("--x_square", set_x_square,true),
+        initialize_command_flag_with_value("--y_square", set_y_square,true),
+        initialize_command_flag_with_value("--square_side", set_square_side,true),
+        initialize_command_flag_without_value("--help", set_help,false)
     };
 
     parse_command_line(tsp_flags, 6, argc, argv, &params);
@@ -65,8 +56,20 @@ int main(const int argc, char* argv[])
     const TspSolution* solution = initialize_solution(instance);
     const FeasibilityResult result = solve_with_nearest_neighbor(solution);
 
+    if (result != FEASIBLE)
+    {
+        fprintf(stderr, "Nearest Neighbor generated an unfeasible solution : %s\n", ENUM_TO_STRING(result));
+        exit(EXIT_FAILURE);
+    }
+
 
     printf("%s", ENUM_TO_STRING(result));
 
     return 0;
+}
+
+void debug_print_nodes(Node* nodes, size_t count)
+{
+    for (size_t i = 0; i < count; i++)
+        printf("Node[%zu]: x = %ld, y = %ld\n", i, nodes[i].x, nodes[i].y);
 }

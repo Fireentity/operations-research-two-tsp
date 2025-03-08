@@ -20,7 +20,8 @@ set(SOURCES
         include/math_util.h
         src/math_util.c
         include/enums.h
-        src/enums.c
+        src/parsing_util.c
+        include/parsing_util.h
 )
 
 # Definisci l'eseguibile

@@ -26,7 +26,7 @@
  */
 struct TspInstance
 {
-    double* edge_cost_matrix;
+    double* edge_cost_array;
     long number_of_nodes;
     Node* nodes;
 };
@@ -39,7 +39,7 @@ long get_number_of_nodes(const TspInstance* instance)
 
 const double* get_edge_cost_array(const TspInstance* instance)
 {
-    return instance->edge_cost_matrix;
+    return instance->edge_cost_array;
 }
 
 void fill_edge_cost_matrix(const TspInstance* instance)
@@ -51,7 +51,7 @@ void fill_edge_cost_matrix(const TspInstance* instance)
         {
             const long dx = instance->nodes[i].x - instance->nodes[j].x;
             const long dy = instance->nodes[i].y - instance->nodes[j].y;
-            instance->edge_cost_matrix[i * number_of_nodes + j] = sqrt((double)(dx * dx + dy * dy));
+            instance->edge_cost_array[i * number_of_nodes + j] = sqrt((double)(dx * dx + dy * dy));
         }
     }
 }
@@ -74,7 +74,19 @@ TspInstance* initialize_random_tsp_instance(const TspParams* params)
     TspInstance* instance = malloc(sizeof(TspInstance));
     instance->number_of_nodes = number_of_nodes;
     instance->nodes = nodes;
-    instance->edge_cost_matrix = calloc(number_of_nodes * number_of_nodes, sizeof(double));
+    instance->edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));
     fill_edge_cost_matrix(instance);
+
+    for (size_t i = 0; i < number_of_nodes; i++)
+        printf("Node[%zu]: x = %ld, y = %ld\n", i, nodes[i].x, nodes[i].y);
+
+    printf("Edge Cost Matrix:\n");
+    for (long i = 0; i < number_of_nodes; i++) {
+        for (long j = 0; j < number_of_nodes; j++) {
+            printf("%.2f ", instance->edge_cost_array[i * number_of_nodes + j]);
+        }
+        printf("\n");
+    }
+
     return instance;
 }

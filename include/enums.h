@@ -1,27 +1,25 @@
 #ifndef ENUMS_H
 #define ENUMS_H
 
-static const char*const feasibility_result_map[];
-
-static const char*const parsing_result_map[];
-
 typedef enum
 {
-    SUCCESS = 0,
-    PARSING_ERROR = 1,
-    UNKNOWN_ARG = 2,
+    PARSE_SUCCESS,
+    PARSE_IGNORED,
+    PARSE_UNKNOWN_ARG,
+    PARSE_USAGE_ERROR,
+    PARSE_WRONG_VALUE_TYPE,
+    PARSE_MISSING_VALUE,
+    PARSE_MISSING_MANDATORY_FLAG
 } ParsingResult;
 
 typedef enum
 {
-    DUPLICATED_ENTRY = 0,
-    UNINITIALIZED_ENTRY = 1,
-    NON_MATCHING_COST = 2,
-    FEASIBLE = 3,
+    DUPLICATED_ENTRY,
+    UNINITIALIZED_ENTRY,
+    NON_MATCHING_COST,
+    FEASIBLE,
 } FeasibilityResult;
 
-#define ENUM_TO_STRING(x) _Generic((x), \
-ParsingResult: parsing_result_map[(x)], \
-FeasibilityResult: feasibility_result_map[(x)] )
+#define ENUM_TO_STRING(x) #x
 
-#endif //ENUMS_H
+#endif // ENUMS_H
