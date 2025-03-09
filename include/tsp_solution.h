@@ -10,9 +10,9 @@
 typedef struct TspSolution TspSolution;
 
 
-const TspSolution* init_solution(const TspInstance* instance);
+TspSolution* init_solution(const TspInstance* instance);
 double calculate_solution_cost(const TspSolution* solution);
-FeasibilityResult solve_tsp(TspSolver solver, const TspSolution *solution);
+FeasibilityResult solve_tsp(TspSolver solver, TspSolution *solution);
 FeasibilityResult check_solution_feasibility(const TspSolution* solution);
 void plot_solution(const TspSolution *sol, const char *output_name);
 unsigned long tour_array_size(unsigned long number_of_nodes);

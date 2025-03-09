@@ -104,7 +104,7 @@ void plot_tour(const unsigned long *tour, const TspInstance *instance, const cha
 
     fprintf(gp, "set terminal png size 800,600\n");
 
-    Bounds bounds = calculate_plot_bounds(tour, instance);
+    const Bounds bounds = calculate_plot_bounds(tour, instance);
 
     fprintf(gp, "set xrange [%lf:%lf]\n", bounds.min_x, bounds.max_x);
     fprintf(gp, "set yrange [%lf:%lf]\n", bounds.min_y, bounds.max_y);
@@ -126,7 +126,7 @@ const Node *get_nodes(const TspInstance *instance) {
     return instance->nodes;
 }
 
-void solve_instance(TspSolver solver, unsigned long *tour, double *cost, const TspInstance *instance) {
+void solve_instance(const TspSolver solver, unsigned long *tour, double *cost, const TspInstance *instance) {
     solver(tour, instance->number_of_nodes, instance->edge_cost_array, cost);
 }
 

@@ -72,7 +72,7 @@ int main(const int argc, const char* argv[])
     const TspInstance* instance = init_random_tsp_instance(cmd_options.number_of_nodes,
                                                            cmd_options.seed,
                                                            cmd_options.generation_area);
-    const TspSolution* solution = init_solution(instance);
+    TspSolution* solution = init_solution(instance);
     const FeasibilityResult result = solve_tsp(solve_with_nearest_neighbor, solution);
 
 

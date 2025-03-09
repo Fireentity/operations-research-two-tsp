@@ -23,7 +23,7 @@ double calculate_solution_cost(const TspSolution *solution) {
 }
 
 
-const TspSolution *init_solution(const TspInstance *instance) {
+TspSolution *init_solution(const TspInstance *instance) {
     const unsigned long number_of_nodes = get_number_of_nodes(instance);
 
     unsigned long *tour = calloc(tour_array_size(number_of_nodes), sizeof(number_of_nodes));
@@ -82,12 +82,12 @@ void plot_solution(const TspSolution *sol, const char *output_name) {
 }
 
 
-FeasibilityResult solve_tsp(TspSolver solver, const TspSolution *solution) {
+FeasibilityResult solve_tsp(const TspSolver solver, TspSolution *solution) {
     solve_instance(solver, solution->tour, &solution->cost, solution->instance);
     return check_solution_feasibility(solution);
 }
 
-unsigned long tour_array_size(unsigned long number_of_nodes) {
+unsigned long tour_array_size(const unsigned long number_of_nodes) {
     return number_of_nodes + 1;
 }
 
