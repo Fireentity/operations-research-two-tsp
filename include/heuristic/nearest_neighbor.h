@@ -8,12 +8,14 @@
  * This algorithm constructs a tour by always visiting the nearest unvisited node.
  *
  * @param tour Pointer to the array that will store the computed tour.
+ * @param starting_node
  * @param number_of_nodes The total number of nodes in the instance.
  * @param edge_cost_array Pointer to the array containing edge costs.
  * @param cost Pointer to store the total cost of the computed tour.
  */
 void solve_with_nearest_neighbor(
         unsigned long *tour,
+        unsigned long starting_node,
         unsigned long number_of_nodes,
         const double *edge_cost_array,
         double *cost
@@ -21,6 +23,7 @@ void solve_with_nearest_neighbor(
 
 void solve_with_nearest_neighbor_and_two_opt(
         unsigned long *tour,
+        unsigned long starting_node,
         unsigned long number_of_nodes,
         const double *edge_cost_array,
         double *cost

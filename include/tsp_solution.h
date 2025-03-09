@@ -17,6 +17,6 @@ solve_tsp_for_seconds(TspSolver solver, TspSolution *solution, unsigned int seco
 FeasibilityResult check_solution_feasibility(const TspSolution* solution);
 void plot_solution(const TspSolution *sol, const char *output_name);
 unsigned long tour_array_size(unsigned long number_of_nodes);
-void free_TspSolution_without_instance(TspSolution* solution);
+void free_tsp_solution(TspSolution* solution);
 
 #endif //TSP_SOLUTION_H

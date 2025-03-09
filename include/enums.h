@@ -27,6 +27,7 @@ const char* feasibility_result_to_string(FeasibilityResult result);
 //TODO sposta da qui
 typedef void (*TspSolver)(
         unsigned long *tour,
+        unsigned long starting_node,
         unsigned long number_of_nodes,
         const double *edge_cost_array,
         double *cost
