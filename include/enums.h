@@ -22,10 +22,14 @@ typedef enum
 
 const char* parsing_result_to_string(ParsingResult result);
 
-
-
 const char* feasibility_result_to_string(FeasibilityResult result);
 
-#define ENUM_TO_STRING(x) #x
+//TODO sposta da qui
+typedef void (*TspSolver)(
+        unsigned long *tour,
+        unsigned long number_of_nodes,
+        const double *edge_cost_array,
+        double *cost
+);
 
 #endif // ENUMS_H

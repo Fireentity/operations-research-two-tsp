@@ -6,6 +6,7 @@
 #include "single_flag.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
+#include "nearest_neighbor.h"
 
 // Function to parse the command-line arguments using flags.
 ParsingResult parse_command_line(
@@ -39,6 +40,13 @@ ParsingResult parse_command_line(
                 }
                 break;
             }
+
+             /*
+             if(i == tsp_flag_size){
+                 //TODO unrecognized flag
+             }
+             */
+
         }
     }
 
@@ -65,24 +73,29 @@ int main(const int argc, const char* argv[])
                                                            cmd_options.seed,
                                                            cmd_options.generation_area);
     const TspSolution* solution = init_solution(instance);
-    const FeasibilityResult result = solve_with_nearest_neighbor(solution);
+    const FeasibilityResult result = solve_tsp(solve_with_nearest_neighbor, solution);
+
+
+    plot_solution(solution, "pre.png");
+    //TODO two_opt(solution);
+    plot_solution(solution, "post.png");
 
     if (result != FEASIBLE)
     {
-        printf("Nearest Neighbor generated an unfeasible solution : %d\n", result);
+        printf("Nearest Neighbor generated an unfeasible solution : %s\n", feasibility_result_to_string(result));
         exit(EXIT_FAILURE);
     }
 
-    plot_solution(solution);
+    plot_solution(solution, NULL);
 
-    printf("%d", result);
+    printf("%s", feasibility_result_to_string(result));
 
     return 0;
 }
 
 
-void debug_print_nodes(Node* nodes, size_t count)
+void debug_print_nodes(Node* nodes, unsigned long count)
 {
-    for (size_t i = 0; i < count; i++)
+    for (unsigned long i = 0; i < count; i++)
         printf("Node[%zu]: x = %ld, y = %ld\n", i, nodes[i].x, nodes[i].y);
 }

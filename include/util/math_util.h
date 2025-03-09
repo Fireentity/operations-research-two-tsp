@@ -5,7 +5,14 @@
 #ifndef MATH_UTIL_H
 #define MATH_UTIL_H
 
-double calculate_tour_cost(const int* tour, long number_of_nodes, const double* edge_cost_array);
+#include "tsp_instance.h"
+
+double calculate_tour_cost(const unsigned long *const tour, const unsigned long number_of_nodes, const double *const edge_cost_array);
+typedef struct {
+    double min_x, max_x;
+    double min_y, max_y;
+} Bounds;
+Bounds calculate_plot_bounds(const unsigned long *tour, const TspInstance *instance);
 
 #define SWAP(a, b) do { __typeof__(a) _tmp = (a); (a) = (b); (b) = _tmp; } while (0)
 
