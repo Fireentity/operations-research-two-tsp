@@ -10,7 +10,6 @@ void solve_with_nearest_neighbor(
         const double *edge_cost_array,
         double *cost
 ) {
-
     const unsigned long start = rand() % number_of_nodes;
     unsigned long visited = 1;
 

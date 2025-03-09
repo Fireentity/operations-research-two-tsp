@@ -105,7 +105,7 @@ FeasibilityResult solve_tsp_for_seconds(TspSolver solver, TspSolution *solution,
 
         if (new_solution->cost < solution->cost) {
 
-            memcpy(solution->tour, new_solution->tour, get_number_of_nodes(solution->instance) * sizeof(unsigned long));
+            memcpy(solution->tour, new_solution->tour, tour_array_size(get_number_of_nodes(solution->instance)) * sizeof(unsigned long));
             solution->cost = new_solution->cost;
         }
 
