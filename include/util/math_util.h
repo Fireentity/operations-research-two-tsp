@@ -4,6 +4,7 @@
 #include "tsp_instance.h"
 
 double calculate_tour_cost(const unsigned long *tour, unsigned long number_of_nodes, const double *edge_cost_array);
+double random01();
 
 #define SWAP(a, b) do { __typeof__(a) _tmp = (a); (a) = (b); (b) = _tmp; } while (0)
 

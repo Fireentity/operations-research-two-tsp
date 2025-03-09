@@ -50,30 +50,43 @@ ParsingResult parse_command_line(
 }
 
 int main(const int argc, const char *argv[]) {
+
     const Flag *tsp_flags[] = {
             init_single_flag("--nodes", set_nodes, true),
             init_single_flag("--seed", set_seed, false),
             init_single_flag("--x-square", set_x_square, true),
             init_single_flag("--y-square", set_y_square, true),
             init_single_flag("--square-side", set_square_side, true),
+            init_single_flag("--seconds", set_seconds, false),
             init_empty_flag("--help", set_help, false)
     };
+    ParsingResult parse_result = parse_command_line(tsp_flags, 6, argc, argv);
+    if (PARSE_SUCCESS != parse_result) {
+        printf("Parsing of the command line has failed for the following reason : %s\n",
+               parsing_result_to_string(parse_result));
+        exit(EXIT_FAILURE);
+    }
 
-    parse_command_line(tsp_flags, 6, argc, argv);
     const CmdOptions cmd_options = get_cmd_options();
     const TspInstance *instance = init_random_tsp_instance(cmd_options.number_of_nodes,
                                                            cmd_options.seed,
                                                            cmd_options.generation_area);
     TspSolution *solution = init_solution(instance);
-    const FeasibilityResult result = solve_tsp(solve_with_nearest_neighbor_and_two_opt, solution);
+
+    FeasibilityResult feasibility_result;
+    if(cmd_options.seconds){
+        feasibility_result = solve_tsp_for_seconds(solve_with_nearest_neighbor_and_two_opt, solution, cmd_options.seconds);
+    } else {
+        feasibility_result = solve_tsp(solve_with_nearest_neighbor_and_two_opt, solution);
+    }
 
 
-    if (result != FEASIBLE) {
-        printf("Nearest Neighbor generated an unfeasible solution : %s\n", feasibility_result_to_string(result));
+    if (feasibility_result != FEASIBLE) {
+        printf("Solution in not feasible: %s\n", feasibility_result_to_string(feasibility_result));
         exit(EXIT_FAILURE);
     }
 
-    printf("%s\n", feasibility_result_to_string(result));
+    printf("%s\n", feasibility_result_to_string(feasibility_result));
 
     plot_solution(solution, "plot.png");
 

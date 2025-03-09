@@ -12,6 +12,7 @@ static CmdOptions cmd_options = {
     .help = false,
     .number_of_nodes = 0,
     .seed = 0,
+    .seconds = 0
 };
 
 CmdOptions get_cmd_options()
@@ -48,4 +49,9 @@ ParsingResult set_help()
 {
     cmd_options.help = true;
     return PARSE_SUCCESS;
+}
+
+ParsingResult set_seconds(const char* arg)
+{
+    return parse_unsigned_int(arg, &cmd_options.seconds);
 }

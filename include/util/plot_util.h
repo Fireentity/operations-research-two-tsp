@@ -1,5 +1,5 @@
-#ifndef OPERATIONS_RESEARCH_TWO_TSP_PLOT_UTIL_H
-#define OPERATIONS_RESEARCH_TWO_TSP_PLOT_UTIL_H
+#ifndef PLOT_UTIL_H
+#define PLOT_UTIL_H
 
 #include "tsp_instance.h"
 #include "math_util.h"
@@ -11,4 +11,4 @@ typedef struct {
 void plot_tour(const unsigned long *tour, unsigned long number_of_nodes, const Node* nodes, const char *output_name);
 Bounds calculate_plot_bounds(const unsigned long *tour, unsigned long number_of_nodes, const Node* nodes);
 
-#endif //OPERATIONS_RESEARCH_TWO_TSP_PLOT_UTIL_H
+#endif //PLOT_UTIL_H

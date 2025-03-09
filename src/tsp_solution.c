@@ -2,15 +2,17 @@
 #include "tsp_solution.h"
 #include <stdlib.h>
 #include <string.h>
+#include <float.h>
 #include "math_util.h"
 #include "constants.h"
 #include "enums.h"
 #include "c_util.h"
 #include "plot_util.h"
+#include "util/chrono.h"
 
 struct TspSolution {
     double cost;
-    unsigned long *const tour;
+    unsigned long *tour;
     const TspInstance *const instance;
 };
 
@@ -90,4 +92,38 @@ unsigned long tour_array_size(const unsigned long number_of_nodes) {
 void plot_solution(const TspSolution *sol, const char *output_name) {
     plot_tour(sol->tour, get_number_of_nodes(sol->instance), get_nodes(sol->instance), output_name);
 }
+
+FeasibilityResult solve_tsp_for_seconds(TspSolver solver, TspSolution *solution, unsigned int seconds) {
+    double start = second();
+
+    solve_instance(solver, solution->tour, &solution->cost, solution->instance);
+    int i = 0;
+    while (second() < start + seconds) {
+        i++;
+        TspSolution *new_solution = init_solution(solution->instance);
+        solve_instance(solver, new_solution->tour, &new_solution->cost, new_solution->instance);
+
+        if (new_solution->cost < solution->cost) {
+
+            memcpy(solution->tour, new_solution->tour, get_number_of_nodes(solution->instance) * sizeof(unsigned long));
+            solution->cost = new_solution->cost;
+        }
+
+
+        free_TspSolution_without_instance(new_solution);
+    }
+
+    return check_solution_feasibility(solution);
+}
+
+void free_TspSolution_without_instance(TspSolution *solution) {
+    if (!solution || !solution->tour) {
+        return;
+    }
+    free(solution->tour);
+    solution->tour = NULL;
+    free(solution);
+
+}
+
 

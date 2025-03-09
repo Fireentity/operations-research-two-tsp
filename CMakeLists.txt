@@ -18,7 +18,7 @@ set(SOURCES
         src/tsp_solution.c
         src/cmd_options.c
         src/main.c
-        src/chrono.c
+        src/util/chrono.c
         src/enums.c
 
         include/util/parsing_util.h
@@ -35,6 +35,7 @@ set(SOURCES
         include/constants.h
         include/util/plot_util.h
         src/util/plot_util.c
+        include/util/chrono.h
 )
 
 # Definisci l'eseguibile
