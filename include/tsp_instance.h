@@ -1,7 +1,7 @@
 #ifndef TSP_INSTANCE_H
 #define TSP_INSTANCE_H
 
-#include "tsp_params.h"
+#include "cmd_options.h"
 
 typedef struct
 {
@@ -11,7 +11,9 @@ typedef struct
 
 typedef struct TspInstance TspInstance;
 
-const TspInstance* init_random_tsp_instance(const TspParams* params);
+const TspInstance* init_random_tsp_instance(unsigned int number_of_nodes,
+                                            int seed,
+                                            Rectangle generation_area);
 const double* get_edge_cost_array(const TspInstance* instance);
 long get_number_of_nodes(const TspInstance* instance);
 void plot_tour(const int* tour, const TspInstance* instance);

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "flag.h"
+#include "parsing_util.h"
 #include "single_flag.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
@@ -11,8 +12,7 @@ ParsingResult parse_command_line(
     const Flag** tsp_flags,
     const int tsp_flag_size,
     const int argc,
-    const char** argv,
-    TspParams* params)
+    const char** argv)
 {
     if (argc < 2)
         return PARSE_USAGE_ERROR;
@@ -30,7 +30,7 @@ ParsingResult parse_command_line(
         for (int i = 0; i < tsp_flag_size; i++)
         {
             // Parse the flag with its associated value.
-            const ParsingResult result = parse_flag(tsp_flags[i], argv, params, &current_argv_parameter);
+            const ParsingResult result = parse_flag(tsp_flags[i], argv, &current_argv_parameter);
             if (result == PARSE_SUCCESS)
             {
                 if (tsp_flags[i]->mandatory)
@@ -50,20 +50,20 @@ ParsingResult parse_command_line(
 
 int main(const int argc, const char* argv[])
 {
-    TspParams params;
     const Flag* tsp_flags[] = {
-            init_single_flag("--nodes", set_nodes, true),
-            init_single_flag("--seed", set_seed, false),
-            init_single_flag("--x-square", set_x_square, true),
-            init_single_flag("--y-square", set_y_square, true),
-            init_single_flag("--square-side", set_square_side, true),
-            init_empty_flag("--help", set_help, false)
+        init_single_flag("--nodes", set_nodes, true),
+        init_single_flag("--seed", set_seed, false),
+        init_single_flag("--x-square", set_x_square, true),
+        init_single_flag("--y-square", set_y_square, true),
+        init_single_flag("--square-side", set_square_side, true),
+        init_empty_flag("--help", set_help, false)
     };
 
-    parse_command_line(tsp_flags, 6, argc, argv, &params);
-
-    //const double start_seconds = second();
-    const TspInstance* instance = init_random_tsp_instance(&params);
+    parse_command_line(tsp_flags, 6, argc, argv);
+    const CmdOptions cmd_options = get_cmd_options();
+    const TspInstance* instance = init_random_tsp_instance(cmd_options.number_of_nodes,
+                                                           cmd_options.seed,
+                                                           cmd_options.generation_area);
     const TspSolution* solution = init_solution(instance);
     const FeasibilityResult result = solve_with_nearest_neighbor(solution);
 
@@ -73,6 +73,7 @@ int main(const int argc, const char* argv[])
         exit(EXIT_FAILURE);
     }
 
+    plot_solution(solution);
 
     printf("%d", result);
 

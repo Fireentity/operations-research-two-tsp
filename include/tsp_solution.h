@@ -13,5 +13,6 @@ double calculate_solution_cost(const TspSolution* solution);
 FeasibilityResult solve_with_nearest_neighbor(const TspSolution* solution);
 FeasibilityResult check_solution_feasibility(const TspSolution* solution);
 const int* get_tour(const TspSolution* instance);
+void plot_solution(const TspSolution* sol);
 
 #endif //TSP_SOLUTION_H

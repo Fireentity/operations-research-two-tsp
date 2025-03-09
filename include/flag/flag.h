@@ -14,7 +14,7 @@ struct Flag
     };
     const char* label;
     const bool mandatory;
-    ParsingResult (* const parse)(const Flag* param, const char** argv, TspParams* params, int* index);
+    ParsingResult (* const parse)(const Flag* param, const char** argv, int* index);
 };
 
 

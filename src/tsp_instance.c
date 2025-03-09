@@ -58,18 +58,19 @@ void fill_edge_cost_matrix(const TspInstance* instance)
     }
 }
 
-const TspInstance* init_random_tsp_instance(const TspParams* params)
+const TspInstance* init_random_tsp_instance(const unsigned int number_of_nodes,
+                                            const int seed,
+                                            const Rectangle generation_area)
 {
-    const unsigned int number_of_nodes = params->number_of_nodes;
-    srand(params->seed);
+    srand(seed);
 
     Node* nodes = malloc(number_of_nodes * sizeof(Node));
     check_alloc(nodes);
     for (int i = 0; i < number_of_nodes; i++)
     {
         //TODO Con questo metodo i nodi non possono avere la virgola pensare di passare a nodi non interi
-        nodes[i].x = params->generation_area.x_square + rand() % (params->generation_area.square_side + 1);
-        nodes[i].y = params->generation_area.y_square + rand() % (params->generation_area.square_side + 1);
+        nodes[i].x = generation_area.x_square + rand() % (generation_area.square_side + 1);
+        nodes[i].y = generation_area.y_square + rand() % (generation_area.square_side + 1);
     }
 
     double* edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));

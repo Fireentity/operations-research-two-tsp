@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static ParsingResult parse(const Flag* flag, const char** argv, TspParams* params, int* idx)
+static ParsingResult parse(const Flag* flag, const char** argv, int* idx)
 {
     const char* label = argv[*idx];
     const char* value = argv[*idx + 1];
@@ -13,13 +13,13 @@ static ParsingResult parse(const Flag* flag, const char** argv, TspParams* param
     {
         return PARSE_NON_MATCHING_LABEL;
     }
-    const ParsingResult result = flag->single_flag->param_supplier(params, value);
+    const ParsingResult result = flag->single_flag->param_supplier(value);
     if (result == PARSE_SUCCESS) (*idx)++;
     return result;
 }
 
 const Flag* init_single_flag(const char* label,
-                             ParsingResult (*const param_supplier)(TspParams* self, const char* arg),
+                             ParsingResult (*const param_supplier)(const char* arg),
                              const bool mandatory
 )
 {
