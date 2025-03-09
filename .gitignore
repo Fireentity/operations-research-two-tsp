@@ -11,6 +11,8 @@ CMakeFiles/
 CMakeCache.txt
 Makefile
 cmake_install.cmake
+build
+.cmake
 
 # Build output files
 *.o
