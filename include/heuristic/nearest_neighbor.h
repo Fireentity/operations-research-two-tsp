@@ -19,6 +19,13 @@ void solve_with_nearest_neighbor(
         double *cost
 );
 
+void solve_with_nearest_neighbor_and_two_opt(
+        unsigned long *tour,
+        unsigned long number_of_nodes,
+        const double *edge_cost_array,
+        double *cost
+);
+
 /**
  * Optimizes an existing TSP tour using the 2-opt algorithm.
  * The 2-opt algorithm improves a given tour by iteratively reversing segments
@@ -29,12 +36,7 @@ void solve_with_nearest_neighbor(
  * @param number_of_nodes The total number of nodes in the instance.
  * @param cost Pointer to store the updated cost of the optimized tour.
  */
-void two_opt(
-        unsigned long *tour,
-        const double *edge_cost_array,
-        unsigned long number_of_nodes,
-        double *cost
-);
+void two_opt(unsigned long *tour, unsigned long number_of_nodes, const double *edge_cost_array, double *cost);
 
 /**
  * Reverses a segment of the tour between indices i and k (inclusive).

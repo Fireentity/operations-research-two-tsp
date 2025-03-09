@@ -1,12 +1,12 @@
 #include <math.h>
 #include "tsp_solution.h"
-#include <float.h>
 #include <stdlib.h>
 #include <string.h>
 #include "math_util.h"
 #include "constants.h"
 #include "enums.h"
 #include "c_util.h"
+#include "plot_util.h"
 
 struct TspSolution {
     double cost;
@@ -77,10 +77,6 @@ FeasibilityResult check_solution_feasibility(const TspSolution *solution) {
     return FEASIBLE;
 }
 
-void plot_solution(const TspSolution *sol, const char *output_name) {
-    plot_tour(sol->tour, sol->instance, output_name);
-}
-
 
 FeasibilityResult solve_tsp(const TspSolver solver, TspSolution *solution) {
     solve_instance(solver, solution->tour, &solution->cost, solution->instance);
@@ -89,5 +85,9 @@ FeasibilityResult solve_tsp(const TspSolver solver, TspSolution *solution) {
 
 unsigned long tour_array_size(const unsigned long number_of_nodes) {
     return number_of_nodes + 1;
+}
+
+void plot_solution(const TspSolution *sol, const char *output_name) {
+    plot_tour(sol->tour, get_number_of_nodes(sol->instance), get_nodes(sol->instance), output_name);
 }
 

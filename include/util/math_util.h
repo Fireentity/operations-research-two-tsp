@@ -1,18 +1,9 @@
-//
-// Created by croce on 07/03/2025.
-//
-
 #ifndef MATH_UTIL_H
 #define MATH_UTIL_H
 
 #include "tsp_instance.h"
 
-double calculate_tour_cost(const unsigned long *const tour, const unsigned long number_of_nodes, const double *const edge_cost_array);
-typedef struct {
-    double min_x, max_x;
-    double min_y, max_y;
-} Bounds;
-Bounds calculate_plot_bounds(const unsigned long *tour, const TspInstance *instance);
+double calculate_tour_cost(const unsigned long *tour, unsigned long number_of_nodes, const double *edge_cost_array);
 
 #define SWAP(a, b) do { __typeof__(a) _tmp = (a); (a) = (b); (b) = _tmp; } while (0)
 

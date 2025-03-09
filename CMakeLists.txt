@@ -33,6 +33,8 @@ set(SOURCES
         include/cmd_options.h
         include/enums.h
         include/constants.h
+        include/util/plot_util.h
+        src/util/plot_util.c
 )
 
 # Definisci l'eseguibile
