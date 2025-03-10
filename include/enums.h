@@ -24,13 +24,9 @@ const char* parsing_result_to_string(ParsingResult result);
 
 const char* feasibility_result_to_string(FeasibilityResult result);
 
-//TODO sposta da qui
-typedef void (*TspSolver)(
-        unsigned long *tour,
-        unsigned long starting_node,
-        unsigned long number_of_nodes,
-        const double *edge_cost_array,
-        double *cost
-);
+#define FEASIBILITY_ABORT(result) do { \
+    printf("Solution in not feasible: %s\n", feasibility_result_to_string(feasibility_result)); \
+    exit(EXIT_FAILURE); \
+} while(0)
 
 #endif // ENUMS_H

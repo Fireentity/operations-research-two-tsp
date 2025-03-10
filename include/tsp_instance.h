@@ -3,6 +3,7 @@
 
 #include <glob.h>
 #include "cmd_options.h"
+#include "function_type.h"
 
 typedef struct
 {
