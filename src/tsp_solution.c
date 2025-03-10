@@ -2,7 +2,6 @@
 #include "tsp_solution.h"
 #include <stdlib.h>
 #include <string.h>
-#include <float.h>
 #include "math_util.h"
 #include "constants.h"
 #include "enums.h"

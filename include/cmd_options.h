@@ -4,8 +4,6 @@
 #include "enums.h"
 #include <stdbool.h>
 
-typedef struct Flag Flag;
-
 typedef struct
 {
     int x_square;

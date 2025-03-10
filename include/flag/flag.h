@@ -3,14 +3,12 @@
 #include <stdbool.h>
 #include "enums.h"
 
-typedef struct Flag Flag;
-
-struct Flag {
+typedef struct {
     const unsigned int number_of_params;
     const char *label;
     const bool mandatory;
     ParsingResult (* const parse_fuction)(const char **arg);
-};
+} Flag;
 
 ParsingResult parse(const Flag* flag, const char** argv, int* index);
 
