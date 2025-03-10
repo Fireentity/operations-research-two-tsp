@@ -11,8 +11,6 @@ set(SOURCES
         src/util/parsing_util.c
         src/util/math_util.c
         src/util/c_util.c
-        src/flag/single_flag.c
-        src/flag/empty_flag.c
         src/heuristic/nearest_neighbor.c
         src/tsp_instance.c
         src/tsp_solution.c
@@ -20,13 +18,12 @@ set(SOURCES
         src/main.c
         src/util/chrono.c
         src/enums.c
+        src/flag/flag.c
 
         include/util/parsing_util.h
         include/util/math_util.h
         include/util/c_util.h
         include/flag/flag.h
-        include/flag/single_flag.h
-        include/flag/empty_flag.h
         include/heuristic/nearest_neighbor.h
         include/tsp_instance.h
         include/tsp_solution.h

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "flag.h"
 #include "parsing_util.h"
-#include "single_flag.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
 #include "nearest_neighbor.h"
@@ -30,7 +30,7 @@ ParsingResult parse_command_line(
         for (int i = 0; i < tsp_flag_size; i++)
         {
             // Parse the flag with its associated value.
-            const ParsingResult result = parse_flag(tsp_flags[i], argv, &current_argv_parameter);
+            const ParsingResult result = parse(tsp_flags[i], argv, &current_argv_parameter);
             if (result == PARSE_SUCCESS)
             {
                 if (tsp_flags[i]->mandatory)
@@ -57,13 +57,13 @@ ParsingResult parse_command_line(
 int main(const int argc, const char* argv[])
 {
     const Flag* tsp_flags[] = {
-        init_single_flag("--nodes", set_nodes, true),
-        init_single_flag("--seed", set_seed, false),
-        init_single_flag("--x-square", set_x_square, true),
-        init_single_flag("--y-square", set_y_square, true),
-        init_single_flag("--square-side", set_square_side, true),
-        init_single_flag("--seconds", set_seconds, false),
-        init_empty_flag("--help", set_help, false)
+        init_flag("--nodes", 1, set_nodes, true),
+        init_flag("--seed", 1, set_seed, false),
+        init_flag("--x-square", 1, set_x_square, true),
+        init_flag("--y-square", 1, set_y_square, true),
+        init_flag("--square-side", 1, set_square_side, true),
+        init_flag("--seconds", 1, set_seconds, false),
+        init_flag("--help", 0, set_help, false)
     };
     const ParsingResult parse_result = parse_command_line(tsp_flags, 6, argc, argv);
     if (PARSE_SUCCESS != parse_result)

@@ -7,13 +7,6 @@
 #include "cmd_options.h"
 #include "flag.h"
 
-ParsingResult parse_flag(const Flag* flag,
-                         const char** argv,
-                         int* index)
-{
-    return flag->parse(flag, argv, index);
-}
-
 ParsingResult parse_unsigned_int(const char* arg, unsigned int* parsed)
 {
     char* end;

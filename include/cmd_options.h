@@ -23,11 +23,11 @@ typedef struct
 } CmdOptions;
 
 CmdOptions get_cmd_options();
-ParsingResult set_nodes(const char* arg);
-ParsingResult set_seed(const char* arg);
-ParsingResult set_x_square(const char* arg);
-ParsingResult set_y_square(const char* arg);
-ParsingResult set_square_side(const char* arg);
-ParsingResult set_help();
-ParsingResult set_seconds(const char* arg);
+ParsingResult set_nodes(const char** arg);
+ParsingResult set_seed(const char** arg);
+ParsingResult set_x_square(const char** arg);
+ParsingResult set_y_square(const char** arg);
+ParsingResult set_square_side(const char** arg);
+ParsingResult set_help(const char** arg);
+ParsingResult set_seconds(const char** arg);
 #endif //TSP_PARAMS_H

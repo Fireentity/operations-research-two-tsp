@@ -36,9 +36,9 @@ Bounds calculate_plot_bounds(const unsigned long *tour, const unsigned long numb
     Bounds b;
     b.min_x = b.max_x = (double) nodes[tour[0]].x;
     b.min_y = b.max_y = (double) nodes[tour[0]].y;
-    for (long i = 1; i < number_of_nodes; i++) {
-        double x = (double) nodes[tour[i]].x;
-        double y = (double) nodes[tour[i]].y;
+    for (unsigned long i = 1; i < number_of_nodes; i++) {
+        const double x = nodes[tour[i]].x;
+        const double y = nodes[tour[i]].y;
 
         if (x < b.min_x) b.min_x = x;
         if (x > b.max_x) b.max_x = x;

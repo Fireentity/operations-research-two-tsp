@@ -20,38 +20,38 @@ CmdOptions get_cmd_options()
     return cmd_options;
 }
 
-ParsingResult set_nodes(const char* arg)
+ParsingResult set_nodes(const char** arg)
 {
-    return parse_unsigned_int(arg, &cmd_options.number_of_nodes);
+    return parse_unsigned_int(arg[0], &cmd_options.number_of_nodes);
 }
 
-ParsingResult set_seed(const char* arg)
+ParsingResult set_seed(const char** arg)
 {
-    return parse_int(arg, &cmd_options.seed);
+    return parse_int(arg[0], &cmd_options.seed);
 }
 
-ParsingResult set_x_square(const char* arg)
+ParsingResult set_x_square(const char** arg)
 {
-    return parse_int(arg, &cmd_options.generation_area.x_square);
+    return parse_int(arg[0], &cmd_options.generation_area.x_square);
 }
 
-ParsingResult set_y_square(const char* arg)
+ParsingResult set_y_square(const char** arg)
 {
-    return parse_int(arg, &cmd_options.generation_area.y_square);
+    return parse_int(arg[0], &cmd_options.generation_area.y_square);
 }
 
-ParsingResult set_square_side(const char* arg)
+ParsingResult set_square_side(const char** arg)
 {
-    return parse_unsigned_int(arg, &cmd_options.generation_area.square_side);
+    return parse_unsigned_int(arg[0], &cmd_options.generation_area.square_side);
 }
 
-ParsingResult set_help()
+ParsingResult set_help(const char** arg)
 {
     cmd_options.help = true;
     return PARSE_SUCCESS;
 }
 
-ParsingResult set_seconds(const char* arg)
+ParsingResult set_seconds(const char** arg)
 {
-    return parse_unsigned_int(arg, &cmd_options.seconds);
+    return parse_unsigned_int(arg[0], &cmd_options.seconds);
 }
