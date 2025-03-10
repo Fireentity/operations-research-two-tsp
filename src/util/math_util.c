@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include "math_util.h"
-#include "tsp_solution.h"
 
 double calculate_tour_cost(const unsigned long *const tour, const unsigned long number_of_nodes, const double *const edge_cost_array) {
     double cost = 0;

@@ -60,7 +60,6 @@ const TspInstance *init_random_tsp_instance(const unsigned long number_of_nodes,
     Node *nodes = malloc(number_of_nodes * sizeof(Node));
     check_alloc(nodes);
     for (unsigned long i = 0; i < number_of_nodes; i++) {
-        //TODO Con questo metodo i nodi non possono avere la virgola pensare di passare a nodi non interi
         nodes[i].x = generation_area.x_square + random01() * generation_area.square_side;
         nodes[i].y = generation_area.y_square + random01() * generation_area.square_side;
     }
