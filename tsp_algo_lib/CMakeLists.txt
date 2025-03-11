@@ -5,7 +5,7 @@ set(TSP_ALGO_SOURCES
         src/tsp_instance.c
         src/tsp_solution.c
         src/feasibility_result.c
-        src/math_util.c
+        src/tsp_math_util.c
 )
 
 add_library(tsp_algo_lib ${TSP_ALGO_SOURCES})

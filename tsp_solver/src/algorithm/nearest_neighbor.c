@@ -1,8 +1,10 @@
-#include "c_util.h"
-#include "nearest_neighbor.h"
+#include <c_util.h>
+#include <nearest_neighbor.h>
 #include "extended_algorithm.c"
 #include <chrono.h>
 #include <float.h>
+#include <tsp_math_util.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -163,7 +165,7 @@ static void two_opt(unsigned long* tour,
                     edge_cost_array[c * number_of_nodes + d];
 
                 // If delta is negative, the new tour is shorter (improvement)
-                if (delta < -EPSILON)
+                if (delta < 0)
                 {
                     // Reverse the segment between i and k to apply the improvement
                     REVERSE_ARRAY(tour, i, k);

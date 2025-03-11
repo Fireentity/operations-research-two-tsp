@@ -3,14 +3,14 @@
 #include <stdio.h>
 #include <tsp_instance.h>
 #include <tsp_solution.h>
-#include "parsing_util.h"
-#include "nearest_neighbor.h"
+#include <parsing_util.h>
+#include <nearest_neighbor.h>
 
 struct CmdOptions
 {
     unsigned int number_of_nodes;
     int seed;
-    Rectangle generation_area;
+    TspGenerationArea generation_area;
     bool help;
     unsigned int time_limit;
 };
@@ -34,7 +34,7 @@ int main(const int argc, const char *argv[]) {
                                                            cmd_options.seed,
                                                            cmd_options.generation_area);
     TspSolution *solution = init_solution(instance);
-    const struct TspAlgorithm* tsp_algorithm = init_nearest_neighbor(cmd_options.time_limit);
+    const TspAlgorithm* tsp_algorithm = init_nearest_neighbor(cmd_options.time_limit);
     const FeasibilityResult result = solve(tsp_algorithm,solution);
 
     if (FEASIBLE != result) {

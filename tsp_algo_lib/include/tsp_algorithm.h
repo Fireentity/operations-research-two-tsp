@@ -1,13 +1,13 @@
 #ifndef TSP_ALGORITHM_H
 #define TSP_ALGORITHM_H
 
-typedef union ExtendedTspAlgorithm ExtendedTspAlgorithm;
+union ExtendedTspAlgorithm;
 
 typedef struct TspAlgorithm TspAlgorithm;
 
 struct TspAlgorithm
 {
-    ExtendedTspAlgorithm;
+    union ExtendedTspAlgorithm;
 
     void (*solve)(const TspAlgorithm* tsp_algorithm,
                   unsigned long* tour,

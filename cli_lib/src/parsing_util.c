@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/cmd_options.h"
-#include "../include/flag.h"
-#include "../include/parsing_util.h"
+#include <cmd_options.h>
+#include <flag.h>
+#include <parsing_util.h>
 
 
 ParsingResult parse_unsigned_int(const char* arg, unsigned int* parsed)
@@ -58,6 +58,7 @@ ParsingResult parse_bool(const char* arg, bool* parsed)
 
 // Function to parse the command-line arguments using flags.
 void parse_command_line(
+    const CmdOptions* cmd_options,
     const Flag* const tsp_flags[],
     const int argc,
     const char** argv)
@@ -81,7 +82,7 @@ void parse_command_line(
         for (int i = 0; i < tsp_flag_size; i++)
         {
             // Parse the flag with its associated value.
-            const ParsingResult result = parse(tsp_flags[i], argv, &current_argv_parameter);
+            const ParsingResult result = parse(tsp_flags[i], cmd_options, argv, &current_argv_parameter);
 
             //If the flag is parsed then break and parse the next flag
             if (PARSE_SUCCESS == result)

@@ -1,14 +1,14 @@
 #include <math.h>
-#include "tsp_solution.h"
+#include <tsp_solution.h>
 #include <feasibility_result.h>
 #include <stdlib.h>
 #include <string.h>
-#include "math_util.h"
-#include "nearest_neighbor.h"
-#include "plot_util.h"
-#include "tsp_algorithm.h"
-#include "c_util.h"
-#include "chrono.h"
+#include <tsp_math_util.h>
+#include <tsp_algorithm.h>
+#include <c_util.h>
+#include <chrono.h>
+
+#define EPSILON 1e-10
 
 struct TspSolution
 {

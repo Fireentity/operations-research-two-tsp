@@ -1,12 +1,10 @@
-#include "tsp_instance.h"
-#include "c_util.h"
-#include "math_util.h"
+#include <tsp_instance.h>
+#include <c_util.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-
-#include "../../common/include/c_util.h"
+#include <tsp_math_util.h>
 
 /**
  * @struct TspInstance
@@ -56,7 +54,7 @@ void fill_edge_cost_matrix(const TspInstance *instance) {
 
 const TspInstance *init_random_tsp_instance(const unsigned long number_of_nodes,
                                             const int seed,
-                                            const Rectangle generation_area) {
+                                            const TspGenerationArea generation_area) {
     srand(seed);
 
     Node *nodes = malloc(number_of_nodes * sizeof(Node));

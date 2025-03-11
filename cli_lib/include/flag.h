@@ -2,7 +2,7 @@
 #define FLAG_H
 #include <cmd_options.h>
 #include <stdbool.h>
-#include "parsing_result.h"
+#include <parsing_result.h>
 
 typedef struct {
     const unsigned int number_of_params;

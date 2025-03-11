@@ -1,5 +1,5 @@
-#include "flag.h"
-#include "c_util.h"
+#include <flag.h>
+#include <c_util.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
