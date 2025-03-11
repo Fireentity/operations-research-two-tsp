@@ -1,19 +1,11 @@
+#include "c_util.h"
 #include "nearest_neighbor.h"
+#include "extended_algorithm.c"
+#include <chrono.h>
 #include <float.h>
-#include "tsp_algorithm.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "chrono.h"
-#include "../include/constants.h"
-#include "c_util.h"
-#include "math_util.h"
-#include "../../tsp_algo_lib/include/tsp_solution.h"
-
-struct NearestNeighbor
-{
-    const double time_limit;
-};
 
 static void two_opt(unsigned long* tour,
                     unsigned long number_of_nodes,
@@ -38,7 +30,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 
     long starting_nodes[number_of_nodes];
     memcpy(starting_nodes, tour, sizeof(unsigned long) * number_of_nodes);
-    SHUFFLE_ARRAY(starting_nodes, number_of_nodes)
+    SHUFFLE_ARRAY(starting_nodes, number_of_nodes);
 
     unsigned long incumbent_starting_node = starting_nodes[0];
 

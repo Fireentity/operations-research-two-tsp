@@ -12,8 +12,8 @@ CMakeCache.txt
 Makefile
 cmake_install.cmake
 build
-.cmake
 *.cmake
+*.cbp
 
 # Build output files
 *.o
@@ -32,4 +32,3 @@ build
 Thumbs.db
 
 # Backup files
-*~

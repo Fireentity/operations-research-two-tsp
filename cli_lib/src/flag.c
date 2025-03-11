@@ -1,13 +1,15 @@
 #include "flag.h"
+#include "c_util.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-ParsingResult parse(const Flag* flag,
-                         const char** argv,
-                         unsigned int* index)
+ParsingResult parse(const CmdOptions* const cmd_options,
+                    const Flag* flag,
+                    const char** argv,
+                    unsigned int* index)
 {
-    const ParsingResult result = flag->parse_function(argv);
+    const ParsingResult result = flag->parse_function(cmd_options, argv);
     *index += flag->number_of_params;
     return result;
 }
@@ -15,7 +17,7 @@ ParsingResult parse(const Flag* flag,
 
 const Flag* init_flag(const char* label,
                       const unsigned int number_of_params,
-                      ParsingResult (*const param_supplier)(const char** arg),
+                      ParsingResult (*const param_supplier)(const CmdOptions* cmd_options, const char** arg),
                       const bool mandatory
 )
 {

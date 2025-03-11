@@ -1,7 +1,9 @@
 #include "parsing_result.h"
 
-const char *parsing_result_to_string(ParsingResult result) {
-    switch (result) {
+const char* parsing_result_to_string(const ParsingResult result)
+{
+    switch (result)
+    {
     case PARSE_SUCCESS: return "PARSE_SUCCESS";
     case PARSE_NON_MATCHING_LABEL: return "PARSE_NON_MATCHING_LABEL";
     case PARSE_UNKNOWN_ARG: return "PARSE_UNKNOWN_ARG";

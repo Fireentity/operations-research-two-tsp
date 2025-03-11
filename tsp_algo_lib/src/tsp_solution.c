@@ -1,15 +1,14 @@
 #include <math.h>
-#include "../include/tsp_solution.h"
+#include "tsp_solution.h"
+#include <feasibility_result.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../include/util/math_util.h"
-#include "../../tsp_solver/include/constants.h"
-#include "../../include/enums.h"
-#include "../../include/util/c_util.h"
-#include "../../include/algorithms/nearest_neighbor.h"
-#include "../../include/util/plot_util.h"
+#include "math_util.h"
+#include "nearest_neighbor.h"
+#include "plot_util.h"
 #include "tsp_algorithm.h"
-#include "../../include/util/chrono.h"
+#include "c_util.h"
+#include "chrono.h"
 
 struct TspSolution
 {

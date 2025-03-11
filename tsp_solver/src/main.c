@@ -1,23 +1,35 @@
+#include <cmd_options.h>
 #include <feasibility_result.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <tsp_instance.h>
 #include <tsp_solution.h>
-
 #include "parsing_util.h"
 #include "nearest_neighbor.h"
 
-struct TspAlgorithm;
-
 struct CmdOptions
 {
+    unsigned int number_of_nodes;
+    int seed;
+    Rectangle generation_area;
+    bool help;
+    unsigned int time_limit;
+};
 
+static CmdOptions cmd_options = {
+    .generation_area = {
+        .square_side = 0,
+        .x_square = 0,
+        .y_square = 0,
+    },
+    .help = false,
+    .number_of_nodes = 0,
+    .seed = 0,
+    .time_limit = 0
 };
 
 int main(const int argc, const char *argv[]) {
     parse_command_line(argc, argv);
 
-    const CmdOptions cmd_options = get_cmd_options();
     const TspInstance *instance = init_random_tsp_instance(cmd_options.number_of_nodes,
                                                            cmd_options.seed,
                                                            cmd_options.generation_area);

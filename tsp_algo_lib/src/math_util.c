@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "math_util.h"
+#include "../include/math_util.h"
 
 double calculate_tour_cost(const unsigned long* const tour,
                            const unsigned long number_of_nodes,

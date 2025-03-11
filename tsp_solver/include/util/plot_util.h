@@ -1,8 +1,9 @@
 #ifndef PLOT_UTIL_H
 #define PLOT_UTIL_H
 
-#include "../../tsp_algo_lib/include/tsp_instance.h"
+#include "tsp_instance.h"
 #include "math_util.h"
+
 typedef struct {
     double min_x, max_x;
     double min_y, max_y;

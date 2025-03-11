@@ -1,5 +1,7 @@
 #include "c_util.h"
 
+#include <stdlib.h>
+
 void check_alloc(const void* ptr)
 {
     if (!ptr)
