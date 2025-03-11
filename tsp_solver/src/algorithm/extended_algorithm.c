@@ -1,4 +1,5 @@
 #include <nearest_neighbor.h>
+#include <tsp_algorithm.h>
 
 struct NearestNeighbor
 {
