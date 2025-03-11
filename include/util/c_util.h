@@ -20,6 +20,5 @@ for (size_t i = (n) - 1; i > 0; i--) {      \
     SWAP((arr)[i], (arr)[j]);               \
 }
 
-
 #endif //C_UTIL_H
 

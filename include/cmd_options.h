@@ -17,7 +17,7 @@ typedef struct
     int seed;
     Rectangle generation_area;
     bool help;
-    unsigned int seconds;
+    unsigned int time_limit;
 } CmdOptions;
 
 CmdOptions get_cmd_options();
@@ -27,5 +27,5 @@ ParsingResult set_x_square(const char** arg);
 ParsingResult set_y_square(const char** arg);
 ParsingResult set_square_side(const char** arg);
 ParsingResult set_help(const char** arg);
-ParsingResult set_seconds(const char** arg);
+ParsingResult set_time_limit(const char** arg);
 #endif //TSP_PARAMS_H

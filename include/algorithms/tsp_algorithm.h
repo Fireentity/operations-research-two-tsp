@@ -9,7 +9,12 @@ struct TspAlgorithm
     {
         NearestNeighbor nearest_neighbor;
     };
-    void (*solve)(const TspAlgorithm* tsp_algorithm,unsigned long* tour, unsigned long number_of_nodes, const double* edge_cost_array, double* cost);
+
+    void (*solve)(const TspAlgorithm* tsp_algorithm,
+                  unsigned long* tour,
+                  unsigned long number_of_nodes,
+                  const double* edge_cost_array,
+                  double* cost);
 };
 
 #endif //TSP_ALGORITHM_H

@@ -12,7 +12,7 @@ static CmdOptions cmd_options = {
     .help = false,
     .number_of_nodes = 0,
     .seed = 0,
-    .seconds = 0
+    .time_limit = 0
 };
 
 CmdOptions get_cmd_options()
@@ -51,7 +51,7 @@ ParsingResult set_help(const char** arg)
     return PARSE_SUCCESS;
 }
 
-ParsingResult set_seconds(const char** arg)
+ParsingResult set_time_limit(const char** arg)
 {
-    return parse_unsigned_int(arg[0], &cmd_options.seconds);
+    return parse_unsigned_int(arg[0], &cmd_options.time_limit);
 }

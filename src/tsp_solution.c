@@ -6,13 +6,15 @@
 #include "constants.h"
 #include "enums.h"
 #include "c_util.h"
+#include "nearest_neighbor.h"
 #include "plot_util.h"
+#include "tsp_algorithm.h"
 #include "util/chrono.h"
 
 struct TspSolution
 {
     double cost;
-    unsigned long* tour;
+    unsigned long* const tour;
     const TspInstance* const instance;
 };
 
@@ -30,7 +32,7 @@ TspSolution* init_solution(const TspInstance* instance)
 {
     const unsigned long number_of_nodes = get_number_of_nodes(instance);
 
-    unsigned long* tour = calloc(tour_array_size(number_of_nodes), sizeof(number_of_nodes));
+    unsigned long* tour = calloc(number_of_nodes+1, sizeof(unsigned long));
     check_alloc(tour);
     for (unsigned long i = 0; i < number_of_nodes; i++)
         tour[i] = i;
@@ -86,52 +88,18 @@ FeasibilityResult check_solution_feasibility(const TspSolution* solution)
     return FEASIBLE;
 }
 
-
-FeasibilityResult solve_tsp(const TspSolver solver, TspSolution* solution)
-{
-    solve_instance(solver,
-                   rand() % get_number_of_nodes(solution->instance),
-                   solution->tour,
-                   &solution->cost,
-                   solution->instance);
-    return check_solution_feasibility(solution);
-}
-
-unsigned long tour_array_size(const unsigned long number_of_nodes)
-{
-    return number_of_nodes + 1;
-}
-
 void plot_solution(const TspSolution* sol, const char* output_name)
 {
     plot_tour(sol->tour, get_number_of_nodes(sol->instance), get_nodes(sol->instance), output_name);
 }
 
-FeasibilityResult solve_tsp_for_seconds(const TspSolver solver, TspSolution* solution, const unsigned int seconds)
+FeasibilityResult solve(const TspAlgorithm* tsp_algorithm, TspSolution* solution)
 {
-    const double start = second();
-
-    unsigned long best_solution_starting_node = rand() % get_number_of_nodes(solution->instance);
-    solve_instance(solver, best_solution_starting_node, solution->tour, &solution->cost, solution->instance);
-    double best_solution_cost = solution->cost;
-
-    while (second() < start + seconds)
-    {
-        solve_instance(solver,
-                       rand() % get_number_of_nodes(solution->instance),
-                       solution->tour,
-                       &solution->cost,
-                       solution->instance);
-
-        if (solution->cost < best_solution_cost)
-        {
-            best_solution_starting_node = solution->tour[0];
-            best_solution_cost = solution->cost;
-        }
-    }
-
-    solve_instance(solver, best_solution_starting_node, solution->tour, &solution->cost, solution->instance);
-
+    tsp_algorithm->solve(tsp_algorithm,
+                         solution->tour,
+                         get_number_of_nodes(solution->instance),
+                         get_edge_cost_array(solution->instance),
+                         &solution->cost);
     return check_solution_feasibility(solution);
 }
 
@@ -142,6 +110,5 @@ void free_tsp_solution(TspSolution* solution)
         return;
     }
     free(solution->tour);
-    solution->tour = NULL;
     free(solution);
 }

@@ -3,51 +3,81 @@
 #include "tsp_algorithm.h"
 #include <stdlib.h>
 #include <string.h>
+
+#include "chrono.h"
 #include "constants.h"
 #include "c_util.h"
 #include "math_util.h"
+#include "tsp_solution.h"
 
-void solve_with_nearest_neighbor(unsigned long* tour,
-                                 unsigned long starting_node,
-                                 unsigned long number_of_nodes,
-                                 const double* edge_cost_array,
-                                 double* cost
-);
+static void two_opt(unsigned long* tour,
+                    unsigned long number_of_nodes,
+                    const double* edge_cost_array,
+                    double* cost);
 
-void solve(const TspAlgorithm* tsp_algorithm,
+static void nearest_neighbor(unsigned long starting_node,
+                             unsigned long* tour,
+                             unsigned long number_of_nodes,
+                             const double* edge_cost_array,
+                             double* cost);
+
+static void solve(const TspAlgorithm* tsp_algorithm,
            unsigned long* tour,
            const unsigned long number_of_nodes,
            const double* edge_cost_array,
            double* cost)
 {
-    tsp_algorithm->nearest_neighbor.starting_node;
+    double best_solution_cost = DBL_MAX;
+    const double time_limit = tsp_algorithm->nearest_neighbor.time_limit;
+    const double start = second();
 
-    unsigned long best_solution_starting_node = tsp_algorithm->nearest_neighbor.starting_node;
-    solve_with_nearest_neighbor(tour,best_solution_starting_node,number_of_nodes,edge_cost_array,cost);
-    double best_solution_cost = *cost;
+    long starting_nodes[number_of_nodes];
+    memcpy(starting_nodes, tour, sizeof(unsigned long) * number_of_nodes);
+    SHUFFLE_ARRAY(starting_nodes, number_of_nodes)
 
-    while (second() < start + seconds)
+    unsigned long incumbent_starting_node = starting_nodes[0];
+
+    int iteration = 0;
+    do
     {
-        solve_with_nearest_neighbor(tour,rand() % number_of_nodes,number_of_nodes,edge_cost_array,cost);
+        nearest_neighbor(starting_nodes[iteration],
+                         tour,
+                         number_of_nodes,
+                         edge_cost_array,
+                         cost);
+        two_opt(tour,
+                number_of_nodes,
+                edge_cost_array,
+                cost);
 
         if (*cost < best_solution_cost)
         {
-            best_solution_starting_node = tour[0];
+            incumbent_starting_node = tour[0];
             best_solution_cost = *cost;
         }
+        iteration++;
     }
+    while (start - second() < time_limit && iteration < number_of_nodes);
 
-    solve_with_nearest_neighbor(tour,best_solution_starting_node,number_of_nodes,edge_cost_array,cost);
+    nearest_neighbor(incumbent_starting_node,
+                     tour,
+                     number_of_nodes,
+                     edge_cost_array,
+                     cost);
+    two_opt(tour,
+            number_of_nodes,
+            edge_cost_array,
+            cost);
 }
 
-TspAlgorithm* init_nearest_neighbor(const unsigned long starting_node)
+const TspAlgorithm* init_nearest_neighbor(const double time_limit)
 {
     TspAlgorithm* tsp_algorithm_ptr = malloc(sizeof(TspAlgorithm));
     check_alloc(tsp_algorithm_ptr);
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
         .nearest_neighbor = {
-            .starting_node = starting_node
+            .time_limit = time_limit
         },
     };
     memcpy(tsp_algorithm_ptr, &tsp_algorithm, sizeof(tsp_algorithm_ptr));
@@ -55,17 +85,15 @@ TspAlgorithm* init_nearest_neighbor(const unsigned long starting_node)
     return tsp_algorithm_ptr;
 }
 
-void solve_with_nearest_neighbor(
-    unsigned long* tour,
-    const unsigned long starting_node,
-    const unsigned long number_of_nodes,
-    const double* edge_cost_array,
-    double* cost
-)
+static void nearest_neighbor(const unsigned long starting_node,
+                             unsigned long* tour,
+                             const unsigned long number_of_nodes,
+                             const double* edge_cost_array,
+                             double* cost)
 {
     if (starting_node > number_of_nodes)
     {
-        printf("Wrong input parameters: starting node (%ld) cannot be greater than the number of nodes (%ld)",
+        printf("The starting node (%ld) cannot be greater than the number of nodes (%ld)",
                starting_node, number_of_nodes);
         exit(EXIT_FAILURE);
     }
@@ -104,7 +132,10 @@ void solve_with_nearest_neighbor(
     *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
 }
 
-void two_opt(unsigned long* tour, unsigned long number_of_nodes, const double* edge_cost_array, double* cost)
+static void two_opt(unsigned long* tour,
+                    const unsigned long number_of_nodes,
+                    const double* edge_cost_array,
+                    double* cost)
 {
     bool improved = true;
 

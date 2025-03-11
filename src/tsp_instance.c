@@ -92,13 +92,8 @@ const TspInstance *init_random_tsp_instance(const unsigned long number_of_nodes,
     return instance_ptr;
 }
 
-
 const Node *get_nodes(const TspInstance *instance) {
     return instance->nodes;
-}
-
-void solve_instance(const TspSolver solver, unsigned long starting_node, unsigned long *tour, double *cost, const TspInstance *instance) {
-    solver(tour, starting_node, instance->number_of_nodes, instance->edge_cost_array, cost);
 }
 
 

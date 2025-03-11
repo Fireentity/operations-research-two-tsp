@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "flag.h"
 #include "parsing_util.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
@@ -14,16 +13,14 @@ int main(const int argc, const char *argv[]) {
                                                            cmd_options.seed,
                                                            cmd_options.generation_area);
     TspSolution *solution = init_solution(instance);
+    const TspAlgorithm* tsp_algorithm = init_nearest_neighbor(cmd_options.time_limit);
+    const FeasibilityResult result = solve(tsp_algorithm,solution);
 
-    const FeasibilityResult feasibility_result = solve_tsp_for_seconds(solve_with_nearest_neighbor_and_two_opt,
-                                                                       solution,
-                                                                       cmd_options.seconds);
-
-    if (FEASIBLE != feasibility_result) {
-        FEASIBILITY_ABORT(feasibility_result);
+    if (FEASIBLE != result) {
+        FEASIBILITY_ABORT(result);
     }
 
-    printf("%s\n", feasibility_result_to_string(feasibility_result));
+    printf("%s\n", feasibility_result_to_string(result));
 
     plot_solution(solution, "plot.png");
 

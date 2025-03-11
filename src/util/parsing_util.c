@@ -64,7 +64,7 @@ void parse_command_line(
         init_flag("--x-square", 1, set_x_square, true),
         init_flag("--y-square", 1, set_y_square, true),
         init_flag("--square-side", 1, set_square_side, true),
-        init_flag("--seconds", 1, set_seconds, false),
+        init_flag("--seconds", 1, set_time_limit, false),
         init_flag("--help", 0, set_help, false)
     };
     //TODO free di sta roba
