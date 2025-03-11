@@ -1,0 +1,12 @@
+#ifndef FEASIBILITY_RESULT_H
+#define FEASIBILITY_RESULT_H
+
+typedef enum
+{
+    DUPLICATED_ENTRY,
+    UNINITIALIZED_ENTRY,
+    NON_MATCHING_COST,
+    FEASIBLE,
+} FeasibilityResult;
+
+#endif //FEASIBILITY_RESULT_H

@@ -1,13 +1,13 @@
 #ifndef FLAG_H
 #define FLAG_H
 #include <stdbool.h>
-#include "enums.h"
+#include "parsing_result.h"
 
 typedef struct {
     const unsigned int number_of_params;
     const char *label;
     const bool mandatory;
-    ParsingResult (* const parse_fuction)(const char **arg);
+    ParsingResult (* const parse_function)(const char **arg);
 } Flag;
 
 ParsingResult parse(const Flag* flag, const char** argv, int* index);

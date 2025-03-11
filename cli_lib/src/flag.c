@@ -1,14 +1,13 @@
 #include "flag.h"
-#include "enums.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include "c_util.h"
 
 ParsingResult parse(const Flag* flag,
                          const char** argv,
-                         int* index)
+                         unsigned int* index)
 {
-    const ParsingResult result = flag->parse_fuction(argv);
+    const ParsingResult result = flag->parse_function(argv);
     *index += flag->number_of_params;
     return result;
 }
@@ -24,7 +23,7 @@ const Flag* init_flag(const char* label,
     check_alloc(flag_ptr);
     const Flag flag = {
         .number_of_params = number_of_params,
-        .parse_fuction = param_supplier,
+        .parse_function = param_supplier,
         .label = label,
         .mandatory = mandatory
     };

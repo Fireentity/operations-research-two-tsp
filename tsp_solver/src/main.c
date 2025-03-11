@@ -1,9 +1,18 @@
+#include <feasibility_result.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <tsp_instance.h>
+#include <tsp_solution.h>
+
 #include "parsing_util.h"
-#include "tsp_instance.h"
-#include "tsp_solution.h"
 #include "nearest_neighbor.h"
+
+struct TspAlgorithm;
+
+struct CmdOptions
+{
+
+};
 
 int main(const int argc, const char *argv[]) {
     parse_command_line(argc, argv);
@@ -13,10 +22,11 @@ int main(const int argc, const char *argv[]) {
                                                            cmd_options.seed,
                                                            cmd_options.generation_area);
     TspSolution *solution = init_solution(instance);
-    const TspAlgorithm* tsp_algorithm = init_nearest_neighbor(cmd_options.time_limit);
+    const struct TspAlgorithm* tsp_algorithm = init_nearest_neighbor(cmd_options.time_limit);
     const FeasibilityResult result = solve(tsp_algorithm,solution);
 
     if (FEASIBLE != result) {
+        free_tsp_solution(solution);
         FEASIBILITY_ABORT(result);
     }
 

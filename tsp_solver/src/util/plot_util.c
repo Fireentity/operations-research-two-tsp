@@ -2,7 +2,7 @@
 #include "plot_util.h"
 #include "c_util.h"
 #include "math_util.h"
-#include "constants.h"
+#include "../../include/constants.h"
 
 void plot_tour(const unsigned long *tour, const unsigned long number_of_nodes, const Node* nodes, const char *output_name) {
     if (!output_name) {

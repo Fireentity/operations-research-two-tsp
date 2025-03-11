@@ -13,6 +13,7 @@ Makefile
 cmake_install.cmake
 build
 .cmake
+*.cmake
 
 # Build output files
 *.o

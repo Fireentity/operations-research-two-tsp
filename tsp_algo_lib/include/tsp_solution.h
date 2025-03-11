@@ -1,8 +1,8 @@
 #ifndef TSP_SOLUTION_H
 #define TSP_SOLUTION_H
 
-#include "enums.h"
-#include "nearest_neighbor.h"
+#include "../../tsp_solver/include/enums.h"
+#include "../../include/algorithms/nearest_neighbor.h"
 #include "tsp_instance.h"
 
 typedef struct TspSolution TspSolution;

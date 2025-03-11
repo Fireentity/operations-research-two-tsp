@@ -18,7 +18,7 @@ void check_popen(FILE* gp)
     }
 }
 
-void check_pclose(int status)
+void check_pclose(const int status)
 {
     if (status == -1)
     {

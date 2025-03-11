@@ -5,10 +5,15 @@
 #include <string.h>
 
 #include "chrono.h"
-#include "constants.h"
+#include "../include/constants.h"
 #include "c_util.h"
 #include "math_util.h"
-#include "tsp_solution.h"
+#include "../../tsp_algo_lib/include/tsp_solution.h"
+
+struct NearestNeighbor
+{
+    const double time_limit;
+};
 
 static void two_opt(unsigned long* tour,
                     unsigned long number_of_nodes,

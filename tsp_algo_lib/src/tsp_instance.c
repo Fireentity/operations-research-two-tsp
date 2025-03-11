@@ -1,6 +1,6 @@
-#include "tsp_instance.h"
-#include "c_util.h"
-#include "math_util.h"
+#include "../include/tsp_instance.h"
+#include "../../include/util/c_util.h"
+#include "../../include/util/math_util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

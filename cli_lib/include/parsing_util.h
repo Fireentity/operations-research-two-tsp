@@ -2,8 +2,7 @@
 #define PARSING_UTIL_H
 
 #include <stdbool.h>
-
-#include "enums.h"
+#include "parsing_result.h"
 
 ParsingResult parse_unsigned_int(const char* arg, unsigned int* parsed);
 ParsingResult parse_int(const char* arg, int* parsed);
