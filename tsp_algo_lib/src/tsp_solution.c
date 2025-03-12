@@ -30,22 +30,23 @@ TspSolution* init_solution(const TspInstance* instance)
 {
     const unsigned long number_of_nodes = get_number_of_nodes(instance);
 
-    unsigned long* tour = calloc(number_of_nodes+1, sizeof(unsigned long));
+    unsigned long* tour = calloc(number_of_nodes + 1, sizeof(unsigned long));
     check_alloc(tour);
     for (unsigned long i = 0; i < number_of_nodes; i++)
         tour[i] = i;
     tour[number_of_nodes] = tour[0];
 
-    TspSolution* solution_ptr = malloc(sizeof(TspSolution));
-    check_alloc(solution_ptr);
-    const TspSolution solution = {
+    TspSolution solution = {
         .cost = calculate_tour_cost(tour, number_of_nodes, get_edge_cost_array(instance)),
         .tour = tour,
         .instance = instance
     };
-    memcpy(solution_ptr, &solution, sizeof(solution));
+    return MALLOC_FROM_STACK(solution);
+}
 
-    return solution_ptr;
+const unsigned long* get_tour(const TspSolution* solution)
+{
+    return solution->tour;
 }
 
 
@@ -84,11 +85,6 @@ FeasibilityResult check_solution_feasibility(const TspSolution* solution)
     }
 
     return FEASIBLE;
-}
-
-void plot_solution(const TspSolution* sol, const char* output_name)
-{
-    plot_tour(sol->tour, get_number_of_nodes(sol->instance), get_nodes(sol->instance), output_name);
 }
 
 FeasibilityResult solve(const TspAlgorithm* tsp_algorithm, TspSolution* solution)

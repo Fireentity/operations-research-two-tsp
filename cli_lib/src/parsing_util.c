@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <cmd_options.h>
 #include <flag.h>
 #include <parsing_util.h>
 
@@ -57,32 +55,32 @@ ParsingResult parse_bool(const char* arg, bool* parsed)
 }
 
 // Function to parse the command-line arguments using flags.
-void parse_command_line(
-    const CmdOptions* cmd_options,
-    const Flag* const tsp_flags[],
-    const int argc,
-    const char** argv)
+void parse_flags(void* options,
+                 const Flag** tsp_flags,
+                 const int number_of_flags,
+                 const int argc,
+                 const char** argv)
 {
     if (argc < 2)
         PARSING_ABORT(PARSE_USAGE_ERROR);
 
-    const int tsp_flag_size = sizeof(tsp_flags) / sizeof(tsp_flags[0]);
+    const int tsp_flag_size = sizeof(number_of_flags) / sizeof(tsp_flags[0]);
 
     int mandatory_flags = 0;
     //Counts the mandatory flags
-    for (int i = 0; i < tsp_flag_size; i++)
+    for (int i = 0; i < number_of_flags; i++)
     {
         if (tsp_flags[i]->mandatory) mandatory_flags++;
     }
 
     int parsed_mandatory_flags = 0;
     // Iterate through flags; stop at argc - 1 to ensure a following argument exists.
-    for (int current_argv_parameter = 1; current_argv_parameter < argc; current_argv_parameter++)
+    for (unsigned int current_argv_parameter = 1; current_argv_parameter < argc; current_argv_parameter++)
     {
-        for (int i = 0; i < tsp_flag_size; i++)
+        for (int i = 0; i < number_of_flags; i++)
         {
             // Parse the flag with its associated value.
-            const ParsingResult result = parse(tsp_flags[i], cmd_options, argv, &current_argv_parameter);
+            const ParsingResult result = parse(tsp_flags[i], options, argv, &current_argv_parameter);
 
             //If the flag is parsed then break and parse the next flag
             if (PARSE_SUCCESS == result)

@@ -3,7 +3,10 @@
 
 #include <tsp_algorithm.h>
 
-typedef struct NearestNeighbor NearestNeighbor;
+typedef struct
+{
+    const double time_limit;
+} NearestNeighbor;
 
 const TspAlgorithm* init_nearest_neighbor(double time_limit);
 

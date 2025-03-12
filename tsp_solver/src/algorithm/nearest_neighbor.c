@@ -1,6 +1,5 @@
 #include <c_util.h>
 #include <nearest_neighbor.h>
-#include "extended_algorithm.c"
 #include <chrono.h>
 #include <float.h>
 #include <tsp_math_util.h>
@@ -14,7 +13,7 @@ static void two_opt(unsigned long* tour,
                     const double* edge_cost_array,
                     double* cost);
 
-static void nearest_neighbor(unsigned long starting_node,
+static void apply_nearest_neighbor(unsigned long starting_node,
                              unsigned long* tour,
                              unsigned long number_of_nodes,
                              const double* edge_cost_array,
@@ -26,8 +25,9 @@ static void solve(const TspAlgorithm* tsp_algorithm,
            const double* edge_cost_array,
            double* cost)
 {
+    const NearestNeighbor* nearest_neighbor = tsp_algorithm->extended_algorithm;
     double best_solution_cost = DBL_MAX;
-    const double time_limit = tsp_algorithm->nearest_neighbor.time_limit;
+    const double time_limit = nearest_neighbor->time_limit;
     const double start = second();
 
     long starting_nodes[number_of_nodes];
@@ -39,7 +39,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     int iteration = 0;
     do
     {
-        nearest_neighbor(starting_nodes[iteration],
+        apply_nearest_neighbor(starting_nodes[iteration],
                          tour,
                          number_of_nodes,
                          edge_cost_array,
@@ -58,7 +58,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     }
     while (start - second() < time_limit && iteration < number_of_nodes);
 
-    nearest_neighbor(incumbent_starting_node,
+    apply_nearest_neighbor(incumbent_starting_node,
                      tour,
                      number_of_nodes,
                      edge_cost_array,
@@ -71,20 +71,19 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 
 const TspAlgorithm* init_nearest_neighbor(const double time_limit)
 {
-    TspAlgorithm* tsp_algorithm_ptr = malloc(sizeof(TspAlgorithm));
-    check_alloc(tsp_algorithm_ptr);
+    NearestNeighbor nearest_neighbor = {
+        .time_limit = time_limit
+    };
+
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
-        .nearest_neighbor = {
-            .time_limit = time_limit
-        },
+        .extended_algorithm = MALLOC_FROM_STACK(nearest_neighbor),
     };
-    memcpy(tsp_algorithm_ptr, &tsp_algorithm, sizeof(tsp_algorithm_ptr));
 
-    return tsp_algorithm_ptr;
+    return MALLOC_FROM_STACK(tsp_algorithm);
 }
 
-static void nearest_neighbor(const unsigned long starting_node,
+static void apply_nearest_neighbor(const unsigned long starting_node,
                              unsigned long* tour,
                              const unsigned long number_of_nodes,
                              const double* edge_cost_array,

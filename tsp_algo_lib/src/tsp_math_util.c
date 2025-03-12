@@ -13,4 +13,4 @@ double calculate_tour_cost(const unsigned long* const tour,
     return cost;
 }
 
-double random01() { return (double)rand() / RAND_MAX; }
+double normalized_rand() { return (double)rand() / RAND_MAX; }

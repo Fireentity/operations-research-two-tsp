@@ -4,12 +4,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-ParsingResult parse(const CmdOptions* const cmd_options,
-                    const Flag* flag,
+ParsingResult parse(const Flag* flag,
+                    void* const options,
                     const char** argv,
                     unsigned int* index)
 {
-    const ParsingResult result = flag->parse_function(cmd_options, argv);
+    const ParsingResult result = flag->parse_function(options, argv);
     *index += flag->number_of_params;
     return result;
 }
@@ -17,19 +17,15 @@ ParsingResult parse(const CmdOptions* const cmd_options,
 
 const Flag* init_flag(const char* label,
                       const unsigned int number_of_params,
-                      ParsingResult (*const param_supplier)(const CmdOptions* cmd_options, const char** arg),
+                      ParsingResult (*const param_supplier)(void* options, const char** arg),
                       const bool mandatory
 )
 {
-    Flag* flag_ptr = malloc(sizeof(Flag));
-    check_alloc(flag_ptr);
     const Flag flag = {
         .number_of_params = number_of_params,
         .parse_function = param_supplier,
         .label = label,
         .mandatory = mandatory
     };
-    memcpy(flag_ptr, &flag, sizeof(flag));
-
-    return flag_ptr;
+    return MALLOC_FROM_STACK(flag);
 }

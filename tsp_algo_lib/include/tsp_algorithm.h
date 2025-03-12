@@ -4,15 +4,14 @@
 
 typedef struct TspAlgorithm TspAlgorithm;
 
-#define DEFINE_TSP_ALGORITHM() struct TspAlgorithm \
-{ \
-    ExtendedTspAlgorithm; \
-\
-    void (*solve)(const TspAlgorithm* tsp_algorithm, \
-                  unsigned long* tour, \
-                  unsigned long number_of_nodes, \
-                  const double* edge_cost_array, \
-                  double* cost); \
+struct TspAlgorithm
+{
+    void * const extended_algorithm;
+    void (*solve)(const TspAlgorithm* tsp_algorithm,
+                  unsigned long* tour,
+                  unsigned long number_of_nodes,
+                  const double* edge_cost_array,
+                  double* cost);
 };
 
 

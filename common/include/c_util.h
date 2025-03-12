@@ -19,5 +19,15 @@ for (size_t i = (n) - 1; i > 0; i--) {      \
     SWAP((arr)[i], (arr)[j]);               \
 }
 
+#define MALLOC_FROM_STACK(obj) ({                    \
+    __typeof__(obj) _tmp = (obj);                   \
+    __typeof__(obj)* _ptr = malloc(sizeof(_tmp));   \
+    check_alloc(_ptr);                              \
+    memcpy(_ptr, &_tmp, sizeof(_tmp));              \
+    _ptr;                                           \
+})
+
+
+
 #endif //C_UTIL_H
 

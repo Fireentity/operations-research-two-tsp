@@ -4,8 +4,8 @@ project(tsp_solver)
 set(TSP_SOLVER_SOURCES
         src/main.c
         src/algorithm/nearest_neighbor.c
-        src/algorithm/extended_algorithm.c
         src/util/plot_util.c
+        src/cmd_options.c
 )
 
 add_executable(tsp_solver ${TSP_SOLVER_SOURCES})
