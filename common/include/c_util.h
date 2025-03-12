@@ -27,6 +27,13 @@ for (size_t i = (n) - 1; i > 0; i--) {      \
     _ptr;                                           \
 })
 
+#define COUNT_IF(arr, len, condition) ({    \
+    int count = 0;                          \
+    for (int i = 0; i < (len); i++) {       \
+        if (condition) count++;             \
+    }                                       \
+    count;                                  \
+})
 
 
 #endif //C_UTIL_H

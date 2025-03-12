@@ -38,27 +38,27 @@ ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const 
 
 ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg)
 {
-    return parse_unsigned_int(arg[0], &cmd_options->number_of_nodes);
+    return parse_unsigned_int(*(arg+1), &cmd_options->number_of_nodes);
 }
 
 ParsingResult set_seed(CmdOptions* cmd_options, const char** arg)
 {
-    return parse_int(arg[0], &cmd_options->seed);
+    return parse_int(*(arg+1), &cmd_options->seed);
 }
 
 ParsingResult set_x_square(CmdOptions* cmd_options, const char** arg)
 {
-    return parse_int(arg[0], &cmd_options->generation_area.x_square);
+    return parse_int(*(arg+1), &cmd_options->generation_area.x_square);
 }
 
 ParsingResult set_y_square(CmdOptions* cmd_options, const char** arg)
 {
-    return parse_int(arg[0], &cmd_options->generation_area.y_square);
+    return parse_int(*(arg+1), &cmd_options->generation_area.y_square);
 }
 
 ParsingResult set_square_side(CmdOptions* cmd_options, const char** arg)
 {
-    return parse_unsigned_int(arg[0], &cmd_options->generation_area.square_side);
+    return parse_unsigned_int(*(arg+1), &cmd_options->generation_area.square_side);
 }
 
 ParsingResult set_help(CmdOptions* cmd_options, const char** arg)
@@ -69,5 +69,5 @@ ParsingResult set_help(CmdOptions* cmd_options, const char** arg)
 
 ParsingResult set_time_limit(CmdOptions* cmd_options, const char** arg)
 {
-    return parse_unsigned_int(arg[0], &cmd_options->time_limit);
+    return parse_unsigned_int(*(arg+1), &cmd_options->time_limit);
 }

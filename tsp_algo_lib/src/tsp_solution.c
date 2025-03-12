@@ -67,7 +67,7 @@ FeasibilityResult is_feasible(const TspSolution* solution)
     return FEASIBLE;
 }
 
-FeasibilityResult solve(const TspAlgorithm* tsp_algorithm, const TspSolution* solution)
+FeasibilityResult solve(const TspSolution* solution, const TspAlgorithm* tsp_algorithm)
 {
     const TspInstance* instance = solution->state->instance;
     tsp_algorithm->solve(tsp_algorithm,

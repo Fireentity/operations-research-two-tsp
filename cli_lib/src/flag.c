@@ -14,13 +14,15 @@ struct FlagState
 
 static bool is_mandatory(const Flag* const self) { return self->state->mandatory; }
 
+static bool get_number_of_params(const Flag* const self) { return self->state->number_of_params; }
+
 static ParsingResult parse(const Flag* flag,
                     CmdOptions* const cmd_options,
                     const char** argv,
                     unsigned int* index)
 {
     if (strcasecmp(flag->state->label, argv[*index]) != 0) return PARSE_NON_MATCHING_LABEL;
-    const ParsingResult result = flag->state->parse_function(cmd_options, argv);
+    const ParsingResult result = flag->state->parse_function(cmd_options, argv+*index);
     if (result == PARSE_SUCCESS) *index += flag->state->number_of_params;
     return result;
 }
@@ -40,7 +42,8 @@ const Flag* init_flag(const char* label,
     Flag flag = {
         .state = MALLOC_FROM_STACK(state),
         .parse = parse,
-        .is_mandatory = is_mandatory
+        .is_mandatory = is_mandatory,
+        .get_number_of_params = get_number_of_params
     };
     return MALLOC_FROM_STACK(flag);
 }

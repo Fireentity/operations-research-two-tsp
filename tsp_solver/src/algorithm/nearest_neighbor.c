@@ -30,7 +30,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     const double time_limit = nearest_neighbor->time_limit;
     const double start = second();
 
-    long starting_nodes[number_of_nodes];
+    int starting_nodes[number_of_nodes];
     memcpy(starting_nodes, tour, sizeof(int) * number_of_nodes);
     SHUFFLE_ARRAY(starting_nodes, number_of_nodes);
 

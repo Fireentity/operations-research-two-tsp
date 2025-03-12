@@ -16,6 +16,7 @@ struct Flag
                                  const char** argv,
                                  unsigned int* index);
     bool (* const is_mandatory)(const Flag* self);
+    int (* const get_number_of_params)(const Flag* self);
 };
 
 const Flag* init_flag(const char* label,

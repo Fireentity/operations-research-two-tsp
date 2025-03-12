@@ -5,7 +5,6 @@
 #include <tsp_solution.h>
 #include <nearest_neighbor.h>
 #include <plot_util.h>
-#include <string.h>
 
 #define CONCAT(a, b) a ## b
 
@@ -30,9 +29,9 @@
 #define ERROR "Internal error this message should not appear. Report it to the developer."
 #define PARSE_UNKNOWN_ARG "Argument not recognized.\n\nUsage:\n" HELP_MESSAGE
 #define PARSE_USAGE_ERROR HELP_MESSAGE
-#define PARSE_WRONG_VALUE_TYPE HELP_MESSAGE "Wrong value type for the argument.\n\nUsage:\n" HELP_MESSAGE
-#define PARSE_MISSING_VALUE HELP_MESSAGE "Missing value type for the argument.\n\nUsage:\n" HELP_MESSAGE
-#define PARSE_MISSING_MANDATORY_FLAG HELP_MESSAGE "Missing mandatory argument.\n\nUsage:\n" HELP_MESSAGE
+#define PARSE_WRONG_VALUE_TYPE "Wrong value type for the argument.\n\nUsage:\n" HELP_MESSAGE
+#define PARSE_MISSING_VALUE "Missing value for the argument.\n\nUsage:\n" HELP_MESSAGE
+#define PARSE_MISSING_MANDATORY_FLAG "Missing mandatory argument.\n\nUsage:\n" HELP_MESSAGE
 
 
 static const char* parsing_messages[] = {
@@ -48,10 +47,10 @@ static const char* parsing_messages[] = {
 int main(const int argc, const char* argv[])
 {
     CmdOptions* cmd_options = init_cmd_options();
-    const ParsingResult parsing_result = parse_cli(cmd_options, argv, argc);
+    const ParsingResult parsing_result = parse_cli(cmd_options, argv+1, argc);
     if (parsing_result != PARSE_SUCCESS)
     {
-        printf(parsing_messages[parsing_result]);
+        printf("%s",parsing_messages[parsing_result]);
         return 0;
     }
 
