@@ -7,11 +7,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static void two_opt(int* tour,
                     int number_of_nodes,
                     const double* edge_cost_array,
-                    double* cost);
+                    double* cost,
+                    double time_limit);
 
 static void apply_nearest_neighbor(int starting_node,
                                    int* tour,
@@ -47,7 +49,8 @@ static void solve(const TspAlgorithm* tsp_algorithm,
         two_opt(tour,
                 number_of_nodes,
                 edge_cost_array,
-                cost);
+                cost,
+                time_limit);
 
         if (*cost < best_solution_cost)
         {
@@ -66,7 +69,8 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     two_opt(tour,
             number_of_nodes,
             edge_cost_array,
-            cost);
+            cost,
+            time_limit);
 }
 
 const TspAlgorithm* init_nearest_neighbor(const double time_limit)
@@ -137,14 +141,17 @@ static void apply_nearest_neighbor(const int starting_node,
 static void two_opt(int* tour,
                     const int number_of_nodes,
                     const double* edge_cost_array,
-                    double* cost)
+                    double* cost,
+                    const double time_limit)
 {
+    const double start_time = second();
     bool improved = true;
 
     // Continue iterating until no improvement is possible
     while (improved)
     {
         improved = false;
+        EXECUTE_AFTER(start_time, time_limit, return);
 
         // Iterate over possible start indices for the segment to reverse
         for (int i = 1; i < number_of_nodes - 1; i++)

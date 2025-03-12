@@ -35,6 +35,12 @@ for (size_t i = (n) - 1; i > 0; i--) {      \
     count;                                  \
 })
 
+#define EXECUTE_AFTER(start_time, seconds, action) do { \
+    if (second() - start_time >= seconds) {  \
+        printf("aaaaaaaaa");\
+        action;                                         \
+    }                                                   \
+} while (0)
 
 #endif //C_UTIL_H
 
