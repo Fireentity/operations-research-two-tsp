@@ -1,6 +1,5 @@
 #include <tsp_instance.h>
 #include <c_util.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
@@ -73,7 +72,7 @@ const TspInstance* init_random_tsp_instance(const int number_of_nodes,
         .edge_cost_array = edge_cost_array,
     };
 
-    const TspInstance instance = {
+    TspInstance instance = {
         .state = MALLOC_FROM_STACK(state),
         .get_edge_cost_array = get_edge_cost_array,
         .get_number_of_nodes = get_number_of_nodes,

@@ -20,7 +20,7 @@ struct Flag
 
 const Flag* init_flag(const char* label,
                       unsigned int number_of_params,
-                      ParsingResult (*param_supplier)(CmdOptions* cmd_options, const char** arg),
+                      ParsingResult (*param_function)(CmdOptions* cmd_options, const char** arg),
                       bool mandatory);
 
 #endif //FLAG_H

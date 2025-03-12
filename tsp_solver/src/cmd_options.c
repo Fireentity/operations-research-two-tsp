@@ -22,7 +22,7 @@ CmdOptions* init_cmd_options()
     return MALLOC_FROM_STACK(cmd_options);
 }
 
-void parse_cli(CmdOptions* cmd_options, const char** const argv, const int argc)
+ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const int argc)
 {
     const Flag* tsp_flags[] = {
         init_flag("--nodes", 1, set_nodes, true),
@@ -33,7 +33,7 @@ void parse_cli(CmdOptions* cmd_options, const char** const argv, const int argc)
         init_flag("--seconds", 1, set_time_limit, false),
         init_flag("--help", 0, set_help, false)
     };
-    parse_flags(cmd_options, tsp_flags, sizeof(tsp_flags), argc, argv);
+    return parse_flags(cmd_options, tsp_flags, 7, argc, argv);
 }
 
 ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg)

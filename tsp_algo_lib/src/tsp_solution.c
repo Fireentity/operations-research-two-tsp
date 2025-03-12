@@ -16,9 +16,9 @@ struct TspSolutionState
     const TspInstance* const instance;
 };
 
-static const int* get_tour(const TspSolution* solution) { return solution->state->tour; }
+const int* get_tour(const TspSolution* solution) { return solution->state->tour; }
 
-static double compute_cost(const TspSolution* solution)
+double compute_cost(const TspSolution* solution)
 {
     const TspInstance* instance = solution->state->instance;
     return calculate_tour_cost(
@@ -28,7 +28,7 @@ static double compute_cost(const TspSolution* solution)
     );
 }
 
-static FeasibilityResult is_feasible(const TspSolution* solution)
+FeasibilityResult is_feasible(const TspSolution* solution)
 {
     const TspInstance* instance = solution->state->instance;
     const int* const tour = solution->state->tour;
@@ -88,7 +88,7 @@ static void free_this(TspSolution* solution)
     free(solution);
 }
 
-static int* init_tour(const int number_of_nodes)
+int* init_tour(const int number_of_nodes)
 {
 
     int* tour = calloc(number_of_nodes + 1, sizeof(int));
@@ -114,6 +114,7 @@ TspSolution* init_solution(const TspInstance* instance)
         .free = free_this,
         .is_feasible = is_feasible,
         .solve = solve,
+        .get_tour = get_tour,
         .state = MALLOC_FROM_STACK(state)
     };
     return MALLOC_FROM_STACK(solution);

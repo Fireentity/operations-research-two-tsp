@@ -54,17 +54,12 @@ ParsingResult parse_bool(const char* arg, bool* parsed)
 }
 
 // Function to parse the command-line arguments using flags.
-void parse_flags(void* options,
+ParsingResult parse_flags(CmdOptions* cmd_options,
                  const Flag** tsp_flags,
                  const int number_of_flags,
                  const int argc,
                  const char** argv)
 {
-    if (argc < 2)
-        PARSING_ABORT(PARSE_USAGE_ERROR);
-
-    const int tsp_flag_size = sizeof(number_of_flags) / sizeof(tsp_flags[0]);
-
     int mandatory_flags = 0;
     //Counts the mandatory flags
     for (int i = 0; i < number_of_flags; i++)
@@ -76,32 +71,30 @@ void parse_flags(void* options,
     // Iterate through flags; stop at argc - 1 to ensure a following argument exists.
     for (unsigned int current_argv_parameter = 1; current_argv_parameter < argc; current_argv_parameter++)
     {
-        for (int i = 0; i < number_of_flags; i++)
+        const Flag** current_flag = tsp_flags;
+        ParsingResult result;
+        do
         {
-            // Parse the flag with its associated value.
-            const ParsingResult result = tsp_flags[i]->parse(tsp_flags[i], options, argv, &current_argv_parameter);
+            result = (*current_flag)->parse(*current_flag, cmd_options, argv, &current_argv_parameter);
+            current_flag++;
+        } while (result != PARSE_SUCCESS && current_flag < tsp_flags + number_of_flags);
+        current_flag--;
 
-            //If the flag is parsed then break and parse the next flag
-            if (PARSE_SUCCESS == result)
-            {
-                // Check if the current flag is mandatory; if so, increment the count of parsed mandatory flags
-                if (tsp_flags[i]->is_mandatory(tsp_flags[i]))
-                {
-                    parsed_mandatory_flags++;
-                }
-                break;
-            }
+        if (result == PARSE_SUCCESS && (*current_flag)->is_mandatory(*current_flag))
+        {
+            parsed_mandatory_flags++;
+        }
 
-            // If this is the last flag and the argument did not match any flag, print an error message.
-            if (i == tsp_flag_size - 1 && PARSE_NON_MATCHING_LABEL == result)
-            {
-                printf("Argument not recognized: '%s'\n", argv[current_argv_parameter]);
-            }
+        if (result != PARSE_SUCCESS)
+        {
+            return PARSE_UNKNOWN_ARG;
         }
     }
 
     if (parsed_mandatory_flags != mandatory_flags)
     {
-        PARSING_ABORT(PARSE_MISSING_MANDATORY_FLAG);
+        return PARSE_MISSING_MANDATORY_FLAG;
     }
+
+    return PARSE_SUCCESS;
 }

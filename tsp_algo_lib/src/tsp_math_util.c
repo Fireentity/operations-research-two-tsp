@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <tsp_math_util.h>
 
-double calculate_tour_cost(int* const tour,
+double calculate_tour_cost(const int* const tour,
                            const int number_of_nodes,
                            const double* const edge_cost_array)
 {

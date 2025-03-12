@@ -2,7 +2,6 @@
 project(cli_lib)
 
 set(CLI_LIB_SOURCES
-        src/parsing_result.c
         src/parsing_util.c
         src/flag.c
 )

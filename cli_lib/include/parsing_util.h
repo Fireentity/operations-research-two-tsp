@@ -13,7 +13,7 @@ ParsingResult parse_int(const char* arg, int* parsed);
 ParsingResult parse_float(const char* arg, float* parsed);
 ParsingResult parse_bool(const char* arg, bool* parsed);
 
-void parse_flags(CmdOptions* options,
+ParsingResult parse_flags(CmdOptions* cmd_options,
                  const Flag** tsp_flags,
                  int number_of_flags,
                  int argc,

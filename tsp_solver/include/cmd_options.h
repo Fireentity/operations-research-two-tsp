@@ -22,7 +22,7 @@ struct CmdOptions
 };
 
 CmdOptions* init_cmd_options();
-void parse_cli(CmdOptions* cmd_options, const char** argv, int argc);
+ParsingResult parse_cli(CmdOptions* cmd_options, const char** argv, int argc);
 ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg);
 ParsingResult set_seed(CmdOptions* cmd_options, const char** arg);
 ParsingResult set_x_square(CmdOptions* cmd_options, const char** arg);
