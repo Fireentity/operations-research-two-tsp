@@ -5,12 +5,18 @@
 #include <tsp_algorithm.h>
 #include <tsp_instance.h>
 
+typedef struct TspSolutionState TspSolutionState;
+
 typedef struct TspSolution TspSolution;
 
+struct TspSolution
+{
+    TspSolutionState* state;
+    FeasibilityResult (*const solve)(const TspSolution* self, const TspAlgorithm* tsp_algorithm);
+    FeasibilityResult (*const is_feasible)(const TspSolution *self);
+    void (*const free)(const TspInstance* self);
+};
+
 TspSolution* init_solution(const TspInstance* instance);
-FeasibilityResult solve(const TspAlgorithm* tsp_algorithm, TspSolution *solution);
-FeasibilityResult check_solution_feasibility(const TspSolution* solution);
-void plot_solution(const TspSolution *sol, const char *output_name);
-void free_tsp_solution(TspSolution* solution);
 
 #endif //TSP_SOLUTION_H

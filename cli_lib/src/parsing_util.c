@@ -6,12 +6,11 @@
 #include <flag.h>
 #include <parsing_util.h>
 
-
 ParsingResult parse_unsigned_int(const char* arg, unsigned int* parsed)
 {
     char* end;
     errno = 0;
-    const unsigned long val = strtoul(arg, &end, 10);
+    const int val = strtoul(arg, &end, 10);
     if (errno || *end != '\0' || val > UINT_MAX)
         return PARSE_WRONG_VALUE_TYPE;
     *parsed = (unsigned int)val;
@@ -70,7 +69,7 @@ void parse_flags(void* options,
     //Counts the mandatory flags
     for (int i = 0; i < number_of_flags; i++)
     {
-        if (tsp_flags[i]->mandatory) mandatory_flags++;
+        if (tsp_flags[i]->is_mandatory(tsp_flags[i])) mandatory_flags++;
     }
 
     int parsed_mandatory_flags = 0;
@@ -80,13 +79,13 @@ void parse_flags(void* options,
         for (int i = 0; i < number_of_flags; i++)
         {
             // Parse the flag with its associated value.
-            const ParsingResult result = parse(tsp_flags[i], options, argv, &current_argv_parameter);
+            const ParsingResult result = tsp_flags[i]->parse(tsp_flags[i], options, argv, &current_argv_parameter);
 
             //If the flag is parsed then break and parse the next flag
             if (PARSE_SUCCESS == result)
             {
                 // Check if the current flag is mandatory; if so, increment the count of parsed mandatory flags
-                if (tsp_flags[i]->mandatory)
+                if (tsp_flags[i]->is_mandatory(tsp_flags[i]))
                 {
                     parsed_mandatory_flags++;
                 }

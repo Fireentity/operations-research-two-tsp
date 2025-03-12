@@ -2,9 +2,9 @@
 project(cli_lib)
 
 set(CLI_LIB_SOURCES
-        src/flag.c
         src/parsing_result.c
         src/parsing_util.c
+        src/flag.c
 )
 
 add_library(cli_lib ${CLI_LIB_SOURCES})

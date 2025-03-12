@@ -8,5 +8,6 @@ typedef enum
     NON_MATCHING_COST,
     FEASIBLE,
 } FeasibilityResult;
+const char* feasibility_result_to_string(FeasibilityResult result);
 
 #endif //FEASIBILITY_RESULT_H

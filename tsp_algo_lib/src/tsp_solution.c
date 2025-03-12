@@ -9,77 +9,57 @@
 
 #define EPSILON 1e-10
 
-struct TspSolution
+struct TspSolutionState
 {
     double cost;
-    unsigned long* const tour;
+    int* const tour;
     const TspInstance* const instance;
 };
 
-double calculate_solution_cost(const TspSolution* solution)
+static const int* get_tour(const TspSolution* solution) { return solution->state->tour; }
+
+static double compute_cost(const TspSolution* solution)
 {
+    const TspInstance* instance = solution->state->instance;
     return calculate_tour_cost(
-        solution->tour,
-        get_number_of_nodes(solution->instance),
-        get_edge_cost_array(solution->instance)
+        solution->state->tour,
+        instance->get_number_of_nodes(instance),
+        instance->get_edge_cost_array(instance)
     );
 }
 
-
-TspSolution* init_solution(const TspInstance* instance)
+static FeasibilityResult is_feasible(const TspSolution* solution)
 {
-    const unsigned long number_of_nodes = get_number_of_nodes(instance);
-
-    unsigned long* tour = calloc(number_of_nodes + 1, sizeof(unsigned long));
-    check_alloc(tour);
-    for (unsigned long i = 0; i < number_of_nodes; i++)
-        tour[i] = i;
-    tour[number_of_nodes] = tour[0];
-
-    TspSolution solution = {
-        .cost = calculate_tour_cost(tour, number_of_nodes, get_edge_cost_array(instance)),
-        .tour = tour,
-        .instance = instance
-    };
-    return MALLOC_FROM_STACK(solution);
-}
-
-const unsigned long* get_tour(const TspSolution* solution)
-{
-    return solution->tour;
-}
-
-
-FeasibilityResult check_solution_feasibility(const TspSolution* solution)
-{
-    const unsigned long number_of_nodes = get_number_of_nodes(solution->instance);
-    unsigned long counter[number_of_nodes];
+    const TspInstance* instance = solution->state->instance;
+    const int* const tour = solution->state->tour;
+    const int number_of_nodes = solution->state->instance->get_number_of_nodes(instance);
+    int counter[number_of_nodes];
     memset(counter, 0, number_of_nodes * sizeof(counter[0]));
 
-    for (unsigned long i = 0; i < number_of_nodes; i++)
+    for (int i = 0; i < number_of_nodes; i++)
     {
         // Checks that each value in the solution array is a valid index in the TSP problem's node array
-        if (solution->tour[i] < 0 || solution->tour[i] > number_of_nodes - 1)
+        if (tour[i] < 0 || tour[i] > number_of_nodes - 1)
         {
             return UNINITIALIZED_ENTRY;
         }
 
-        counter[solution->tour[i]]++;
+        counter[tour[i]]++;
 
         // Ensures each index appears exactly once; if an index appears more than once or not at all, the TSP solution is infeasible
         // This is because in a valid TSP tour, each node must be visited exactly once to form a Hamiltonian cycle
-        if (counter[solution->tour[i]] != 1)
+        if (counter[tour[i]] != 1)
         {
             return DUPLICATED_ENTRY;
         }
     }
 
     // Recalculate the total cost of the current solution
-    const double calculated_cost = calculate_solution_cost(solution);
+    const double calculated_cost = compute_cost(solution);
 
     // Check if the stored cost is approximately equal to the recalculated cost within an epsilon margin
     // This accounts for floating-point precision errors
-    if (fabs(solution->cost - calculated_cost) > EPSILON)
+    if (fabs(solution->state->cost - calculated_cost) > EPSILON)
     {
         return NON_MATCHING_COST;
     }
@@ -87,22 +67,54 @@ FeasibilityResult check_solution_feasibility(const TspSolution* solution)
     return FEASIBLE;
 }
 
-FeasibilityResult solve(const TspAlgorithm* tsp_algorithm, TspSolution* solution)
+FeasibilityResult solve(const TspAlgorithm* tsp_algorithm, const TspSolution* solution)
 {
+    const TspInstance* instance = solution->state->instance;
     tsp_algorithm->solve(tsp_algorithm,
-                         solution->tour,
-                         get_number_of_nodes(solution->instance),
-                         get_edge_cost_array(solution->instance),
-                         &solution->cost);
-    return check_solution_feasibility(solution);
+                         solution->state->tour,
+                         instance->get_number_of_nodes(instance),
+                         instance->get_edge_cost_array(instance),
+                         &solution->state->cost);
+    return is_feasible(solution);
 }
 
-void free_tsp_solution(TspSolution* solution)
+static void free_this(TspSolution* solution)
 {
-    if (!solution || !solution->tour)
+    if (!solution || !solution->state->tour)
     {
         return;
     }
-    free(solution->tour);
+    free(solution->state->tour);
     free(solution);
+}
+
+static int* init_tour(const int number_of_nodes)
+{
+
+    int* tour = calloc(number_of_nodes + 1, sizeof(int));
+    check_alloc(tour);
+    for (int i = 0; i < number_of_nodes; i++)
+        tour[i] = i;
+    tour[number_of_nodes] = tour[0];
+    return tour;
+}
+
+TspSolution* init_solution(const TspInstance* instance)
+{
+    const int number_of_nodes = instance->get_number_of_nodes(instance);
+
+    int* tour = init_tour(number_of_nodes);
+
+    TspSolutionState state = {
+        .cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance)),
+        .tour = tour,
+        .instance = instance
+    };
+    TspSolution solution = {
+        .free = free_this,
+        .is_feasible = is_feasible,
+        .solve = solve,
+        .state = MALLOC_FROM_STACK(state)
+    };
+    return MALLOC_FROM_STACK(solution);
 }
