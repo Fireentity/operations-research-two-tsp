@@ -9,6 +9,12 @@
 #include <string.h>
 #include <time.h>
 
+union TspExtendedAlgorithms
+{
+    NearestNeighbor* nearest_neighbor;
+};
+
+
 static void two_opt(int* tour,
                     int number_of_nodes,
                     const double* edge_cost_array,

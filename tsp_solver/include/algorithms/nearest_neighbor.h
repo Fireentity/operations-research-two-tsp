@@ -1,13 +1,12 @@
 #ifndef NEAREST_NEIGHBOR_H
 #define NEAREST_NEIGHBOR_H
 
-#include <extended_algorithms.h>
 #include <tsp_algorithm.h>
 
-struct NearestNeighbor
+typedef struct
 {
     const double time_limit;
-};
+} NearestNeighbor;
 
 const TspAlgorithm* init_nearest_neighbor(double time_limit);
 
