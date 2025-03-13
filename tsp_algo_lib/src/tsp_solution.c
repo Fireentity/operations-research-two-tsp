@@ -90,7 +90,6 @@ static void free_this(TspSolution* solution)
 
 int* init_tour(const int number_of_nodes)
 {
-
     int* tour = calloc(number_of_nodes + 1, sizeof(int));
     check_alloc(tour);
     for (int i = 0; i < number_of_nodes; i++)

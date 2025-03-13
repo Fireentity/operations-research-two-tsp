@@ -19,5 +19,6 @@ struct TspSolution
 };
 
 TspSolution* init_solution(const TspInstance* instance);
+TspSolution* init_solution_with_tour(const TspInstance* instance, int* tour);
 
 #endif //TSP_SOLUTION_H

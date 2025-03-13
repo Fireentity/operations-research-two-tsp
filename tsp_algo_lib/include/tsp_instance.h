@@ -30,4 +30,6 @@ const TspInstance* init_random_tsp_instance(int number_of_nodes,
                                             int seed,
                                             TspGenerationArea generation_area);
 
+const TspInstance* init_tsp_instance(const Node* nodes, int number_of_nodes);
+
 #endif //TSP_INSTANCE_H
