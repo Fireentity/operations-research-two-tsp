@@ -14,7 +14,7 @@ struct FlagState
 
 static bool is_mandatory(const Flag* const self) { return self->state->mandatory; }
 
-static bool get_number_of_params(const Flag* const self) { return self->state->number_of_params; }
+static int get_number_of_params(const Flag* const self) { return self->state->number_of_params; }
 
 static ParsingResult parse(const Flag* flag,
                     CmdOptions* const cmd_options,
