@@ -53,7 +53,7 @@ double compute_cost(const int* tour, int number_of_nodes, const double* edge_cos
     return total;
 }
 
-void test_case1() {
+void test_case1_all_right() {
     // n < 2: no change
     int tour[4] = {0, 1, 2, 3};
     int expected[4] = {0, 1, 2, 3};
@@ -121,7 +121,7 @@ void test_case4() {
 }
 
 int main() {
-    test_case1();
+    test_case1_all_right();
     test_case2();
     test_case3();
     test_case4();

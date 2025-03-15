@@ -5,6 +5,7 @@ set(COMMON_SOURCES
         src/c_util.c
         src/chrono.c
         src/hashmap.c
+        include/uthash.h
 )
 
 add_library(common ${COMMON_SOURCES})

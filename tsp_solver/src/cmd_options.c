@@ -35,7 +35,7 @@ ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const 
         init_flag("prova", 1000, set_help, false)
     };
     //TODO togli number_of_flags e metti sizeof/sizeof
-    return parse_flags(cmd_options, tsp_flags, 8, argc, argv);
+    return parse_flags_v2(cmd_options, tsp_flags, 8, argc, argv);
 }
 
 ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg)

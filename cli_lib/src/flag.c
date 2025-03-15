@@ -17,7 +17,7 @@ static bool is_mandatory(const Flag* const self) { return self->state->mandatory
 
 static unsigned int get_number_of_params(const Flag* const self) { return self->state->number_of_params; }
 
-static const char* get_label(const Flag* const self) { printf("Dentro get_label\n");return self->state->label; }
+static const char* get_label(const Flag* const self) { return self->state->label; }
 
 static ParsingResult parse(const Flag* flag,
                     CmdOptions* const cmd_options,

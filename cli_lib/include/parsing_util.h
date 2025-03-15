@@ -12,6 +12,11 @@ ParsingResult parse_unsigned_int(const char* arg, unsigned int* parsed);
 ParsingResult parse_int(const char* arg, int* parsed);
 ParsingResult parse_float(const char* arg, float* parsed);
 ParsingResult parse_bool(const char* arg, bool* parsed);
+ParsingResult parse_flags_v2(CmdOptions* cmd_options,
+                             const Flag** tsp_flags,
+                             int number_of_flags,
+                             int argc,
+                             const char** argv);
 
 ParsingResult parse_flags(CmdOptions* cmd_options,
                  const Flag** tsp_flags,

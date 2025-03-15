@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 99)
 enable_testing()
 
 add_subdirectory(cli_lib)
+add_subdirectory(cli_lib/tests)
 add_subdirectory(tsp_algo_lib)
 add_subdirectory(tsp_solver)
 add_subdirectory(common)
