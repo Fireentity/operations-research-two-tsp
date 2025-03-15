@@ -116,10 +116,12 @@ double compute_n_opt_cost(const int number_of_segments,
  * @param number_of_segments Number of segments in the n-opt move
  * @param tour Array representing the current tour configuration which will be modified
  * @param edges_to_remove Array containing indices of the edges to be removed
+ * @param number_of_nodes
  */
 void compute_n_opt_move(const int number_of_segments,
                         int tour[],
-                        const int* edges_to_remove)
+                        const int* edges_to_remove,
+                        const int number_of_nodes)
 {
     // Process each segment except the last one
     for (int i = 0; i < number_of_segments - 1; i += 1)
@@ -132,4 +134,5 @@ void compute_n_opt_move(const int number_of_segments,
         // This effectively inverts the segment's direction in the tour
         reverse_array_int(tour, tour[start_node], tour[end_node]);
     }
+    tour[number_of_nodes] = tour[0];
 }

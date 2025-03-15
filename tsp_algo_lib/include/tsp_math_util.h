@@ -12,6 +12,7 @@ double compute_n_opt_cost(int number_of_segments,
                           int number_of_nodes);
 void compute_n_opt_move(int number_of_segments,
                         int tour[],
-                        const int* edges_to_remove);
+                        const int* edges_to_remove,
+                        int number_of_nodes);
 
 #endif //MATH_UTIL_H
