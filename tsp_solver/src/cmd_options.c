@@ -8,7 +8,7 @@
 
 CmdOptions* init_cmd_options()
 {
-    CmdOptions cmd_options = {
+    const CmdOptions cmd_options = {
         .generation_area = {
             .square_side = 0,
             .x_square = 0,
@@ -19,7 +19,7 @@ CmdOptions* init_cmd_options()
         .seed = 0,
         .time_limit = 0
     };
-    return MALLOC_FROM_STACK(cmd_options);
+    return malloc_from_stack(&cmd_options, sizeof(cmd_options));
 }
 
 ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const int argc)

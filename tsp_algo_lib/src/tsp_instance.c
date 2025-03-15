@@ -50,17 +50,17 @@ const TspInstance* init_random_tsp_instance(const int number_of_nodes,
     Node* nodes = init_nodes(number_of_nodes, generation_area);
     double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
 
-    TspInstanceState state = {
+    const TspInstanceState state = {
         .number_of_nodes = number_of_nodes,
         .nodes = nodes,
         .edge_cost_array = edge_cost_array,
     };
 
-    TspInstance instance = {
-        .state = MALLOC_FROM_STACK(state),
+    const TspInstance instance = {
+        .state = malloc_from_stack(&state, sizeof(state)),
         .get_edge_cost_array = get_edge_cost_array,
         .get_number_of_nodes = get_number_of_nodes,
         .get_nodes = get_nodes,
     };
-    return MALLOC_FROM_STACK(instance);
+    return malloc_from_stack(&instance, sizeof(instance));
 }

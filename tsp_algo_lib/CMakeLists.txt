@@ -1,6 +1,8 @@
 # tsp_algo_lib/CMakeLists.txt
 project(tsp_algo_lib)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  ")
+
 set(TSP_ALGO_SOURCES
         src/tsp_instance.c
         src/tsp_solution.c

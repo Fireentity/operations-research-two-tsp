@@ -1,8 +1,10 @@
 # common/CMakeLists.txt
 project(common)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  ")
+
 set(COMMON_SOURCES
-        src/c_util.c
+        include/c_util.h
         src/chrono.c
 )
 

@@ -33,17 +33,17 @@ const Flag* init_flag(const char* label,
                       const bool mandatory
 )
 {
-    FlagState state = {
+    const FlagState state = {
         .number_of_params = number_of_params,
         .parse_function = param_function,
         .label = label,
         .mandatory = mandatory
     };
-    Flag flag = {
-        .state = MALLOC_FROM_STACK(state),
+    const Flag flag = {
+        .state = malloc_from_stack(&state, sizeof(state)),
         .parse = parse,
         .is_mandatory = is_mandatory,
         .get_number_of_params = get_number_of_params
     };
-    return MALLOC_FROM_STACK(flag);
+    return malloc_from_stack(&flag, sizeof(flag));
 }

@@ -78,14 +78,14 @@ FeasibilityResult solve(const TspSolution* solution, const TspAlgorithm* tsp_alg
     return is_feasible(solution);
 }
 
-static void free_this(TspSolution* solution)
+static void free_this(const TspSolution* solution)
 {
     if (!solution || !solution->state->tour)
     {
         return;
     }
     free(solution->state->tour);
-    free(solution);
+    free((void*)solution);
 }
 
 int* init_tour(const int number_of_nodes)
@@ -104,17 +104,17 @@ TspSolution* init_solution(const TspInstance* instance)
 
     int* tour = init_tour(number_of_nodes);
 
-    TspSolutionState state = {
+    const TspSolutionState state = {
         .cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance)),
         .tour = tour,
         .instance = instance
     };
-    TspSolution solution = {
+    const TspSolution solution = {
         .free = free_this,
         .is_feasible = is_feasible,
         .solve = solve,
         .get_tour = get_tour,
-        .state = MALLOC_FROM_STACK(state)
+        .state = malloc_from_stack(&state, sizeof(state))
     };
-    return MALLOC_FROM_STACK(solution);
+    return malloc_from_stack(&solution, sizeof(solution));
 }

@@ -54,6 +54,15 @@ ParsingResult parse_bool(const char* arg, bool* parsed)
     return PARSE_WRONG_VALUE_TYPE;
 }
 
+DEFINE_COUNT_IF(Flag*, flag);
+
+bool is_mandatory(Flag** tsp_flags, int i)
+{
+    return tsp_flags[i]->is_mandatory(tsp_flags[i]);
+}
+
+
+
 // Function to parse the command-line arguments using flags.
 ParsingResult parse_flags(CmdOptions* cmd_options,
                           const Flag** tsp_flags,
@@ -61,7 +70,7 @@ ParsingResult parse_flags(CmdOptions* cmd_options,
                           const int argc,
                           const char** argv)
 {
-    const int mandatory_flags = COUNT_IF(tsp_flags, number_of_flags, tsp_flags[i]->is_mandatory(tsp_flags[i]));
+    const int mandatory_flags = count_flag_if(tsp_flags, number_of_flags, is_mandatory);
     const Flag* local_flags[number_of_flags];
     memcpy(local_flags, tsp_flags, number_of_flags * sizeof(*tsp_flags));
 
@@ -89,7 +98,7 @@ ParsingResult parse_flags(CmdOptions* cmd_options,
         }
         if (result == PARSE_SUCCESS)
         {
-            SWAP(local_flags[parsed_flags_count], local_flags[i - 1]);
+            //swap_int(local_flags[parsed_flags_count], local_flags[i - 1]);
             parsed_flags_count++;
         }
         else
