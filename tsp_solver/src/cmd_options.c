@@ -31,9 +31,11 @@ ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const 
         init_flag("--y-square", 1, set_y_square, true),
         init_flag("--square-side", 1, set_square_side, true),
         init_flag("--seconds", 1, set_time_limit, false),
-        init_flag("--help", 0, set_help, false)
+        init_flag("--help", 0, set_help, false),
+        init_flag("prova", 1000, set_help, false)
     };
-    return parse_flags(cmd_options, tsp_flags, 7, argc, argv);
+    //TODO togli number_of_flags e metti sizeof/sizeof
+    return parse_flags(cmd_options, tsp_flags, 8, argc, argv);
 }
 
 ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg)
