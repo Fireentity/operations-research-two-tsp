@@ -43,6 +43,33 @@ static inline bool arrays_equal(const void *arr1, const void *arr2, const size_t
     return memcmp(arr1, arr2, size * elem_size) == 0;
 }
 
+/**
+ * @brief Extracts k non-contiguous numbers from a given range.
+ *
+ * Generates k random numbers from [low, high] ensuring that
+ * no two numbers are adjacent.
+ *
+ * @param low    Lower bound (inclusive).
+ * @param high   Upper bound (inclusive).
+ * @param k      Number of numbers to extract.
+ * @param result Array to store the resulting numbers.
+ */
+static inline void rand_k_non_contiguous(const int low, const int high, const int k, int result[]) {
+    // Calculate effective range size adjusted for required gaps.
+    const int m = high - low + 1 - (k - 1);
+    int s[k];  // Array to store offset values.
+
+    // Generate the first offset.
+    s[0] = rand() % (m - (k - 1));
+
+    // Generate subsequent offsets with at least one gap between them.
+    for (int i = 1; i < k; i++)
+        s[i] = s[i - 1] + 1 + rand() % (m - s[i - 1] - (k - i));
+
+    // Adjust offsets to produce final non-contiguous numbers.
+    for (int i = 0; i < k; i++)
+        result[i] = low + s[i] + i;
+}
 
 #define DEFINE_SWAP(type, suffix)                                   \
 static inline void swap_##suffix(type arr[], size_t i, size_t j) {  \
@@ -107,6 +134,5 @@ DEFINE_COUNT_IF(char, char)
         action;                                         \
     }                                                   \
 } while (0)
-
 #endif //C_UTIL_H
 

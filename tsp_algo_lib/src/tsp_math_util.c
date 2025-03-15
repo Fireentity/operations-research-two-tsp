@@ -113,18 +113,18 @@ double compute_n_opt_cost(const int number_of_segments,
  * The function works in conjunction with compute_n_opt_cost which calculates the cost
  * change before the actual move is performed.
  *
- * @param number_of_segments Number of segments in the n-opt move
+ * @param number_of_edges_to_remove Number of edges to be removed in the n-opt move
  * @param tour Array representing the current tour configuration which will be modified
  * @param edges_to_remove Array containing indices of the edges to be removed
  * @param number_of_nodes
  */
-void compute_n_opt_move(const int number_of_segments,
+void compute_n_opt_move(const int number_of_edges_to_remove,
                         int tour[],
                         const int* edges_to_remove,
                         const int number_of_nodes)
 {
     // Process each segment except the last one
-    for (int i = 0; i < number_of_segments - 1; i += 1)
+    for (int i = 0; i < number_of_edges_to_remove - 1; i += 1)
     {
         // Identify the start and end nodes of the segment to reverse
         const int start_node = edges_to_remove[i] + 1;
