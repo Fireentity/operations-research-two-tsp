@@ -31,22 +31,6 @@ static Node* init_nodes(const int number_of_nodes, const TspGenerationArea gener
     return nodes;
 }
 
-static double* init_edge_cost_array(const Node* nodes, const int number_of_nodes)
-{
-    double* const edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));
-    const double edge_array_size = number_of_nodes * number_of_nodes;
-    for (int i = 0; i < edge_array_size; i++)
-    {
-        const int row = i / number_of_nodes;
-        const int colum = i % number_of_nodes;
-        const double dx = nodes[row].x - nodes[colum].x;
-        const double dy = nodes[row].y - nodes[colum].y;
-        edge_cost_array[i] = sqrt((dx * dx + dy * dy));
-    }
-
-    return edge_cost_array;
-}
-
 static void free_this(TspInstance* solution)
 {
     if (!solution || !solution->state->edge_cost_array || !solution->state->nodes)
@@ -66,17 +50,17 @@ const TspInstance* init_random_tsp_instance(const int number_of_nodes,
     Node* nodes = init_nodes(number_of_nodes, generation_area);
     double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
 
-    TspInstanceState state = {
+    const TspInstanceState state = {
         .number_of_nodes = number_of_nodes,
         .nodes = nodes,
         .edge_cost_array = edge_cost_array,
     };
 
-    TspInstance instance = {
-        .state = MALLOC_FROM_STACK(state),
+    const TspInstance instance = {
+        .state = malloc_from_stack(&state, sizeof(state)),
         .get_edge_cost_array = get_edge_cost_array,
         .get_number_of_nodes = get_number_of_nodes,
         .get_nodes = get_nodes,
     };
-    return MALLOC_FROM_STACK(instance);
+    return malloc_from_stack(&instance, sizeof(instance));
 }

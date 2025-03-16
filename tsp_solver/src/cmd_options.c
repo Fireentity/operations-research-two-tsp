@@ -8,7 +8,7 @@
 
 CmdOptions* init_cmd_options()
 {
-    CmdOptions cmd_options = {
+    const CmdOptions cmd_options = {
         .generation_area = {
             .square_side = 0,
             .x_square = 0,
@@ -19,7 +19,7 @@ CmdOptions* init_cmd_options()
         .seed = 0,
         .time_limit = 0
     };
-    return MALLOC_FROM_STACK(cmd_options);
+    return malloc_from_stack(&cmd_options, sizeof(cmd_options));
 }
 
 ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const int argc)
@@ -31,11 +31,9 @@ ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const 
         init_flag("--y-square", 1, set_y_square, true),
         init_flag("--square-side", 1, set_square_side, true),
         init_flag("--seconds", 1, set_time_limit, false),
-        init_flag("--help", 0, set_help, false),
-        init_flag("prova", 1000, set_help, false)
+        init_flag("--help", 0, set_help, false)
     };
-    //TODO togli number_of_flags e metti sizeof/sizeof
-    return parse_flags_v2(cmd_options, tsp_flags, 8, argc, argv);
+    return parse_flags(cmd_options, tsp_flags, 7, argc, argv);
 }
 
 ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg)

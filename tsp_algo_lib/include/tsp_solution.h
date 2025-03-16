@@ -14,10 +14,11 @@ struct TspSolution
     TspSolutionState* state;
     FeasibilityResult (*const solve)(const TspSolution* self, const TspAlgorithm* tsp_algorithm);
     FeasibilityResult (*const is_feasible)(const TspSolution* self);
-    void (*const free)(const TspInstance* self);
+    void (*const free)(const TspSolution* self);
     const int* (* const get_tour)(const TspSolution* solution);
 };
 
 TspSolution* init_solution(const TspInstance* instance);
+TspSolution* init_solution_with_tour(const TspInstance* instance, int* tour);
 
 #endif //TSP_SOLUTION_H

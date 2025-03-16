@@ -40,23 +40,15 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 
     int starting_nodes[number_of_nodes];
     memcpy(starting_nodes, tour, sizeof(int) * number_of_nodes);
-    SHUFFLE_ARRAY(starting_nodes, number_of_nodes);
+    shuffle_int_array(starting_nodes, number_of_nodes);
 
     int incumbent_starting_node = starting_nodes[0];
 
     int iteration = 0;
     do
     {
-        apply_nearest_neighbor(starting_nodes[iteration],
-                               tour,
-                               number_of_nodes,
-                               edge_cost_array,
-                               cost);
-        two_opt(tour,
-                number_of_nodes,
-                edge_cost_array,
-                cost,
-                time_limit);
+        apply_nearest_neighbor(starting_nodes[iteration], tour, number_of_nodes, edge_cost_array, cost);
+        two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limit);
 
         if (*cost < best_solution_cost)
         {
@@ -67,34 +59,26 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     }
     while (start - second() < time_limit && iteration < number_of_nodes);
 
-    apply_nearest_neighbor(incumbent_starting_node,
-                           tour,
-                           number_of_nodes,
-                           edge_cost_array,
-                           cost);
-    two_opt(tour,
-            number_of_nodes,
-            edge_cost_array,
-            cost,
-            time_limit);
+    apply_nearest_neighbor(incumbent_starting_node, tour, number_of_nodes, edge_cost_array, cost);
+    two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limit);
 }
 
 const TspAlgorithm* init_nearest_neighbor(const double time_limit)
 {
-    NearestNeighbor nearest_neighbor = {
+    const NearestNeighbor nearest_neighbor = {
         .time_limit = time_limit
     };
 
-    TspExtendedAlgorithms extended_algorithms = {
-        .nearest_neighbor = MALLOC_FROM_STACK(nearest_neighbor)
+    const TspExtendedAlgorithms extended_algorithms = {
+        .nearest_neighbor = malloc_from_stack(&nearest_neighbor, sizeof(nearest_neighbor))
     };
 
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
-        .extended_algorithms = MALLOC_FROM_STACK(extended_algorithms),
+        .extended_algorithms = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };
 
-    return MALLOC_FROM_STACK(tsp_algorithm);
+    return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
 }
 
 static void apply_nearest_neighbor(const int starting_node,
@@ -113,7 +97,7 @@ static void apply_nearest_neighbor(const int starting_node,
     int visited = 1;
 
     // Start from the node in input
-    SWAP(tour[0], tour[starting_node]);
+    swap_int(tour, 0, starting_node);
     int current = tour[0];
 
     // Closing the tour
@@ -135,7 +119,7 @@ static void apply_nearest_neighbor(const int starting_node,
             }
         }
         // Move the best found node to the next position in the tour
-        SWAP(tour[visited], tour[best_index]);
+        swap_int(tour, visited, best_index);
         current = tour[visited];
         visited++;
     }
@@ -158,42 +142,26 @@ static void two_opt(int* tour,
     {
         improved = false;
         EXECUTE_AFTER(start_time, time_limit, return);
-
-        // Iterate over possible start indices for the segment to reverse
         for (int i = 1; i < number_of_nodes - 1; i++)
         {
-            int found = 0;
-
             // Iterate over possible end indices for the segment
             for (int k = i + 1; k < number_of_nodes; k++)
             {
-                // Identify the four nodes involved in the current potential 2-opt move
-                int a = tour[i - 1]; // Node immediately before the segment
-                int b = tour[i]; // First node of the segment
-                int c = tour[k]; // Last node of the segment
-                int d = tour[(k + 1) % number_of_nodes]; // Node immediately after the segment (wraps around)
 
-                // Calculate the cost difference (delta) if the segment between i and k is reversed
-                // Delta = (cost of new edges: (a, c) + (b, d)) - (cost of old edges: (a, b) + (c, d))
-                const double delta = edge_cost_array[a * number_of_nodes + c] +
-                    edge_cost_array[b * number_of_nodes + d] -
-                    edge_cost_array[a * number_of_nodes + b] -
-                    edge_cost_array[c * number_of_nodes + d];
+                const int edge_to_remove[] = {i, k};
+                const double delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
+                // Skip if no improvement
+                if (delta >= 0) continue;
 
-                // If delta is negative, the new tour is shorter (improvement)
-                if (delta < 0)
-                {
-                    // Reverse the segment between i and k to apply the improvement
-                    REVERSE_ARRAY(tour, i, k);
+                // Apply the improvement
+                *cost += delta;
+                compute_n_opt_move(2, tour, edge_to_remove);
+                improved = true;
 
-                    // Update the overall tour cost.
-                    *cost += delta;
-                    improved = true;
-                    found = 1;
-                    break; // Break out of the inner loop to restart with the updated tour
-                }
+                // Break inner loop - restart with new tour
+                break;
             }
-            if (found)
+            if (improved)
                 break; // Break out of the outer loop as well to restart the process
         }
     }

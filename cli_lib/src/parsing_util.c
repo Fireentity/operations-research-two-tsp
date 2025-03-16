@@ -115,6 +115,9 @@ ParsingResult parse_flags(CmdOptions *cmd_options,
         }
         if (result == PARSE_SUCCESS) {
             SWAP(local_flags[parsed_flags_count], local_flags[i - 1]);
+        if (result == PARSE_SUCCESS)
+        {
+            //swap_int(local_flags[parsed_flags_count], local_flags[i - 1]);
             parsed_flags_count++;
         } else {
             return result;
