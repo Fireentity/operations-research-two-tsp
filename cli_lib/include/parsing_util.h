@@ -4,29 +4,71 @@
 #include <stdbool.h>
 #include <parsing_result.h>
 
+/**
+ * @file parsing_util.h
+ * @brief Utility functions for command line argument parsing.
+ */
+
+/**
+ * @brief Forward declaration of Flag.
+ */
 typedef struct Flag Flag;
 
+/**
+ * @brief Forward declaration of CmdOptions.
+ */
 typedef struct CmdOptions CmdOptions;
 
+/**
+ * @brief Parses an unsigned integer from a string.
+ *
+ * @param arg String containing the unsigned integer.
+ * @param parsed Pointer to store the parsed unsigned integer.
+ * @return ParsingResult outcome of the parsing.
+ */
 ParsingResult parse_unsigned_int(const char* arg, unsigned int* parsed);
+
+/**
+ * @brief Parses an integer from a string.
+ *
+ * @param arg String containing the integer.
+ * @param parsed Pointer to store the parsed integer.
+ * @return ParsingResult outcome of the parsing.
+ */
 ParsingResult parse_int(const char* arg, int* parsed);
+
+/**
+ * @brief Parses a floating point number from a string.
+ *
+ * @param arg String containing the float.
+ * @param parsed Pointer to store the parsed float.
+ * @return ParsingResult outcome of the parsing.
+ */
 ParsingResult parse_float(const char* arg, float* parsed);
+
+/**
+ * @brief Parses a boolean value from a string.
+ *
+ * @param arg String containing the boolean.
+ * @param parsed Pointer to store the parsed boolean.
+ * @return ParsingResult outcome of the parsing.
+ */
 ParsingResult parse_bool(const char* arg, bool* parsed);
-ParsingResult parse_flags_v2(CmdOptions* cmd_options,
-                             const Flag** tsp_flags,
-                             int number_of_flags,
-                             int argc,
-                             const char** argv);
 
+/**
+ * @brief Parses command line flags.
+ *
+ * @param cmd_options Pointer to the command options.
+ * @param tsp_flags Array of pointers to flags.
+ * @param number_of_flags Number of flags in the array.
+ * @param argc Argument count.
+ * @param argv Array of argument strings.
+ * @return ParsingResult outcome of the parsing.
+ */
 ParsingResult parse_flags(CmdOptions* cmd_options,
-                 const Flag** tsp_flags,
-                 int number_of_flags,
-                 int argc,
-                 const char** argv);
-
-#define PARSING_ABORT(result) do { \
-    printf("Command line parsing, reason : %s\n", parsing_result_to_string(result)); \
-    exit(EXIT_FAILURE); \
-} while(0)
+                          const Flag** tsp_flags,
+                          int number_of_flags,
+                          int argc,
+                          const char** argv);
 
 #endif //PARSING_UTIL_H

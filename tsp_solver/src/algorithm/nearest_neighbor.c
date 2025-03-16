@@ -14,7 +14,6 @@ union TspExtendedAlgorithms
     NearestNeighbor* nearest_neighbor;
 };
 
-
 static void two_opt(int* tour,
                     int number_of_nodes,
                     const double* edge_cost_array,
@@ -66,16 +65,16 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 const TspAlgorithm* init_nearest_neighbor(const double time_limit)
 {
     const NearestNeighbor nearest_neighbor = {
-        .time_limit = time_limit
+            .time_limit = time_limit
     };
 
     const TspExtendedAlgorithms extended_algorithms = {
-        .nearest_neighbor = malloc_from_stack(&nearest_neighbor, sizeof(nearest_neighbor))
+            .nearest_neighbor = malloc_from_stack(&nearest_neighbor, sizeof(nearest_neighbor))
     };
 
     const TspAlgorithm tsp_algorithm = {
-        .solve = solve,
-        .extended_algorithms = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
+            .solve = solve,
+            .extended_algorithms = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };
 
     return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
@@ -155,7 +154,7 @@ static void two_opt(int* tour,
 
                 // Apply the improvement
                 *cost += delta;
-                compute_n_opt_move(2, tour, edge_to_remove);
+                compute_n_opt_move(2, tour, edge_to_remove, number_of_nodes);
                 improved = true;
 
                 // Break inner loop - restart with new tour

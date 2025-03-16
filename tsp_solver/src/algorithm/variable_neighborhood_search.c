@@ -53,7 +53,7 @@ static void two_opt(const int starting_node,
                 // Update the tour cost with the improvement
                 *cost += delta;
                 // Apply the two-opt move to modify the tour
-                compute_n_opt_move(2, tour, edge_to_remove);
+                compute_n_opt_move(2, tour, edge_to_remove, number_of_nodes);
                 improved = true;
 
                 // Break the inner loop to restart the search with the updated tour

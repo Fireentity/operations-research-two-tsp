@@ -22,9 +22,9 @@ double compute_cost(const TspSolution* solution)
 {
     const TspInstance* instance = solution->state->instance;
     return calculate_tour_cost(
-        solution->state->tour,
-        instance->get_number_of_nodes(instance),
-        instance->get_edge_cost_array(instance)
+            solution->state->tour,
+            instance->get_number_of_nodes(instance),
+            instance->get_edge_cost_array(instance)
     );
 }
 
@@ -105,16 +105,16 @@ TspSolution* init_solution(const TspInstance* instance)
     int* tour = init_tour(number_of_nodes);
 
     const TspSolutionState state = {
-        .cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance)),
-        .tour = tour,
-        .instance = instance
+            .cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance)),
+            .tour = tour,
+            .instance = instance
     };
     const TspSolution solution = {
-        .free = free_this,
-        .is_feasible = is_feasible,
-        .solve = solve,
-        .get_tour = get_tour,
-        .state = malloc_from_stack(&state, sizeof(state))
+            .free = free_this,
+            .is_feasible = is_feasible,
+            .solve = solve,
+            .get_tour = get_tour,
+            .state = malloc_from_stack(&state, sizeof(state))
     };
     return malloc_from_stack(&solution, sizeof(solution));
 }

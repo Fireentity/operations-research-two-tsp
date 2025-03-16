@@ -6,7 +6,7 @@
 
 void plot_tour(const int *tour, const int number_of_nodes, const Node* nodes, const char *output_name) {
     if (!output_name) {
-        output_name = "tsp_solution.png"; // Nome di default
+        output_name = "tsp_solution.png"; // Default name
     }
 
     FILE *gp = popen("gnuplot", "w");

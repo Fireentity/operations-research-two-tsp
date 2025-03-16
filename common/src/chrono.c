@@ -5,6 +5,7 @@
 
 double second()
 {
+    // On Windows, return processor time in seconds.
     return ((double)clock() / (double)CLK_TCK);
 }
 
@@ -23,12 +24,14 @@ static double myWallTime()
     {
         mach_timebase_info_data_t timeBase;
         mach_timebase_info(&timeBase);
+        // Compute conversion factor from mach_absolute_time units to seconds.
         timeConvert = (double)timeBase.numer / (double)timeBase.denom / 1000000000.0;
     }
     return mach_absolute_time() * timeConvert;
 #else
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
+    // Convert timespec (seconds and nanoseconds) to seconds.
     return (double)ts.tv_sec + 1.0e-9 * ((double)ts.tv_nsec);
 #endif // __APPLE__
 }

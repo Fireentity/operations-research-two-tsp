@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
+# tsp_solver/CMakeLists.txt
 project(tsp_solver)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  ")
 
 set(TSP_SOLVER_SOURCES
         src/main.c
@@ -12,9 +10,5 @@ set(TSP_SOLVER_SOURCES
 )
 
 add_executable(tsp_solver ${TSP_SOLVER_SOURCES})
-target_include_directories(tsp_solver PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/util
-)
+target_include_directories(tsp_solver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms ${CMAKE_CURRENT_SOURCE_DIR}/include/util)
 target_link_libraries(tsp_solver PRIVATE cli_lib tsp_algo_lib common m)

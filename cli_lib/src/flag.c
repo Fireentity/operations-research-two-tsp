@@ -24,9 +24,11 @@ static ParsingResult parse(const Flag* flag,
                     const char** argv,
                     unsigned int* index)
 {
-    if (strcasecmp(flag->state->label, argv[*index]) != 0) return PARSE_NON_MATCHING_LABEL;
+    if (strcasecmp(flag->state->label, argv[*index]) != 0)
+        return PARSE_NON_MATCHING_LABEL;
     const ParsingResult result = flag->state->parse_function(cmd_options, argv+*index);
-    if (result == PARSE_SUCCESS) *index += flag->state->number_of_params;
+    if (result == PARSE_SUCCESS)
+        *index += flag->state->number_of_params;
     return result;
 }
 

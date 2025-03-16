@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Checks if the given pointer is not NULL.
+ *
+ * If the pointer is NULL, prints an error and exits.
+ *
+ * @param ptr Pointer to check.
+ */
 static inline void check_alloc(const void* ptr)
 {
     if (!ptr)
@@ -14,6 +21,13 @@ static inline void check_alloc(const void* ptr)
     }
 }
 
+/**
+ * @brief Checks the FILE pointer returned by popen.
+ *
+ * If the pointer is NULL, prints an error and exits.
+ *
+ * @param gp FILE pointer returned by popen.
+ */
 static inline void check_popen(FILE* gp)
 {
     if (!gp)
@@ -23,6 +37,13 @@ static inline void check_popen(FILE* gp)
     }
 }
 
+/**
+ * @brief Checks the status returned by pclose.
+ *
+ * If the status equals -1, prints an error and exits.
+ *
+ * @param status Status returned by pclose.
+ */
 static inline void check_pclose(const int status)
 {
     if (status == -1)
@@ -32,6 +53,15 @@ static inline void check_pclose(const int status)
     }
 }
 
+/**
+ * @brief Allocates memory and copies an object from the stack.
+ *
+ * Allocates memory of given size, checks allocation, and copies the object.
+ *
+ * @param obj Pointer to the source object.
+ * @param size Size of the object in bytes.
+ * @return Pointer to the newly allocated memory containing the copied object.
+ */
 static inline void *malloc_from_stack(const void *obj, const size_t size) {
     void *ptr = malloc(size);
     check_alloc(ptr);
@@ -39,6 +69,17 @@ static inline void *malloc_from_stack(const void *obj, const size_t size) {
     return ptr;
 }
 
+/**
+ * @brief Compares two arrays for equality.
+ *
+ * Compares two arrays byte-by-byte.
+ *
+ * @param arr1 Pointer to the first array.
+ * @param arr2 Pointer to the second array.
+ * @param size Number of elements in each array.
+ * @param elem_size Size of each element in bytes.
+ * @return true if arrays are equal, false otherwise.
+ */
 static inline bool arrays_equal(const void *arr1, const void *arr2, const size_t size, const size_t elem_size) {
     return memcmp(arr1, arr2, size * elem_size) == 0;
 }
@@ -71,6 +112,14 @@ static inline void rand_k_non_contiguous(const int low, const int high, const in
         result[i] = low + s[i] + i;
 }
 
+/**
+ * @brief Macro to define a swap function for arrays.
+ *
+ * Generates an inline function swap_suffix that swaps two elements in an array.
+ *
+ * @param type Data type of the array elements.
+ * @param suffix Suffix for the generated function name.
+ */
 #define DEFINE_SWAP(type, suffix)                                   \
 static inline void swap_##suffix(type arr[], size_t i, size_t j) {  \
     type tmp = arr[i];                                              \
@@ -83,6 +132,15 @@ DEFINE_SWAP(double, double);
 DEFINE_SWAP(char, char);
 DEFINE_SWAP(float, float);
 
+/**
+ * @brief Macro to define a function to reverse a subarray.
+ *
+ * Generates an inline function reverse_array_suffix that reverses elements in an array
+ * between the indices start and end.
+ *
+ * @param type Data type of the array elements.
+ * @param suffix Suffix for the generated function name.
+ */
 #define DEFINE_REVERSE_ARRAY(type, suffix)                                          \
 static inline void reverse_array_##suffix(type arr[], size_t start, size_t end) {   \
     while (start < end) {                                                           \
@@ -98,14 +156,22 @@ DEFINE_REVERSE_ARRAY(int, int)
 DEFINE_REVERSE_ARRAY(double, double)
 DEFINE_REVERSE_ARRAY(float, float)
 
+/**
+ * @brief Macro to define a function to shuffle an array.
+ *
+ * Generates an inline function shuffle_suffix_array that randomly shuffles elements in an array.
+ *
+ * @param type Data type of the array elements.
+ * @param suffix Suffix for the generated function name.
+ */
 #define DEFINE_SHUFFLE_ARRAY(type, suffix)                     \
-static inline void shuffle_##suffix##_array(type arr[], size_t n) {\
+static inline void shuffle_##suffix##_array(type arr[], size_t n) {  \
     if(n < 2) return;                                          \
-        for (size_t i = n - 1; i > 0; i--) {                         \
-            size_t j = rand() % (i + 1);                             \
-            type tmp = arr[i];                                     \
-            arr[i] = arr[j];                                       \
-            arr[j] = tmp;                                          \
+    for (size_t i = n - 1; i > 0; i--) {                         \
+        size_t j = rand() % (i + 1);                             \
+        type tmp = arr[i];                                     \
+        arr[i] = arr[j];                                       \
+        arr[j] = tmp;                                          \
     }                                                          \
 }
 
@@ -113,14 +179,23 @@ DEFINE_SHUFFLE_ARRAY(int, int)
 DEFINE_SHUFFLE_ARRAY(double, double)
 DEFINE_SHUFFLE_ARRAY(float, float)
 
+/**
+ * @brief Macro to define a function that counts elements satisfying a predicate.
+ *
+ * Generates an inline function count_suffix_if that iterates through an array and
+ * counts the number of elements for which the predicate returns true.
+ *
+ * @param type Data type of the array elements.
+ * @param suffix Suffix for the generated function name.
+ */
 #define DEFINE_COUNT_IF(type, suffix)                               \
 static inline int count_##suffix##_if(const type arr[], size_t len,     \
     bool (*predicate)(const type* arr, const type)) {   \
             int count = 0;                                                  \
             for (size_t i = 0; i < len; i++) {                                \
-            if (predicate(arr, arr[i])) count++;                             \
-        }                                                               \
-    return count;                                                   \
+                if (predicate(arr, arr[i])) count++;                          \
+            }                                                               \
+        return count;                                                   \
 }
 
 DEFINE_COUNT_IF(int, int)
@@ -128,11 +203,20 @@ DEFINE_COUNT_IF(double, double)
 DEFINE_COUNT_IF(float, float)
 DEFINE_COUNT_IF(char, char)
 
+/**
+ * @brief Executes an action after a specified time interval.
+ *
+ * If the time elapsed since start_time is at least seconds, prints a message and executes the action.
+ *
+ * @param start_time Starting time.
+ * @param seconds Time interval threshold in seconds.
+ * @param action Action to execute when the interval is reached.
+ */
 #define EXECUTE_AFTER(start_time, seconds, action) do { \
     if (second() - start_time >= seconds) {  \
         printf("aaaaaaaaa");\
         action;                                         \
     }                                                   \
 } while (0)
-#endif //C_UTIL_H
 
+#endif //C_UTIL_H
