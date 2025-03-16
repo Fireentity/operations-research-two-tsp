@@ -3,8 +3,6 @@
 #include <flag.h>
 #include <parsing_result.h>
 #include <parsing_util.h>
-#include <stdlib.h>
-#include <string.h>
 
 CmdOptions* init_cmd_options()
 {
@@ -14,6 +12,7 @@ CmdOptions* init_cmd_options()
                     .x_square = 0,
                     .y_square = 0,
             },
+
             .help = false,
             .number_of_nodes = 0,
             .seed = 0,
@@ -22,52 +21,143 @@ CmdOptions* init_cmd_options()
     return malloc_from_stack(&cmd_options, sizeof(cmd_options));
 }
 
-ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const int argc)
-{
-    const Flag* tsp_flags[] = {
-            init_flag("--nodes", 1, set_nodes, true),
-            init_flag("--seed", 1, set_seed, false),
-            init_flag("--x-square", 1, set_x_square, true),
-            init_flag("--y-square", 1, set_y_square, true),
-            init_flag("--square-side", 1, set_square_side, true),
-            init_flag("--seconds", 1, set_time_limit, false),
-            init_flag("--help", 0, set_help, false)
-    };
-    return parse_flags(cmd_options, tsp_flags, 7, argc, argv);
-}
-
+/**
+ * @brief Sets the number of nodes in the command options.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
 ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg)
 {
     return parse_unsigned_int(*(arg+1), &cmd_options->number_of_nodes);
 }
 
+/**
+ * @brief Sets the seed value for random number generation.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
 ParsingResult set_seed(CmdOptions* cmd_options, const char** arg)
 {
     return parse_int(*(arg+1), &cmd_options->seed);
 }
 
+/**
+ * @brief Sets the x-coordinate of the generation area.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
 ParsingResult set_x_square(CmdOptions* cmd_options, const char** arg)
 {
     return parse_int(*(arg+1), &cmd_options->generation_area.x_square);
 }
 
+/**
+ * @brief Sets the y-coordinate of the generation area.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
 ParsingResult set_y_square(CmdOptions* cmd_options, const char** arg)
 {
     return parse_int(*(arg+1), &cmd_options->generation_area.y_square);
 }
 
+/**
+ * @brief Sets the side length of the generation area.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
 ParsingResult set_square_side(CmdOptions* cmd_options, const char** arg)
 {
     return parse_unsigned_int(*(arg+1), &cmd_options->generation_area.square_side);
 }
 
+/**
+ * @brief Sets the help flag in the command options.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
 ParsingResult set_help(CmdOptions* cmd_options, const char** arg)
 {
     cmd_options->help = true;
     return PARSE_SUCCESS;
 }
 
+/**
+ * @brief Enables the Variable Neighborhood Search (VNS) algorithm.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
+ParsingResult set_vns(CmdOptions* cmd_options, const char** arg)
+{
+    cmd_options->variable_neighborhood_search = true;
+    return PARSE_SUCCESS;
+}
+
+/**
+ * @brief Sets the number of kick repetitions for the VNS algorithm.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
+ParsingResult set_kick_repetitions(CmdOptions* cmd_options, const char** arg)
+{
+    return parse_int(*(arg+1), &cmd_options->kick_repetitions);
+}
+
+/**
+ * @brief Sets the time limit for the TSP algorithm.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
 ParsingResult set_time_limit(CmdOptions* cmd_options, const char** arg)
 {
     return parse_unsigned_int(*(arg+1), &cmd_options->time_limit);
 }
+
+/**
+ * @brief Enables the Nearest Neighbor heuristic for the TSP algorithm.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
+ParsingResult set_nearest_neighbor(CmdOptions* cmd_options, const char** arg)
+{
+    cmd_options->nearest_neighbor = true;
+    return PARSE_SUCCESS;
+}
+
+ParsingResult parse_cli(CmdOptions* cmd_options, const char** const argv, const int argc)
+{
+    const Flag* tsp_flags[] = {
+        init_flag("--nodes", 1, set_nodes, true),
+        init_flag("--seed", 1, set_seed, false),
+        init_flag("--x-square", 1, set_x_square, true),
+        init_flag("--y-square", 1, set_y_square, true),
+        init_flag("--square-side", 1, set_square_side, true),
+        init_flag("--seconds", 1, set_time_limit, false),
+        init_flag("--help", 0, set_help, false),
+        init_flag("--vns", 0, set_vns, false),
+        init_flag("--kick-repetitions", 1, set_kick_repetitions, false),
+        init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false)
+};
+    return parse_flags(cmd_options, tsp_flags, sizeof(tsp_flags)/sizeof(tsp_flags[0]), argc, argv);
+}
+

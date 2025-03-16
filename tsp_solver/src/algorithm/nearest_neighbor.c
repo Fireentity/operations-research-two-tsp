@@ -2,82 +2,24 @@
 #include <nearest_neighbor.h>
 #include <chrono.h>
 #include <float.h>
+#include <plot_util.h>
 #include <tsp_math_util.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <time_limiter.h>
 
 union TspExtendedAlgorithms
 {
     NearestNeighbor* nearest_neighbor;
 };
 
-static void two_opt(int* tour,
-                    int number_of_nodes,
-                    const double* edge_cost_array,
-                    double* cost,
-                    double time_limit);
-
-static void apply_nearest_neighbor(int starting_node,
-                                   int* tour,
-                                   int number_of_nodes,
-                                   const double* edge_cost_array,
-                                   double* cost);
-
-static void solve(const TspAlgorithm* tsp_algorithm,
-                  int* tour,
-                  const int number_of_nodes,
-                  const double* edge_cost_array,
-                  double* cost)
+static void free_this(const TspAlgorithm* self)
 {
-    const NearestNeighbor* nearest_neighbor = tsp_algorithm->extended_algorithms->nearest_neighbor;
-    double best_solution_cost = DBL_MAX;
-    const double time_limit = nearest_neighbor->time_limit;
-    const double start = second();
-
-    int starting_nodes[number_of_nodes];
-    memcpy(starting_nodes, tour, sizeof(int) * number_of_nodes);
-    shuffle_int_array(starting_nodes, number_of_nodes);
-
-    int incumbent_starting_node = starting_nodes[0];
-
-    int iteration = 0;
-    do
-    {
-        apply_nearest_neighbor(starting_nodes[iteration], tour, number_of_nodes, edge_cost_array, cost);
-        two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limit);
-
-        if (*cost < best_solution_cost)
-        {
-            incumbent_starting_node = tour[0];
-            best_solution_cost = *cost;
-        }
-        iteration++;
-    }
-    while (start - second() < time_limit && iteration < number_of_nodes);
-
-    apply_nearest_neighbor(incumbent_starting_node, tour, number_of_nodes, edge_cost_array, cost);
-    two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limit);
-}
-
-const TspAlgorithm* init_nearest_neighbor(const double time_limit)
-{
-    const NearestNeighbor nearest_neighbor = {
-            .time_limit = time_limit
-    };
-
-    const TspExtendedAlgorithms extended_algorithms = {
-            .nearest_neighbor = malloc_from_stack(&nearest_neighbor, sizeof(nearest_neighbor))
-    };
-
-    const TspAlgorithm tsp_algorithm = {
-            .solve = solve,
-            .extended_algorithms = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
-    };
-
-    return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
+    free(self->extended_algorithms->nearest_neighbor);
+    free((void*)self);
 }
 
 static void apply_nearest_neighbor(const int starting_node,
@@ -127,41 +69,129 @@ static void apply_nearest_neighbor(const int starting_node,
     *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
 }
 
-static void two_opt(int* tour,
-                    const int number_of_nodes,
-                    const double* edge_cost_array,
-                    double* cost,
-                    const double time_limit)
+/**
+ * @brief Performs a two-opt optimization on the tour.
+ *
+ * Iteratively examines pairs of edges to find a two-opt move that reduces the tour cost.
+ * When a beneficial move is found, the tour is updated and the process restarts.
+ *
+ * @param tour            Array representing the current tour.
+ * @param number_of_nodes Total number of nodes in the tour.
+ * @param edge_cost_array Flattened 2D array containing edge costs.
+ * @param cost            Pointer to the current tour cost to be updated.
+ * @param time_limiter    Maximum allowed time for optimization, in seconds. If exceeded, the function terminates early.
+ */
+static double two_opt(int* tour,
+                      const int number_of_nodes,
+                      const double* edge_cost_array,
+                      double* cost,
+                      const TimeLimiter* time_limiter)
 {
-    const double start_time = second();
-    bool improved = true;
+    // Iterate over possible starting indices for a two-opt move
+    for (int i = 1; i < number_of_nodes - 1; i++)
+    {
+        if (time_limiter->is_time_over(time_limiter))
+        {
+            return 1;
+        }
 
-    // Continue iterating until no improvement is possible
+        // Iterate over possible end indices for the segment to be reversed
+        for (int k = i + 2; k < number_of_nodes; k++)
+        {
+            // Define the endpoints of the segment to remove
+            const int edge_to_remove[] = {i, k};
+            // Compute the cost difference for the proposed two-opt move
+            const double delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
+            // If the move does not improve the tour cost, skip it
+            if (delta >= 0)
+                continue;
+
+            // Update the tour cost with the improvement
+            *cost += delta;
+            // Apply the two-opt move to modify the tour
+            compute_n_opt_move(2, tour, edge_to_remove, number_of_nodes);
+            return delta;
+        }
+    }
+
+    return 1;
+}
+
+static void optimize_with_two_opt(int* tour,
+                          const int number_of_nodes,
+                          const double* edge_cost_array,
+                          double* cost,
+                          const TimeLimiter* time_limiter)
+{
+    bool improved = true; // Flag to track if any improvement was made
+
+    // Continue iterating until no further improvements are possible
     while (improved)
     {
         improved = false;
-        EXECUTE_AFTER(start_time, time_limit, return);
-        for (int i = 1; i < number_of_nodes - 1; i++)
+        improved = two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limiter) < 0;
+
+        if (time_limiter->is_time_over(time_limiter))
         {
-            // Iterate over possible end indices for the segment
-            for (int k = i + 1; k < number_of_nodes; k++)
-            {
-
-                const int edge_to_remove[] = {i, k};
-                const double delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
-                // Skip if no improvement
-                if (delta >= 0) continue;
-
-                // Apply the improvement
-                *cost += delta;
-                compute_n_opt_move(2, tour, edge_to_remove, number_of_nodes);
-                improved = true;
-
-                // Break inner loop - restart with new tour
-                break;
-            }
-            if (improved)
-                break; // Break out of the outer loop as well to restart the process
+            return;
         }
     }
+}
+
+static void solve(const TspAlgorithm* tsp_algorithm,
+                  int* tour,
+                  const int number_of_nodes,
+                  const double* edge_cost_array,
+                  double* cost)
+{
+    const NearestNeighbor* nearest_neighbor = tsp_algorithm->extended_algorithms->nearest_neighbor;
+    double best_solution_cost = DBL_MAX;
+    const double time_limit = nearest_neighbor->time_limit;
+    const TimeLimiter* time_limiter = init_time_limiter(time_limit);
+    time_limiter->start(time_limiter);
+
+    int starting_nodes[number_of_nodes];
+    memcpy(starting_nodes, tour, sizeof(int) * number_of_nodes);
+    shuffle_int_array(starting_nodes, number_of_nodes);
+
+    int incumbent_starting_node = starting_nodes[0];
+
+    int iteration = 0;
+    do
+    {
+        apply_nearest_neighbor(starting_nodes[iteration], tour, number_of_nodes, edge_cost_array, cost);
+        optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limiter);
+
+        if (*cost < best_solution_cost)
+        {
+            incumbent_starting_node = tour[0];
+            best_solution_cost = *cost;
+        }
+        iteration++;
+    }
+    while (time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes);
+
+    apply_nearest_neighbor(incumbent_starting_node, tour, number_of_nodes, edge_cost_array, cost);
+    optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limiter);
+
+    time_limiter->free(time_limiter);
+}
+
+const TspAlgorithm* init_nearest_neighbor(const double time_limit)
+{
+    const NearestNeighbor nearest_neighbor = {
+        .time_limit = time_limit
+    };
+
+    const TspExtendedAlgorithms extended_algorithms = {
+        .nearest_neighbor = malloc_from_stack(&nearest_neighbor, sizeof(nearest_neighbor))
+    };
+
+    const TspAlgorithm tsp_algorithm = {
+        .solve = solve,
+        .free = free_this,
+        .extended_algorithms = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
+    };
+
+    return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
 }

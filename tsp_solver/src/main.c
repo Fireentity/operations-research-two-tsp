@@ -5,6 +5,7 @@
 #include <tsp_solution.h>
 #include <nearest_neighbor.h>
 #include <plot_util.h>
+#include <variable_neighborhood_search.h>
 
 #define CONCAT(a, b) a ## b
 
@@ -64,15 +65,32 @@ int main(const int argc, const char* argv[])
                                                            cmd_options->seed,
                                                            tsp_generation_area);
     const TspSolution* solution = init_solution(instance);
-    const TspAlgorithm* nearest_neighbor = init_nearest_neighbor(cmd_options->time_limit);
-    const FeasibilityResult result = solution->solve(solution, nearest_neighbor);
+    const TspAlgorithm* algorithm;
+
+    //TODO replace this with polymorphism
+    if (cmd_options->variable_neighborhood_search)
+    {
+        algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->time_limit);
+    } else if (cmd_options->nearest_neighbor)
+    {
+        algorithm = init_nearest_neighbor(cmd_options->time_limit);
+    } else
+    {
+        return 1;
+    }
+
+    const FeasibilityResult result = solution->solve(solution, algorithm);
 
     plot_tour(solution->get_tour(solution),
               instance->get_number_of_nodes(instance),
               instance->get_nodes(instance),
               "plot.png");
 
-    printf("%s\n", feasibility_result_to_string(parsing_result));
+    algorithm->free(algorithm);
+    solution->free(solution);
+    instance->free(instance);
+
+    printf("%s\n", feasibility_result_to_string(result));
 
     return 0;
 }

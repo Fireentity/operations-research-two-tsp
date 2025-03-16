@@ -38,21 +38,27 @@ struct TspInstance
      * @param self Pointer to the TSP instance.
      * @return Pointer to the edge cost array.
      */
-    const double* (*get_edge_cost_array)(const TspInstance* self);
+    const double* (*const get_edge_cost_array)(const TspInstance* self);
     /**
      * @brief Returns the number of nodes in the instance.
      *
      * @param self Pointer to the TSP instance.
      * @return Number of nodes.
      */
-    int (*get_number_of_nodes)(const TspInstance* self);
+    int (*const get_number_of_nodes)(const TspInstance* self);
     /**
      * @brief Retrieves the array of nodes.
      *
      * @param self Pointer to the TSP instance.
      * @return Pointer to the nodes array.
      */
-    const Node* (*get_nodes)(const TspInstance* self);
+    const Node* (*const get_nodes)(const TspInstance* self);
+    /**
+     * @brief Frees the memory allocated for the TSP instance.
+     *
+     * @param self Pointer to the TSP instance to be freed.
+     */
+    void (*const free)(const TspInstance* self);
 };
 
 /**

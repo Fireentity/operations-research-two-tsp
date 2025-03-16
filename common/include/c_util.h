@@ -70,19 +70,32 @@ static inline void *malloc_from_stack(const void *obj, const size_t size) {
 }
 
 /**
- * @brief Compares two arrays for equality.
+ * @brief Macro to define an arrays equality function for arrays.
  *
- * Compares two arrays byte-by-byte.
+ * Generates an inline function arrays_equal_suffix that compares two arrays for equality
+ * by checking each element individually.
  *
- * @param arr1 Pointer to the first array.
- * @param arr2 Pointer to the second array.
- * @param size Number of elements in each array.
- * @param elem_size Size of each element in bytes.
- * @return true if arrays are equal, false otherwise.
+ * @param type Data type of the array elements.
+ * @param suffix Suffix for the generated function name.
  */
-static inline bool arrays_equal(const void *arr1, const void *arr2, const size_t size, const size_t elem_size) {
-    return memcmp(arr1, arr2, size * elem_size) == 0;
+#define DEFINE_ARRAYS_EQUAL(type, suffix, check)                        \
+static inline bool suffix##_arrays_equal(const type arr1[], const type arr2[], size_t size) { \
+    for (size_t i = 0; i < size; i++) {                                   \
+        type a = arr1[i];                                               \
+        type b = arr2[i];                                               \
+        if (!(check)) {                                                 \
+            return false;                                               \
+        }                                                               \
+    }                                                                   \
+    return true;                                                        \
 }
+
+
+DEFINE_ARRAYS_EQUAL(int, int, a==b);
+DEFINE_ARRAYS_EQUAL(long, long, a==b);
+DEFINE_ARRAYS_EQUAL(float, float, a==b);
+DEFINE_ARRAYS_EQUAL(double, double, a==b);
+
 
 /**
  * @brief Extracts k non-contiguous numbers from a given range.

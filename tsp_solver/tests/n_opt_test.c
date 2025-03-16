@@ -6,6 +6,8 @@
 
 #include "c_util.h"
 
+DEFINE_ARRAYS_EQUAL(Node, node, a.x == b.x && a.y == b.y);
+
 void test_case3()
 {
     const Node nodes[] = {
@@ -29,7 +31,7 @@ void test_case3()
     compute_n_opt_move(number_of_segments, tour, segments, number_of_nodes);
     const double delta_result = 2 * sqrt(2) - 2;
 
-    assert(arrays_equal(tour, result_tour,tour_size, sizeof(tour[0])));
+    assert(node_arrays_equal(tour, result_tour,tour_size));
     assert(delta == delta_result);
 
     free(edge_cost_array);
@@ -58,7 +60,7 @@ void test_case4()
     compute_n_opt_move(number_of_segments, tour, segments, number_of_nodes);
     const double delta_result = 2 * sqrt(2) - 2;
 
-    assert(arrays_equal(tour, result_tour,tour_size, sizeof(tour[0])));
+    assert(node_arrays_equal(tour, result_tour,tour_size));
     assert(delta == delta_result);
 
     free(edge_cost_array);
@@ -85,7 +87,7 @@ void test_case5()
     compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
     const double delta_result = 2 * sqrt(2) - 2;
 
-    assert(arrays_equal(tour, result_tour,tour_size, sizeof(tour[0])));
+    assert(node_arrays_equal(tour, result_tour,tour_size));
     assert(delta == delta_result);
 
     free(edge_cost_array);
@@ -112,7 +114,7 @@ void test_case1()
     compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
     const double delta_result = 2 * sqrt(2) - 2;
 
-    assert(arrays_equal(tour, result_tour,tour_size, sizeof(tour[0])));
+    assert(node_arrays_equal(tour, result_tour,tour_size));
     assert(delta == delta_result);
 
     free(edge_cost_array);
@@ -143,7 +145,7 @@ void test_case2()
     compute_n_opt_move(number_of_segments, tour, edges_to_remove,number_of_nodes);
     const double delta_result = 2 * sqrt(5);
 
-    assert(arrays_equal(tour, result_tour,tour_size, sizeof(tour[0])));
+    assert(node_arrays_equal(tour, result_tour,tour_size));
     assert(delta == delta_result);
 
     free(edge_cost_array);

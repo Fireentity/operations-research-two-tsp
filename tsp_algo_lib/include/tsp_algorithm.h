@@ -28,11 +28,17 @@ struct TspAlgorithm
      * @param edge_cost_array Array of edge costs.
      * @param cost Pointer to store the total cost.
      */
-    void (*solve)(const TspAlgorithm* tsp_algorithm,
+    void (*const solve)(const TspAlgorithm* tsp_algorithm,
                   int* tour,
                   int number_of_nodes,
                   const double* edge_cost_array,
                   double* cost);
+    /**
+     * @brief Frees the memory allocated for the TSP algorithm instance.
+     *
+     * @param self Pointer to the TSP algorithm instance to be freed.
+     */
+    void (*const free)(const TspAlgorithm* self);
 };
 
 #endif //TSP_ALGORITHM_H

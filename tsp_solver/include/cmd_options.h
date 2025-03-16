@@ -24,6 +24,10 @@ struct CmdOptions
     int seed;                     /**< Seed for random number generation. */
     Rectangle generation_area;    /**< Area parameters for node generation. */
     bool help;                    /**< Flag to display help message. */
+    bool variable_neighborhood_search;
+    bool nearest_neighbor;
+    int kick_repetitions;
+    unsigned int timer_limit;
     unsigned int time_limit;      /**< Time limit for algorithm execution. */
 };
 
@@ -43,68 +47,5 @@ CmdOptions* init_cmd_options();
  * @return ParsingResult indicating success or failure.
  */
 ParsingResult parse_cli(CmdOptions* cmd_options, const char** argv, int argc);
-
-/**
- * @brief Sets the number of nodes in the command options.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param arg Array of argument strings.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult set_nodes(CmdOptions* cmd_options, const char** arg);
-
-/**
- * @brief Sets the seed value for random number generation.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param arg Array of argument strings.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult set_seed(CmdOptions* cmd_options, const char** arg);
-
-/**
- * @brief Sets the x-coordinate of the generation area.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param arg Array of argument strings.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult set_x_square(CmdOptions* cmd_options, const char** arg);
-
-/**
- * @brief Sets the y-coordinate of the generation area.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param arg Array of argument strings.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult set_y_square(CmdOptions* cmd_options, const char** arg);
-
-/**
- * @brief Sets the side length of the generation area.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param arg Array of argument strings.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult set_square_side(CmdOptions* cmd_options, const char** arg);
-
-/**
- * @brief Sets the help flag in the command options.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param arg Array of argument strings.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult set_help(CmdOptions* cmd_options, const char** arg);
-
-/**
- * @brief Sets the time limit for the TSP algorithm.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param arg Array of argument strings.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult set_time_limit(CmdOptions* cmd_options, const char** arg);
 
 #endif //TSP_PARAMS_H
