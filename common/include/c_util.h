@@ -90,7 +90,6 @@ static inline bool suffix##_arrays_equal(const type arr1[], const type arr2[], s
     return true;                                                        \
 }
 
-
 DEFINE_ARRAYS_EQUAL(int, int, a==b);
 DEFINE_ARRAYS_EQUAL(long, long, a==b);
 DEFINE_ARRAYS_EQUAL(float, float, a==b);
@@ -168,6 +167,26 @@ static inline void reverse_array_##suffix(type arr[], size_t start, size_t end) 
 DEFINE_REVERSE_ARRAY(int, int)
 DEFINE_REVERSE_ARRAY(double, double)
 DEFINE_REVERSE_ARRAY(float, float)
+
+/**
+ * @brief Macro to define a function to copy an array.
+ *
+ * Generates an inline function copy_array_suffix that copies elements from a source
+ * array to a destination array for a given number of elements.
+ *
+ * @param type Data type of the array elements.
+ * @param suffix Suffix for the generated function name.
+ */
+#define DEFINE_COPY_ARRAY(type, suffix)                                                       \
+static inline void copy_##suffix##_array(const type src[], type dest[], size_t count) {           \
+    for (size_t i = 0; i < count; i++) {                                                        \
+        dest[i] = src[i];  /* Copy current element from source to destination */              \
+    }                                                                                           \
+}
+
+DEFINE_COPY_ARRAY(int, int)
+DEFINE_COPY_ARRAY(double, double)
+DEFINE_COPY_ARRAY(float, float)
 
 /**
  * @brief Macro to define a function to shuffle an array.

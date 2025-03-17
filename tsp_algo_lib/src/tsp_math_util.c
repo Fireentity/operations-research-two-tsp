@@ -85,7 +85,7 @@ void compute_n_opt_move(const int number_of_edges_to_remove,
                         const int number_of_nodes)
 {
     // Process each segment except the last one
-    for (int i = 0; i < number_of_edges_to_remove - 1; i += 1)
+    for (int i = 0; i < number_of_edges_to_remove - 1; i++)
     {
         // Identify the start and end nodes of the segment to reverse
         const int start_node = edges_to_remove[i] + 1;
@@ -93,7 +93,7 @@ void compute_n_opt_move(const int number_of_edges_to_remove,
 
         // Reverse the segment in the tour between start_node and end_node
         // This effectively inverts the segment's direction in the tour
-        reverse_array_int(tour, tour[start_node], tour[end_node]);
+        reverse_array_int(tour, start_node, end_node);
     }
     tour[number_of_nodes] = tour[0];
 }

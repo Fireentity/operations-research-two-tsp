@@ -26,8 +26,7 @@
                 "\n" \
                 "Other options:\n" \
                 "  -?, --help                 display this help message\n" \
-                "      --version              output version information\n;" \
-
+                "      --version              output version information\n;"
 #define ERROR "Internal error this message should not appear. Report it to the developer."
 #define PARSE_UNKNOWN_ARG "Argument not recognized.\n\nUsage:\n" HELP_MESSAGE
 #define PARSE_USAGE_ERROR HELP_MESSAGE
@@ -63,9 +62,9 @@ int main(const int argc, const char* argv[])
             .x_square = 0,
             .y_square = 0,
         },
-        .nearest_neighbor = true,
-        .variable_neighborhood_search = false,
-        .time_limit = INT_MAX,
+        .nearest_neighbor = false,
+        .variable_neighborhood_search = true,
+        .time_limit = 5,
         .seed = 99,
         .help = false
     };
@@ -88,10 +87,12 @@ int main(const int argc, const char* argv[])
     if (cmd_options->variable_neighborhood_search)
     {
         algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->time_limit);
-    } else if (cmd_options->nearest_neighbor)
+    }
+    else if (cmd_options->nearest_neighbor)
     {
         algorithm = init_nearest_neighbor(cmd_options->time_limit, instance);
-    } else
+    }
+    else
     {
         return 1;
     }

@@ -11,4 +11,6 @@
  */
 #define PLOT_PADDING 2
 
+#define EPSILON 1e-10
+
 #endif //CONSTANTS_H
