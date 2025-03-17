@@ -12,12 +12,17 @@ typedef struct FlagState FlagState;
 /** Forward declaration of Flag. */
 typedef struct Flag Flag;
 
+struct FlagsArray {
+    const Flag** flags;
+    const unsigned int number_of_flags;
+};
+
 /**
  * @brief Represents a flag with its state and operations.
  */
 struct Flag {
     FlagState *state; /**< Pointer to the flag's state. */
-
+    struct FlagsArray children;
     /**
      * @brief Parses the flag from command line arguments.
      *
