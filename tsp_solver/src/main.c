@@ -1,5 +1,6 @@
 #include <cmd_options.h>
 #include <feasibility_result.h>
+#include <limits.h>
 #include <stdio.h>
 #include <tsp_instance.h>
 #include <tsp_solution.h>
@@ -47,13 +48,29 @@ static const char* parsing_messages[] = {
 
 int main(const int argc, const char* argv[])
 {
-    CmdOptions* cmd_options = init_cmd_options();
-    const ParsingResult parsing_result = parse_cli(cmd_options, argv+1, argc);
-    if (parsing_result != PARSE_SUCCESS)
-    {
-        printf("%s",parsing_messages[parsing_result]);
-        return 0;
-    }
+    // CmdOptions* cmd_options = init_cmd_options();
+    // const ParsingResult parsing_result = parse_cli(cmd_options, argv, argc);
+    // if (parsing_result != PARSE_SUCCESS)
+    // {
+    //     printf("%s",parsing_messages[parsing_result]);
+    //     return 0;
+    // }
+
+    CmdOptions options = {
+        .number_of_nodes = 10,
+        .generation_area = {
+            .square_side = 10,
+            .x_square = 0,
+            .y_square = 0,
+        },
+        .nearest_neighbor = true,
+        .variable_neighborhood_search = false,
+        .time_limit = INT_MAX,
+        .seed = 99,
+        .help = false
+    };
+
+    const CmdOptions* cmd_options = &options;
 
     const TspGenerationArea tsp_generation_area = {
         .square_side = cmd_options->generation_area.square_side,
@@ -73,7 +90,7 @@ int main(const int argc, const char* argv[])
         algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->time_limit);
     } else if (cmd_options->nearest_neighbor)
     {
-        algorithm = init_nearest_neighbor(cmd_options->time_limit);
+        algorithm = init_nearest_neighbor(cmd_options->time_limit, instance);
     } else
     {
         return 1;

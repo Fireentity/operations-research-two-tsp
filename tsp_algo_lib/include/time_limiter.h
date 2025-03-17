@@ -1,6 +1,8 @@
 #ifndef TIME_LIMITER_H
 #define TIME_LIMITER_H
 
+#include <stdbool.h>
+
 typedef struct TimeLimiter TimeLimiter;
 
 typedef struct TimeLimiterState TimeLimiterState;

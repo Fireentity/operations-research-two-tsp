@@ -146,7 +146,7 @@ ParsingResult parse_cli(CmdOptions *cmd_options, const char **const argv, const 
             init_flag("--kick-repetitions", 1, set_kick_repetitions, false),
             init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false)
     };
-    ParsingResult result = parse_flags(cmd_options, tsp_flags, sizeof(tsp_flags) / sizeof(tsp_flags[0]), argc, argv);
+    const ParsingResult result = parse_flags(cmd_options, tsp_flags, sizeof(tsp_flags) / sizeof(tsp_flags[0]), argc, argv);
     // TODO free delle flag
     return result;
 }

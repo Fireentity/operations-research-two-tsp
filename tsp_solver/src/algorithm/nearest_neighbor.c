@@ -22,7 +22,7 @@ static void free_this(const TspAlgorithm* self)
     free((void*)self);
 }
 
-static void apply_nearest_neighbor(const int starting_node,
+static void find_nearest_neighbor_tour(const int starting_node,
                                    int* tour,
                                    const int number_of_nodes,
                                    const double* edge_cost_array,
@@ -88,7 +88,7 @@ static double two_opt(int* tour,
                       const TimeLimiter* time_limiter)
 {
     // Iterate over possible starting indices for a two-opt move
-    for (int i = 1; i < number_of_nodes - 1; i++)
+    for (int i = 0; i < number_of_nodes - 1; i++)
     {
         if (time_limiter->is_time_over(time_limiter))
         {
@@ -121,7 +121,8 @@ static void optimize_with_two_opt(int* tour,
                           const int number_of_nodes,
                           const double* edge_cost_array,
                           double* cost,
-                          const TimeLimiter* time_limiter)
+                          const TimeLimiter* time_limiter,
+                          const Node nodes[])
 {
     bool improved = true; // Flag to track if any improvement was made
 
@@ -135,6 +136,9 @@ static void optimize_with_two_opt(int* tour,
         {
             return;
         }
+        printf("insert a char to continue ... ");
+        plot_tour(tour, number_of_nodes, nodes, "plot_test.png");
+        getchar();
     }
 }
 
@@ -159,8 +163,8 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     int iteration = 0;
     do
     {
-        apply_nearest_neighbor(starting_nodes[iteration], tour, number_of_nodes, edge_cost_array, cost);
-        optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limiter);
+        find_nearest_neighbor_tour(starting_nodes[iteration], tour, number_of_nodes, edge_cost_array, cost);
+        optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limiter, nearest_neighbor->instance->get_nodes(nearest_neighbor->instance));
 
         if (*cost < best_solution_cost)
         {
@@ -171,16 +175,17 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     }
     while (time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes);
 
-    apply_nearest_neighbor(incumbent_starting_node, tour, number_of_nodes, edge_cost_array, cost);
-    optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limiter);
+    find_nearest_neighbor_tour(incumbent_starting_node, tour, number_of_nodes, edge_cost_array, cost);
+    optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, cost, time_limiter, nearest_neighbor->instance->get_nodes(nearest_neighbor->instance));
 
     time_limiter->free(time_limiter);
 }
 
-const TspAlgorithm* init_nearest_neighbor(const double time_limit)
+const TspAlgorithm* init_nearest_neighbor(const double time_limit, const TspInstance* instance)
 {
     const NearestNeighbor nearest_neighbor = {
-        .time_limit = time_limit
+        .time_limit = time_limit,
+        .instance = instance
     };
 
     const TspExtendedAlgorithms extended_algorithms = {

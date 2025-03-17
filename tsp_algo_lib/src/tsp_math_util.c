@@ -70,8 +70,8 @@ double compute_n_opt_cost(const int number_of_segments,
     delta += edge_cost_array[tour[start_node] + tour[end_node] * number_of_nodes];
 
     // Add the cost of connecting the last segment back to the first segment
-    start_node = edges_to_remove[number_of_segments - 1];
-    end_node = edges_to_remove[0];
+    start_node = edges_to_remove[number_of_segments - 2] + 1;
+    end_node = edges_to_remove[number_of_segments - 1] + 1;
     delta += edge_cost_array[tour[start_node] + tour[end_node] * number_of_nodes];
 
     // Return the total change in cost
