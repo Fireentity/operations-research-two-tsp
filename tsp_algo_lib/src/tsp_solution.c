@@ -75,6 +75,7 @@ FeasibilityResult solve(const TspSolution* solution, const TspAlgorithm* tsp_alg
                          instance->get_number_of_nodes(instance),
                          instance->get_edge_cost_array(instance),
                          &solution->state->cost);
+    printf("%lf\n", solution->state->cost);
     return is_feasible(solution);
 }
 

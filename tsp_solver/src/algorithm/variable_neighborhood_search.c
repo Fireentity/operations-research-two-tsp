@@ -51,6 +51,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 {
     shuffle_int_array(tour, number_of_nodes);
     tour[number_of_nodes] = tour[0];
+    *cost = calculate_tour_cost(tour,number_of_nodes,edge_cost_array);
 
     const int kick_repetition = tsp_algorithm->extended->variable_neighborhood_search->kick_repetition;
     const int time_limit = tsp_algorithm->extended->variable_neighborhood_search->time_limit;

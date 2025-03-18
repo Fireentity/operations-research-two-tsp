@@ -26,8 +26,7 @@
                 "\n" \
                 "Other options:\n" \
                 "  -?, --help                 display this help message\n" \
-                "      --version              output version information\n;" \
-
+                "      --version              output version information\n;"
 #define ERROR "Internal error this message should not appear. Report it to the developer."
 #define PARSE_UNKNOWN_ARG "Argument not recognized.\n\nUsage:\n" HELP_MESSAGE
 #define PARSE_USAGE_ERROR HELP_MESSAGE
@@ -49,10 +48,10 @@ static const char* parsing_messages[] = {
 int main(const int argc, const char* argv[])
 {
     CmdOptions* cmd_options = init_cmd_options();
-    const ParsingResult parsing_result = parse_cli(cmd_options, argv+1);
+    const ParsingResult parsing_result = parse_cli(cmd_options, argv + 1);
     if (parsing_result != PARSE_SUCCESS)
     {
-        printf("%s",parsing_messages[parsing_result]);
+        printf("%s", parsing_messages[parsing_result]);
         return 0;
     }
 
@@ -65,33 +64,37 @@ int main(const int argc, const char* argv[])
     const TspInstance* instance = init_random_tsp_instance(cmd_options->number_of_nodes,
                                                            cmd_options->seed,
                                                            tsp_generation_area);
-    const TspSolution* solution = init_solution(instance);
-    const TspAlgorithm* algorithm;
 
     //TODO replace this with polymorphism
     if (cmd_options->variable_neighborhood_search)
     {
-        algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->time_limit);
-    } else if (cmd_options->nearest_neighbor)
+        const TspSolution* solution = init_solution(instance);
+
+        const TspAlgorithm* algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->time_limit);
+        solution->solve(solution, algorithm);
+        plot_tour(solution->get_tour(solution),
+                  instance->get_number_of_nodes(instance),
+                  instance->get_nodes(instance),
+                  "plot_vns.png");
+        solution->free(solution);
+        algorithm->free(algorithm);
+    }
+    if (cmd_options->nearest_neighbor)
     {
-        algorithm = init_nearest_neighbor(cmd_options->time_limit);
-    } else
-    {
-        return 1;
+        const TspSolution* solution = init_solution(instance);
+
+        const TspAlgorithm* algorithm = init_nearest_neighbor(cmd_options->time_limit, instance);
+        solution->solve(solution, algorithm);
+        plot_tour(solution->get_tour(solution),
+                  instance->get_number_of_nodes(instance),
+                  instance->get_nodes(instance),
+                  "plot_nearest_neighbor.png");
+
+        solution->free(solution);
+        algorithm->free(algorithm);
     }
 
-    const FeasibilityResult result = solution->solve(solution, algorithm);
-
-    plot_tour(solution->get_tour(solution),
-              instance->get_number_of_nodes(instance),
-              instance->get_nodes(instance),
-              "plot.png");
-
-    algorithm->free(algorithm);
-    solution->free(solution);
     instance->free(instance);
-
-    printf("%s\n", feasibility_result_to_string(result));
 
     return 0;
 }

@@ -138,7 +138,7 @@ ParsingResult set_nearest_neighbor(CmdOptions *cmd_options, const char **arg) {
 
 ParsingResult parse_cli(CmdOptions *cmd_options, const char **const argv) {
     const Flag *vns_children[] = {
-        init_flag("--kick-repetitions", 1, set_kick_repetitions, false, EMPTY_FLAGSARRAY),
+        init_flag("--kick-repetitions", 1, set_kick_repetitions, true, EMPTY_FLAGSARRAY),
     };
 
     const Flag *tsp_flags[] = {
