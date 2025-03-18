@@ -28,12 +28,15 @@ static double two_opt(int* tour,
 {
     double cost_improvement = 0;
     // Iterate over possible starting indices for a two-opt move
-    for (int i = 0; i < number_of_nodes; i++)
+    int i = 0;
+    while (i < number_of_nodes)
     {
         if (time_limiter->is_time_over(time_limiter))
         {
             return cost_improvement;
         }
+
+        double delta = 0;
 
         // Iterate over possible end indices for the segment to be reversed
         for (int k = i + 2; k < number_of_nodes; k++)
@@ -42,7 +45,7 @@ static double two_opt(int* tour,
             // Define the endpoints of the segment to remove
             const int edge_to_remove[] = {i, k};
             // Compute the cost difference for the proposed two-opt move
-            const double delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
+            delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
             // If the move does not improve the tour cost, skip it
             if (delta > -EPSILON)
                 continue;
@@ -50,9 +53,10 @@ static double two_opt(int* tour,
             cost_improvement += delta;
             // Apply the two-opt move to modify the tour
             compute_n_opt_move(2, tour, edge_to_remove, number_of_nodes);
-            i=-1;//TODO fix the increment
             break;
         }
+
+        i = delta < -EPSILON ? 0 : i + 1;
     }
 
     return cost_improvement;
@@ -81,7 +85,7 @@ static double kick(int tour[],
     const int number_of_edges_to_remove = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
 
     // Randomly select non-contiguous edges for removal.
-    rand_k_non_contiguous(0, number_of_nodes, number_of_edges_to_remove, edges_to_remove);
+    rand_k_non_contiguous(0, number_of_nodes-1, number_of_edges_to_remove, edges_to_remove);
 
     // Compute the cost change of the 3-opt move and update the total cost.
     const double delta = compute_n_opt_cost(3, tour, edges_to_remove, edge_cost_array, number_of_nodes);
@@ -109,7 +113,9 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     copy_int_array(tour, best_tour, number_of_nodes + 1);
     time_limiter->start(time_limiter);
 
-    while (!time_limiter->is_time_over(time_limiter))
+    bool is_time_over = false;
+    printf("start\n");
+    while (!is_time_over)
     {
         *cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
         if (*cost < best_cost)
@@ -117,9 +123,14 @@ static void solve(const TspAlgorithm* tsp_algorithm,
             copy_int_array(tour, best_tour, number_of_nodes + 1);
             best_cost = *cost;
         }
-        for (int i = 0; i < kick_repetition; i++)
+
+        is_time_over = time_limiter->is_time_over(time_limiter);
+        if (!is_time_over)
         {
-            *cost += kick(tour, number_of_nodes, edge_cost_array);
+            for (int i = 0; i < kick_repetition; i++)
+            {
+                *cost += kick(tour, number_of_nodes, edge_cost_array);
+            }
         }
     }
 

@@ -56,17 +56,18 @@ int main(const int argc, const char* argv[])
     // }
 
     CmdOptions options = {
-        .number_of_nodes = 10,
+        .number_of_nodes = 5000,
         .generation_area = {
             .square_side = 10,
             .x_square = 0,
             .y_square = 0,
         },
-        .nearest_neighbor = false,
-        .variable_neighborhood_search = true,
-        .time_limit = 5,
+        .nearest_neighbor = true,
+        .variable_neighborhood_search = false,
+        .time_limit = INT_MAX,
         .seed = 99,
-        .help = false
+        .help = false,
+        .kick_repetitions = 1
     };
 
     const CmdOptions* cmd_options = &options;

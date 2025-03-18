@@ -87,13 +87,17 @@ static double two_opt(int* tour,
                       const double* edge_cost_array,
                       const TimeLimiter* time_limiter)
 {
+    double cost_improvement = 0;
     // Iterate over possible starting indices for a two-opt move
-    for (int i = 0; i < number_of_nodes; i++)
+    int i = 0;
+    while (i < number_of_nodes)
     {
         if (time_limiter->is_time_over(time_limiter))
         {
-            return 0;
+            return cost_improvement;
         }
+
+        double delta = 0;
 
         // Iterate over possible end indices for the segment to be reversed
         for (int k = i + 2; k < number_of_nodes; k++)
@@ -102,39 +106,19 @@ static double two_opt(int* tour,
             // Define the endpoints of the segment to remove
             const int edge_to_remove[] = {i, k};
             // Compute the cost difference for the proposed two-opt move
-            const double delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
+            delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
             // If the move does not improve the tour cost, skip it
             if (delta > -EPSILON)
                 continue;
 
+            cost_improvement += delta;
             // Apply the two-opt move to modify the tour
             compute_n_opt_move(2, tour, edge_to_remove, number_of_nodes);
-            return delta;
+            break;
         }
+
+        i = delta < -EPSILON ? 0 : i + 1;
     }
-
-    return 0;
-}
-
-static double optimize_with_two_opt(int* tour,
-                                    const int number_of_nodes,
-                                    const double* edge_cost_array,
-                                    const TimeLimiter* time_limiter)
-{
-    double delta = 0;
-    double cost_improvement = 0;
-    // Continue iterating until no further improvements are possible
-    do
-    {
-        delta = two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
-        cost_improvement += delta;
-
-        if (time_limiter->is_time_over(time_limiter))
-        {
-            return cost_improvement;
-        }
-    }
-    while (delta < 0);
 
     return cost_improvement;
 }
@@ -146,14 +130,13 @@ static void solve(const TspAlgorithm* tsp_algorithm,
                   double* cost)
 {
     const NearestNeighbor* nearest_neighbor = tsp_algorithm->extended->nearest_neighbor;
-    double best_solution_cost = DBL_MAX;
     const double time_limit = nearest_neighbor->time_limit;
     const TimeLimiter* time_limiter = init_time_limiter(time_limit);
-
+    double best_cost = DBL_MAX;
+    int best_tour[number_of_nodes];
     int starting_nodes[number_of_nodes];
-    int incumbent_starting_node = starting_nodes[0];
 
-    memcpy(starting_nodes, tour, sizeof(int) * number_of_nodes);
+    copy_int_array(tour, starting_nodes, number_of_nodes);
     shuffle_int_array(starting_nodes, number_of_nodes);
     time_limiter->start(time_limiter);
 
@@ -161,19 +144,19 @@ static void solve(const TspAlgorithm* tsp_algorithm,
     do
     {
         nearest_neighbor_tour(starting_nodes[iteration], tour, number_of_nodes, edge_cost_array, cost);
-        *cost += optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
+        *cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
 
-        if (*cost < best_solution_cost)
+        if (*cost < best_cost)
         {
-            incumbent_starting_node = tour[0];
-            best_solution_cost = *cost;
+            copy_int_array(tour, best_tour, number_of_nodes);
+            best_cost = *cost;
         }
         iteration++;
     }
     while (time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes);
 
-    nearest_neighbor_tour(incumbent_starting_node, tour, number_of_nodes, edge_cost_array, cost);
-    *cost = optimize_with_two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
+    copy_int_array(best_tour, tour, number_of_nodes);
+    *cost = best_cost;
 
     time_limiter->free(time_limiter);
 }
