@@ -4,11 +4,9 @@ project(cli_lib)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  ")
 
 set(CLI_LIB_SOURCES
-        src/parsing_util.c
         src/flag.c
         src/flag_parser.c
-        tests/parse_flag_test.c
-
+        src/parsing_util.c
 )
 
 add_library(cli_lib ${CLI_LIB_SOURCES})

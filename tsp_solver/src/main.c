@@ -26,7 +26,8 @@
                 "\n" \
                 "Other options:\n" \
                 "  -?, --help                 display this help message\n" \
-                "      --version              output version information\n;"
+                "      --version              output version information\n;" \
+
 #define ERROR "Internal error this message should not appear. Report it to the developer."
 #define PARSE_UNKNOWN_ARG "Argument not recognized.\n\nUsage:\n" HELP_MESSAGE
 #define PARSE_USAGE_ERROR HELP_MESSAGE
@@ -47,30 +48,13 @@ static const char* parsing_messages[] = {
 
 int main(const int argc, const char* argv[])
 {
-    // CmdOptions* cmd_options = init_cmd_options();
-    // const ParsingResult parsing_result = parse_cli(cmd_options, argv, argc);
-    // if (parsing_result != PARSE_SUCCESS)
-    // {
-    //     printf("%s",parsing_messages[parsing_result]);
-    //     return 0;
-    // }
-
-    CmdOptions options = {
-        .number_of_nodes = 10,
-        .generation_area = {
-            .square_side = 10,
-            .x_square = 0,
-            .y_square = 0,
-        },
-        .nearest_neighbor = false,
-        .variable_neighborhood_search = true,
-        .time_limit = INT_MAX,
-        .seed = 99,
-        .help = false,
-        .kick_repetitions = 1
-    };
-
-    const CmdOptions* cmd_options = &options;
+    CmdOptions* cmd_options = init_cmd_options();
+    const ParsingResult parsing_result = parse_cli(cmd_options, argv+1);
+    if (parsing_result != PARSE_SUCCESS)
+    {
+        printf("%s",parsing_messages[parsing_result]);
+        return 0;
+    }
 
     const TspGenerationArea tsp_generation_area = {
         .square_side = cmd_options->generation_area.square_side,
@@ -88,12 +72,10 @@ int main(const int argc, const char* argv[])
     if (cmd_options->variable_neighborhood_search)
     {
         algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->time_limit);
-    }
-    else if (cmd_options->nearest_neighbor)
+    } else if (cmd_options->nearest_neighbor)
     {
-        algorithm = init_nearest_neighbor(cmd_options->time_limit, instance);
-    }
-    else
+        algorithm = init_nearest_neighbor(cmd_options->time_limit);
+    } else
     {
         return 1;
     }
