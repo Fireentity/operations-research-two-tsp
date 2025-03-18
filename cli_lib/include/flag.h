@@ -21,7 +21,9 @@ struct FlagsArray {
  * @brief Represents a flag with its state and operations.
  */
 struct Flag {
+
     FlagState *state; /**< Pointer to the flag's state. */
+
     struct FlagsArray children;
     /**
      * @brief Parses the flag from command line arguments.
@@ -69,38 +71,12 @@ struct Flag {
  * @param number_of_params Expected number of parameters.
  * @param param_function Function pointer for parameter parsing.
  * @param mandatory Whether the flag is mandatory.
+ * @param children
  * @return Pointer to the initialized flag.
  */
 const Flag *init_flag(const char *label,
                       unsigned int number_of_params,
                       ParsingResult (*param_function)(CmdOptions *cmd_options, const char **arg),
-                      bool mandatory);
-
-/**
- * @brief Computes a 64-bit hash for a flag.
- *
- * @param item Pointer to the flag.
- * @param seed0 First seed value.
- * @param seed1 Second seed value.
- * @return 64-bit hash value.
- */
-uint64_t hash(const void *item, uint64_t seed0, uint64_t seed1);
-
-/**
- * @brief Compares two flags.
- *
- * @param a Pointer to the first flag.
- * @param b Pointer to the second flag.
- * @param udata User data for comparison.
- * @return Comparison result.
- */
-int compare(const void *a, const void *b, void *udata);
-
-/**
- * @brief Frees memory allocated for a flag.
- *
- * @param item Pointer to the flag to free.
- */
-void free_flag(void *item);
-
+                      bool mandatory, struct FlagsArray children);
+void add_children(Flag *self, struct FlagsArray children);
 #endif //FLAG_H
