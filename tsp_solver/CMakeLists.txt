@@ -3,6 +3,7 @@ project(tsp_solver)
 
 set(TSP_SOLVER_SOURCES
         src/main.c
+        src/algorithm/algorithm.c
         src/algorithm/nearest_neighbor.c
         src/algorithm/variable_neighborhood_search.c
         src/util/plot_util.c
