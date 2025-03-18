@@ -1,21 +1,22 @@
 #include <cmd_options.h>
 #include <c_util.h>
 #include <flag.h>
+#include <flag_parser.h>
 #include <parsing_result.h>
 #include <parsing_util.h>
 
 CmdOptions *init_cmd_options() {
     const CmdOptions cmd_options = {
-            .generation_area = {
-                    .square_side = 0,
-                    .x_square = 0,
-                    .y_square = 0,
-            },
+        .generation_area = {
+            .square_side = 0,
+            .x_square = 0,
+            .y_square = 0,
+        },
 
-            .help = false,
-            .number_of_nodes = 0,
-            .seed = 0,
-            .time_limit = 0
+        .help = false,
+        .number_of_nodes = 0,
+        .seed = 0,
+        .time_limit = 0
     };
     return malloc_from_stack(&cmd_options, sizeof(cmd_options));
 }
@@ -133,21 +134,28 @@ ParsingResult set_nearest_neighbor(CmdOptions *cmd_options, const char **arg) {
     return PARSE_SUCCESS;
 }
 
-ParsingResult parse_cli(CmdOptions *cmd_options, const char **const argv, const int argc) {
-    const Flag *tsp_flags[] = {
-            init_flag("--nodes", 1, set_nodes, true, {}),
-            init_flag("--seed", 1, set_seed, false, {}),
-            init_flag("--x-square", 1, set_x_square, true, {}),
-            init_flag("--y-square", 1, set_y_square, true, {}),
-            init_flag("--square-side", 1, set_square_side, true, {}),
-            init_flag("--seconds", 1, set_time_limit, false, {}),
-            init_flag("--help", 0, set_help, false, {}),
-            init_flag("--vns", 0, set_vns, false, {}),
-            init_flag("--kick-repetitions", 1, set_kick_repetitions, false, {}),
-            init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false, {})
+#define EMPTY_FLAGSARRAY (struct FlagsArray){NULL,0}
+
+ParsingResult parse_cli(CmdOptions *cmd_options, const char **const argv) {
+    const Flag *vns_children[] = {
+        init_flag("--kick-repetitions", 1, set_kick_repetitions, false, EMPTY_FLAGSARRAY),
     };
-    ParsingResult result = parse_flags(cmd_options, tsp_flags, sizeof(tsp_flags) / sizeof(tsp_flags[0]), argc, argv);
+
+    const Flag *tsp_flags[] = {
+        init_flag("--nodes", 1, set_nodes, true, EMPTY_FLAGSARRAY),
+        init_flag("--seed", 1, set_seed, false, EMPTY_FLAGSARRAY),
+        init_flag("--x-square", 1, set_x_square, true, EMPTY_FLAGSARRAY),
+        init_flag("--y-square", 1, set_y_square, true, EMPTY_FLAGSARRAY),
+        init_flag("--square-side", 1, set_square_side, true, EMPTY_FLAGSARRAY),
+        init_flag("--seconds", 1, set_time_limit, false, EMPTY_FLAGSARRAY),
+        init_flag("--help", 0, set_help, false, EMPTY_FLAGSARRAY),
+        init_flag("--vns", 0, set_vns, false, (struct FlagsArray){vns_children, 1}),
+        init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false, EMPTY_FLAGSARRAY)
+    };
+    FlagParser *parser = init_flag_parser((struct FlagsArray){tsp_flags, 9});
+    const ParsingResult result = parse_flags_with_parser(cmd_options, parser, argv);
+    free_flag_parser(parser);
     // TODO free delle flag
+
     return result;
 }
-

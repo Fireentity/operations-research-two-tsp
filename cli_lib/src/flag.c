@@ -1,9 +1,7 @@
 #include <c_util.h>
 #include <flag.h>
 #include <parsing_result.h>
-#include <stdlib.h>
 #include <string.h>
-#include "hashmap.h"
 
 struct FlagState {
     const unsigned int number_of_params;

@@ -3,14 +3,15 @@
 
 #include <stdbool.h>
 #include <parsing_result.h>
-#include <parsing_util.h>
-#include <stdint-gcc.h>
 
 /** Forward declaration of FlagState. */
 typedef struct FlagState FlagState;
 
 /** Forward declaration of Flag. */
 typedef struct Flag Flag;
+
+/** Forward declaration of CmdOptions. */
+typedef struct CmdOptions CmdOptions;
 
 struct FlagsArray {
     const Flag** flags;

@@ -46,12 +46,12 @@ void free_parser_node(void *item) {
 
 // Recursive parsing of flags.
 // is_root indicates if the current node is the root.
-static ParsingResult recursive_parse(const ParserNode *node, CmdOptions *cmd_options, const char **argv,
+static ParsingResult recursive_parse(const ParserNode *node, CmdOptions *cmd_options, const char **labels,
                                      unsigned int *current_index, const bool is_root) {
     int parsed_mandatory = 0;
     // Iterate over argv until reaching the NULL terminator.
-    while (argv[*current_index]) {
-        ParserNode search_entry = {.key = argv[*current_index]};
+    while (labels[*current_index]) {
+        ParserNode search_entry = {.key = labels[*current_index]};
         ParserNode *child = (ParserNode *) hashmap_get(node->children, &search_entry);
         if (!child) {
             // If at root and the flag is unrecognized, return PARSE_UNKNOWN_ARG.
@@ -64,7 +64,7 @@ static ParsingResult recursive_parse(const ParserNode *node, CmdOptions *cmd_opt
             return PARSE_MISSING_MANDATORY_FLAG;
         }
         // Parse the flag.
-        ParsingResult result = child->flag->parse(child->flag, cmd_options, argv, current_index);
+        ParsingResult result = child->flag->parse(child->flag, cmd_options, labels, current_index);
         // Advance to the next argument.
         (*current_index)++;
 
@@ -75,7 +75,7 @@ static ParsingResult recursive_parse(const ParserNode *node, CmdOptions *cmd_opt
 
         // If the node has children, parse them recursively.
         if (child->children) {
-            result = recursive_parse(child, cmd_options, argv, current_index, false);
+            result = recursive_parse(child, cmd_options, labels, current_index, false);
             if (PARSE_SUCCESS != result)
                 return result;
         }
@@ -130,8 +130,15 @@ FlagParser *init_flag_parser(const struct FlagsArray flags) {
 
 // Parses the command-line arguments using the FlagParser.
 ParsingResult parse_flags_with_parser(CmdOptions *cmd_options, const FlagParser *parser,
-                                      const char **argv) {
+                                      const char **labels) {
     const ParserNode root = {.children = parser->map, .mandatory_flags_count = parser->mandatory_flags_count};
-    unsigned int current_index = 1; // Skip the program name.
-    return recursive_parse(&root, cmd_options, argv, &current_index, true);
+    unsigned int current_index = 0;
+    return recursive_parse(&root, cmd_options, labels, &current_index, true);
+}
+
+void free_flag_parser(FlagParser *parser) {
+    if (!parser || !parser->map)
+        return;
+    hashmap_free(parser->map);
+    free(parser);
 }

@@ -48,7 +48,7 @@ static const char* parsing_messages[] = {
 int main(const int argc, const char* argv[])
 {
     CmdOptions* cmd_options = init_cmd_options();
-    const ParsingResult parsing_result = parse_cli(cmd_options, argv+1, argc);
+    const ParsingResult parsing_result = parse_cli(cmd_options, argv+1);
     if (parsing_result != PARSE_SUCCESS)
     {
         printf("%s",parsing_messages[parsing_result]);

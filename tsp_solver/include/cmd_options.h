@@ -1,9 +1,7 @@
 #ifndef TSP_PARAMS_H
 #define TSP_PARAMS_H
 #include <parsing_result.h>
-#include <parsing_util.h>
 #include <stdbool.h>
-#include <tsp_instance.h>
 
 /**
  * @brief Represents a rectangular area for node generation.
@@ -14,6 +12,8 @@ typedef struct
     int y_square;         /**< Y-coordinate of the generation area. */
     unsigned int square_side; /**< Side length of the square. */
 } Rectangle;
+
+typedef struct CmdOptions CmdOptions;
 
 /**
  * @brief Structure holding command line options for TSP instance configuration.
@@ -36,7 +36,7 @@ struct CmdOptions
  *
  * @return Pointer to a new CmdOptions instance.
  */
-CmdOptions* init_cmd_options();
+struct CmdOptions* init_cmd_options();
 
 /**
  * @brief Parses command line arguments into the provided command options.
@@ -46,6 +46,6 @@ CmdOptions* init_cmd_options();
  * @param argc Number of command line arguments.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult parse_cli(CmdOptions* cmd_options, const char** argv, int argc);
+ParsingResult parse_cli(CmdOptions* cmd_options, const char** argv);
 
 #endif //TSP_PARAMS_H

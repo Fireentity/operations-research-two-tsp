@@ -4,20 +4,6 @@
 #include <stdbool.h>
 #include <parsing_result.h>
 
-/**
- * @file parsing_util.h
- * @brief Utility functions for command line argument parsing.
- */
-
-/**
- * @brief Forward declaration of Flag.
- */
-typedef struct Flag Flag;
-
-/**
- * @brief Forward declaration of CmdOptions.
- */
-typedef struct CmdOptions CmdOptions;
 
 /**
  * @brief Parses an unsigned integer from a string.
@@ -54,21 +40,5 @@ ParsingResult parse_float(const char* arg, float* parsed);
  * @return ParsingResult outcome of the parsing.
  */
 ParsingResult parse_bool(const char* arg, bool* parsed);
-
-/**
- * @brief Parses command line flags.
- *
- * @param cmd_options Pointer to the command options.
- * @param tsp_flags Array of pointers to flags.
- * @param number_of_flags Number of flags in the array.
- * @param argc Argument count.
- * @param argv Array of argument strings.
- * @return ParsingResult outcome of the parsing.
- */
-ParsingResult parse_flags(CmdOptions* cmd_options,
-                          const Flag** tsp_flags,
-                          int number_of_flags,
-                          int argc,
-                          const char** argv);
 
 #endif //PARSING_UTIL_H
