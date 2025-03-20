@@ -26,7 +26,9 @@ struct CmdOptions
     bool help;                    /**< Flag to display help message. */
     bool variable_neighborhood_search;
     bool nearest_neighbor;
+    bool tabu_search;
     int kick_repetitions;
+    int tenure;
     unsigned int timer_limit;
     unsigned int time_limit;      /**< Time limit for algorithm execution. */
 };

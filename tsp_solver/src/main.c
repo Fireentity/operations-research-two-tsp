@@ -8,6 +8,7 @@
 #include <nearest_neighbor.h>
 #include <plot_util.h>
 #include <stdlib.h>
+#include <tabu_search.h>
 #include <variable_neighborhood_search.h>
 
 #define CONCAT(a, b) a ## b
@@ -72,6 +73,19 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
                   instance->get_nodes(instance),
                   "plot_nearest_neighbor.png");
         printf("Nearest-neighbor solution: %lf\n", solution->get_cost(solution));
+        solution->free(solution);
+        algorithm->free(algorithm);
+    }
+    if (cmd_options->tabu_search) {
+        const TspSolution *solution = init_solution(instance);
+
+        const TspAlgorithm *algorithm = init_tabu(cmd_options->tenure, cmd_options->time_limit);
+        solution->solve(solution, algorithm);
+        plot_tour(solution->get_tour(solution),
+                  instance->get_number_of_nodes(instance),
+                  instance->get_nodes(instance),
+                  "plot_tabu_search.png");
+        printf("Tabu Search solution: %lf\n", solution->get_cost(solution));
         solution->free(solution);
         algorithm->free(algorithm);
     }

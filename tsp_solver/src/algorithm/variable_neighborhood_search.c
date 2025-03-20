@@ -47,7 +47,7 @@ static void solve(const TspAlgorithm *tsp_algorithm,
                   const int number_of_nodes,
                   const double edge_cost_array[],
                   double *cost) {
-    size_t capacity = 256, iteration = 0;
+    size_t capacity = 1000, iteration = 0;
     double *costs = malloc(capacity * sizeof(double));
     if (!costs) exit(EXIT_FAILURE);
 
@@ -62,12 +62,13 @@ static void solve(const TspAlgorithm *tsp_algorithm,
     time_limiter->start(time_limiter);
 
     int best_tour[number_of_nodes + 1];
-    double best_cost = *cost;
     copy_int_array(tour, best_tour, number_of_nodes + 1);
+    double best_cost = *cost;
 
     do {
         if (iteration == capacity) break;
         *cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
+        costs[iteration++] = *cost;
         if (*cost < best_cost) {
             copy_int_array(tour, best_tour, number_of_nodes + 1);
             best_cost = *cost;

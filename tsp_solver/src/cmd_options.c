@@ -6,18 +6,7 @@
 #include <parsing_util.h>
 
 CmdOptions *init_cmd_options() {
-    const CmdOptions cmd_options = {
-        .generation_area = {
-            .square_side = 0,
-            .x_square = 0,
-            .y_square = 0,
-        },
-
-        .help = false,
-        .number_of_nodes = 0,
-        .seed = 0,
-        .time_limit = 0
-    };
+    const CmdOptions cmd_options;
     return malloc_from_stack(&cmd_options, sizeof(cmd_options));
 }
 
@@ -112,6 +101,10 @@ ParsingResult set_kick_repetitions(CmdOptions *cmd_options, const char **arg) {
     return parse_int(*(arg + 1), &cmd_options->kick_repetitions);
 }
 
+ParsingResult set_tenure(CmdOptions *cmd_options, const char **arg) {
+    return parse_int(*(arg + 1), &cmd_options->tenure);
+}
+
 /**
  * @brief Sets the time limit for the TSP algorithm.
  *
@@ -135,24 +128,46 @@ ParsingResult set_nearest_neighbor(CmdOptions *cmd_options, const char **arg) {
     return PARSE_SUCCESS;
 }
 
-struct FlagsArray init_flags_array() {
-    const Flag **vns_children = malloc(sizeof(const Flag *) * 1);
-    check_alloc(vns_children);
-    vns_children[0] = init_flag("--kick-repetitions", 1, set_kick_repetitions, true, EMPTY_FLAGS_ARRAY);
+/**
+ * @brief Enables the Nearest Neighbor heuristic for the TSP algorithm.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
+ParsingResult set_tabu_search(CmdOptions *cmd_options, const char **arg) {
+    cmd_options->tabu_search = true;
+    return PARSE_SUCCESS;
+}
 
-    const size_t tsp_count = 9;
-    const Flag **tsp_flags = malloc(sizeof(const Flag *) * tsp_count);
-    check_alloc(tsp_flags);
-    tsp_flags[0] = init_flag("--nodes", 1, set_nodes, true, EMPTY_FLAGS_ARRAY);
-    tsp_flags[1] = init_flag("--seed", 1, set_seed, false, EMPTY_FLAGS_ARRAY);
-    tsp_flags[2] = init_flag("--x-square", 1, set_x_square, true, EMPTY_FLAGS_ARRAY);
-    tsp_flags[3] = init_flag("--y-square", 1, set_y_square, true, EMPTY_FLAGS_ARRAY);
-    tsp_flags[4] = init_flag("--square-side", 1, set_square_side, true, EMPTY_FLAGS_ARRAY);
-    tsp_flags[5] = init_flag("--seconds", 1, set_time_limit, false, EMPTY_FLAGS_ARRAY);
-    tsp_flags[6] = init_flag("--help", 0, set_help, false, EMPTY_FLAGS_ARRAY);
-    tsp_flags[7] = init_flag("--vns", 0, set_vns, false, (struct FlagsArray){vns_children, 1});
-    tsp_flags[8] = init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false, EMPTY_FLAGS_ARRAY);
+struct FlagsArray init_flags_array() {
+    // Init VNS flags
+    const Flag *vns_children_data[] = {
+        init_flag("--kick-repetitions", 1, set_kick_repetitions, true, EMPTY_FLAGS_ARRAY)
+    };
+    const Flag **vns_children = malloc_from_stack(vns_children_data, sizeof(const Flag *) * 1);
+
+    // Init Tabu flags
+    const Flag *tabu_children_data[] = {
+        init_flag("--tenure", 1, set_tenure, true, EMPTY_FLAGS_ARRAY)
+    };
+    const Flag **tabu_children = malloc_from_stack(tabu_children_data, sizeof(const Flag *) * 1);
+
+    // Inizializzazione dei flag TSP
+    const size_t tsp_count = 10;
+    const Flag *tsp_flags_data[] = {
+        init_flag("--nodes", 1, set_nodes, true, EMPTY_FLAGS_ARRAY),
+        init_flag("--seed", 1, set_seed, false, EMPTY_FLAGS_ARRAY),
+        init_flag("--x-square", 1, set_x_square, true, EMPTY_FLAGS_ARRAY),
+        init_flag("--y-square", 1, set_y_square, true, EMPTY_FLAGS_ARRAY),
+        init_flag("--square-side", 1, set_square_side, true, EMPTY_FLAGS_ARRAY),
+        init_flag("--seconds", 1, set_time_limit, false, EMPTY_FLAGS_ARRAY),
+        init_flag("--help", 0, set_help, false, EMPTY_FLAGS_ARRAY),
+        init_flag("--vns", 0, set_vns, false, (struct FlagsArray){vns_children, 1}),
+        init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false, EMPTY_FLAGS_ARRAY),
+        init_flag("--tabu-search", 0, set_tabu_search,false, (struct FlagsArray){tabu_children, 1})
+    };
+    const Flag **tsp_flags = malloc_from_stack(tsp_flags_data, sizeof(const Flag *) * tsp_count);
 
     return (struct FlagsArray){tsp_flags, tsp_count};
 }
-
