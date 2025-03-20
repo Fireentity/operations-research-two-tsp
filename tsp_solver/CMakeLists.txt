@@ -8,6 +8,7 @@ set(TSP_SOLVER_SOURCES
         src/algorithm/variable_neighborhood_search.c
         src/util/plot_util.c
         src/cmd_options.c
+        src/algorithm/tabu_search.c
 )
 
 add_executable(tsp_solver ${TSP_SOLVER_SOURCES})

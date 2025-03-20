@@ -1,6 +1,6 @@
 #ifndef TSP_PARAMS_H
 #define TSP_PARAMS_H
-#include <parsing_result.h>
+#include <flag.h>
 #include <stdbool.h>
 
 /**
@@ -13,7 +13,7 @@ typedef struct
     unsigned int square_side; /**< Side length of the square. */
 } Rectangle;
 
-typedef struct CmdOptions CmdOptions;
+typedef CmdOptions CmdOptions;
 
 /**
  * @brief Structure holding command line options for TSP instance configuration.
@@ -36,16 +36,8 @@ struct CmdOptions
  *
  * @return Pointer to a new CmdOptions instance.
  */
-struct CmdOptions* init_cmd_options();
+CmdOptions* init_cmd_options();
 
-/**
- * @brief Parses command line arguments into the provided command options.
- *
- * @param cmd_options Pointer to the CmdOptions structure.
- * @param argv Array of command line arguments.
- * @param argc Number of command line arguments.
- * @return ParsingResult indicating success or failure.
- */
-ParsingResult parse_cli(CmdOptions* cmd_options, const char** argv);
+struct FlagsArray init_flags_array();
 
 #endif //TSP_PARAMS_H

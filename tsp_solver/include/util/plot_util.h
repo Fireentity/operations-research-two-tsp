@@ -26,15 +26,11 @@ typedef struct {
 void plot_tour(const int *tour, int number_of_nodes, const Node* nodes, const char *output_name);
 
 /**
- * @brief Calculates the plotting boundaries for a TSP tour.
+ * @brief Plots the evolution of costs over time.
  *
- * Computes the minimum and maximum coordinates to determine the plot bounds.
- *
- * @param tour Array representing the tour order.
- * @param number_of_nodes Number of nodes in the tour.
- * @param nodes Array of node coordinates.
- * @return A Bounds structure containing the plot boundaries.
+ * @param costs Array of cost values.
+ * @param length Number of points.
+ * @param output_name Output image file name.
  */
-Bounds calculate_plot_bounds(const int *tour, int number_of_nodes, const Node* nodes);
-
+void plot_costs_evolution(const double *costs, int length, const char *output_name);
 #endif //PLOT_UTIL_H

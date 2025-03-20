@@ -1,3 +1,4 @@
+#include "algorithms.h"
 #include <time_limiter.h>
 #include <tsp_math_util.h>
 #include <constants.h>
@@ -53,3 +54,4 @@ static inline double two_opt(int* tour,
 
     return cost_improvement;
 }
+

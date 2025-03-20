@@ -17,6 +17,8 @@ struct FlagsArray {
     const Flag** flags;
     const unsigned int number_of_flags;
 };
+#define EMPTY_FLAGS_ARRAY (struct FlagsArray){NULL,0}
+
 
 /**
  * @brief Represents a flag with its state and operations.
@@ -79,5 +81,10 @@ const Flag *init_flag(const char *label,
                       unsigned int number_of_params,
                       ParsingResult (*param_function)(CmdOptions *cmd_options, const char **arg),
                       bool mandatory, struct FlagsArray children);
+
+
 void add_children(Flag *self, struct FlagsArray children);
+
+void free_flag(Flag *self);
+void free_flags_array(struct FlagsArray self);
 #endif //FLAG_H

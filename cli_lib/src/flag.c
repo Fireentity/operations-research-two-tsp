@@ -51,3 +51,21 @@ const Flag *init_flag(const char *label,
     return malloc_from_stack(&flag, sizeof(flag));
 }
 
+void free_flags_array(struct FlagsArray self) {
+    if (!self.flags) return;
+    for (int i = 0; i < self.number_of_flags; i++) {
+        free_flag((Flag *) self.flags[i]);
+    }
+    free(self.flags);
+}
+
+void free_flag(Flag *self) {
+    if (!self) return;
+
+    free_flags_array(self->children);
+
+    if (self->state) {
+        free(self->state);
+    }
+    free(self);
+}
