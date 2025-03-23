@@ -3,12 +3,13 @@ project(tsp_solver)
 
 set(TSP_SOLVER_SOURCES
         src/main.c
-        src/algorithm/algorithm.c
+        src/algorithm/algorithms.c
         src/algorithm/nearest_neighbor.c
         src/algorithm/variable_neighborhood_search.c
         src/util/plot_util.c
         src/cmd_options.c
         src/algorithm/tabu_search.c
+        src/algorithm/grasp.c
 )
 
 add_executable(tsp_solver ${TSP_SOLVER_SOURCES})

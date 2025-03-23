@@ -105,6 +105,10 @@ ParsingResult set_tenure(CmdOptions *cmd_options, const char **arg) {
     return parse_int(*(arg + 1), &cmd_options->tenure);
 }
 
+ParsingResult set_max_stagnation(CmdOptions *cmd_options, const char **arg) {
+    return parse_int(*(arg + 1), &cmd_options->max_stagnation);
+}
+
 /**
  * @brief Sets the time limit for the TSP algorithm.
  *
@@ -149,9 +153,10 @@ struct FlagsArray init_flags_array() {
 
     // Init Tabu flags
     const Flag *tabu_children_data[] = {
-        init_flag("--tenure", 1, set_tenure, true, EMPTY_FLAGS_ARRAY)
+        init_flag("--tenure", 1, set_tenure, true, EMPTY_FLAGS_ARRAY),
+        init_flag("--max-stagnation", 1, set_max_stagnation, true, EMPTY_FLAGS_ARRAY)
     };
-    const Flag **tabu_children = malloc_from_stack(tabu_children_data, sizeof(const Flag *) * 1);
+    const Flag **tabu_children = malloc_from_stack(tabu_children_data, sizeof(const Flag *) * 2);
 
     // Inizializzazione dei flag TSP
     const size_t tsp_count = 10;
@@ -165,7 +170,7 @@ struct FlagsArray init_flags_array() {
         init_flag("--help", 0, set_help, false, EMPTY_FLAGS_ARRAY),
         init_flag("--vns", 0, set_vns, false, (struct FlagsArray){vns_children, 1}),
         init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false, EMPTY_FLAGS_ARRAY),
-        init_flag("--tabu-search", 0, set_tabu_search,false, (struct FlagsArray){tabu_children, 1})
+        init_flag("--tabu-search", 0, set_tabu_search,false, (struct FlagsArray){tabu_children, 2})
     };
     const Flag **tsp_flags = malloc_from_stack(tsp_flags_data, sizeof(const Flag *) * tsp_count);
 

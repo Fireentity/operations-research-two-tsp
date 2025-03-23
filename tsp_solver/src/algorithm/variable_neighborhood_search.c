@@ -4,7 +4,7 @@
 #include <plot_util.h>
 #include <time_limiter.h>
 #include <tsp_math_util.h>
-#include "algorithm.c"
+#include "algorithms.h"
 
 union TspExtendedAlgorithms {
     VariableNeighborhoodSearch *variable_neighborhood_search;

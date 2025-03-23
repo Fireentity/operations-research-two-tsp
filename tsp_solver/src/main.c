@@ -79,7 +79,7 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
     if (cmd_options->tabu_search) {
         const TspSolution *solution = init_solution(instance);
 
-        const TspAlgorithm *algorithm = init_tabu(cmd_options->tenure, cmd_options->time_limit);
+        const TspAlgorithm *algorithm = init_tabu(cmd_options->tenure, cmd_options->max_stagnation, cmd_options->time_limit);
         solution->solve(solution, algorithm);
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),

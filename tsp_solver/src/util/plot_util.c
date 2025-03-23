@@ -12,7 +12,7 @@
  * @param length Number of points.
  * @return Bounds with computed limits.
  */
-static Bounds calculate_bounds(const double *x, const double *y, int length) {
+static Bounds calculate_bounds(const double *x, const double *y, const int length) {
     Bounds b;
     if (length <= 0) {
         b.min_x = b.max_x = 0;
@@ -34,7 +34,7 @@ static Bounds calculate_bounds(const double *x, const double *y, int length) {
     return b;
 }
 
-void plot_tour(const int *tour, int number_of_nodes, const Node* nodes, const char *output_name) {
+void plot_tour(const int *tour, const int number_of_nodes, const Node* nodes, const char *output_name) {
     if (!output_name)
         output_name = "tsp_solution.png";
     FILE *gp = popen("gnuplot", "w");
@@ -54,7 +54,7 @@ void plot_tour(const int *tour, int number_of_nodes, const Node* nodes, const ch
     const Bounds bounds = calculate_bounds(x, y, number_of_nodes + 1);
     free(x); free(y);
 
-    fprintf(gp, "set xrange [%lf:%lf]\n", 0.0, bounds.max_x);
+    fprintf(gp, "set xrange [%lf:%lf]\n", bounds.min_x, bounds.max_x);
     fprintf(gp, "set yrange [%lf:%lf]\n", bounds.min_y, bounds.max_y);
     fprintf(gp, "set output '%s'\n", output_name);
     fprintf(gp, "plot '-' with linespoints lw 2 pt 7 notitle\n");
@@ -66,7 +66,7 @@ void plot_tour(const int *tour, int number_of_nodes, const Node* nodes, const ch
     check_pclose(pclose(gp));
 }
 
-void plot_costs_evolution(const double *costs, int length, const char *output_name) {
+void plot_costs_evolution(const double *costs, const int length, const char *output_name) {
     if (!output_name)
         output_name = "costs_evolution.png";
     FILE *gp = popen("gnuplot", "w");

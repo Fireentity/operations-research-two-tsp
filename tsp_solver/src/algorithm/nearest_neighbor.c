@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <time_limiter.h>
-#include "algorithm.c"
+#include "algorithms.h"
 
 union TspExtendedAlgorithms {
     NearestNeighbor *nearest_neighbor;
