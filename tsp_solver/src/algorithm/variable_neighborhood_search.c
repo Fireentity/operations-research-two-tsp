@@ -3,7 +3,6 @@
 #include <variable_neighborhood_search.h>
 #include <c_util.h>
 #include <nearest_neighbor.h>
-#include <plot_util.h>
 #include <time_limiter.h>
 #include <tsp_math_util.h>
 #include "algorithms.h"

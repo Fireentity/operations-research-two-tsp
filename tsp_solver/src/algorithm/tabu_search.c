@@ -4,9 +4,7 @@
 #include <float.h>
 #include <stdlib.h>
 #include <time_limiter.h>
-#include <tsp_math_util.h>
 #include "c_util.h"
-#include "hashmap.h"
 #include "algorithms.h"
 
 // Union for extended TSP algorithms (currently only Tabu Search is used).

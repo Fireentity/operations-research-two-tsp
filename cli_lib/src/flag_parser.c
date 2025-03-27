@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <string.h>
 #include "flag_parser.h"
@@ -138,8 +137,10 @@ ParsingResult parse_flags_with_parser(CmdOptions *cmd_options, const FlagParser 
 }
 
 void free_flag_parser(FlagParser *parser) {
-    if (!parser || !parser->map)
+    if (!parser)
         return;
-    hashmap_free(parser->map);
+    if (parser->map) {
+        hashmap_free(parser->map);
+    }
     free(parser);
 }

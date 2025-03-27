@@ -3,12 +3,8 @@
 #include <c_util.h>
 #include <nearest_neighbor.h>
 #include <float.h>
-#include <math.h>
 #include <plot_util.h>
-#include <tsp_math_util.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <time_limiter.h>
 #include "algorithms.h"
 
@@ -45,6 +41,7 @@ static void solve(const TspAlgorithm *tsp_algorithm,
     double current_cost;
 
     // Initialize current_tour by copying the input tour.
+    //TODO make it thread safe
     memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
 
     // Prepare an array of starting nodes from the initial tour and shuffle them.
