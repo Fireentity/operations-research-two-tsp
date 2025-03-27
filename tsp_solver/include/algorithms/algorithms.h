@@ -21,4 +21,13 @@ double two_opt(int* tour,
                       const double* edge_cost_array,
                       const TimeLimiter* time_limiter);
 
+
+void nearest_neighbor_tour(int starting_node,
+                           int *tour,
+                           int number_of_nodes,
+                           const double *edge_cost_array,
+                           double *cost);
+
+
+#define MAX_NO_IMPROVEMENT_CYCLE 1000
 #endif //ALGORITHMS_H

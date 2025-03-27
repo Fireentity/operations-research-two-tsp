@@ -1,6 +1,9 @@
 #include "algorithms.h"
 #include <tsp_math_util.h>
 #include <constants.h>
+#include <float.h>
+
+#include "c_util.h"
 
 
 inline double two_opt(int* tour,
@@ -43,4 +46,48 @@ inline double two_opt(int* tour,
 
     return cost_improvement;
 }
+
+void nearest_neighbor_tour(const int starting_node,
+                                  int *tour,
+                                  const int number_of_nodes,
+                                  const double *edge_cost_array,
+                                  double *cost) {
+    if (starting_node > number_of_nodes) {
+        printf("The starting node (%d) cannot be greater than the number of nodes (%d)",
+               starting_node, number_of_nodes);
+        exit(EXIT_FAILURE);
+    }
+
+    int visited = 1;
+
+    // Start from the node in input
+    swap_int(tour, 0, starting_node);
+    int current = tour[0];
+
+    // Closing the tour
+    tour[number_of_nodes] = tour[0];
+
+    while (visited < number_of_nodes) {
+        double best_cost = DBL_MAX;
+        int best_index = visited;
+
+        // Find the nearest unvisited node
+        for (int i = visited; i < number_of_nodes; i++) {
+            const double cost_candidate = edge_cost_array[current * number_of_nodes + tour[i]];
+            if (cost_candidate < best_cost) {
+                best_cost = cost_candidate;
+                best_index = i;
+            }
+        }
+        // Move the best found node to the next position in the tour
+        swap_int(tour, visited, best_index);
+        current = tour[visited];
+        visited++;
+    }
+
+    // Compute the total cost of the generated tour
+    *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
+}
+
+
 

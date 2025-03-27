@@ -7,6 +7,7 @@ set(TSP_SOLVER_SOURCES
         src/algorithm/nearest_neighbor.c
         src/algorithm/variable_neighborhood_search.c
         src/util/plot_util.c
+        src/util/costs_plotter.c
         src/cmd_options.c
         src/algorithm/tabu_search.c
         src/algorithm/grasp.c

@@ -147,30 +147,32 @@ ParsingResult set_tabu_search(CmdOptions *cmd_options, const char **arg) {
 struct FlagsArray init_flags_array() {
     // Init VNS flags
     const Flag *vns_children_data[] = {
-        init_flag("--kick-repetitions", 1, set_kick_repetitions, true, EMPTY_FLAGS_ARRAY)
+        init_flag("--kick-repetitions", 1, set_kick_repetitions, true)
     };
     const Flag **vns_children = malloc_from_stack(vns_children_data, sizeof(const Flag *) * 1);
 
     // Init Tabu flags
     const Flag *tabu_children_data[] = {
-        init_flag("--tenure", 1, set_tenure, true, EMPTY_FLAGS_ARRAY),
-        init_flag("--max-stagnation", 1, set_max_stagnation, true, EMPTY_FLAGS_ARRAY)
+        init_flag("--tenure", 1, set_tenure, true),
+        init_flag("--max-stagnation", 1, set_max_stagnation, true)
     };
     const Flag **tabu_children = malloc_from_stack(tabu_children_data, sizeof(const Flag *) * 2);
 
     // Inizializzazione dei flag TSP
     const size_t tsp_count = 10;
     const Flag *tsp_flags_data[] = {
-        init_flag("--nodes", 1, set_nodes, true, EMPTY_FLAGS_ARRAY),
-        init_flag("--seed", 1, set_seed, false, EMPTY_FLAGS_ARRAY),
-        init_flag("--x-square", 1, set_x_square, true, EMPTY_FLAGS_ARRAY),
-        init_flag("--y-square", 1, set_y_square, true, EMPTY_FLAGS_ARRAY),
-        init_flag("--square-side", 1, set_square_side, true, EMPTY_FLAGS_ARRAY),
-        init_flag("--seconds", 1, set_time_limit, false, EMPTY_FLAGS_ARRAY),
-        init_flag("--help", 0, set_help, false, EMPTY_FLAGS_ARRAY),
-        init_flag("--vns", 0, set_vns, false, (struct FlagsArray){vns_children, 1}),
-        init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false, EMPTY_FLAGS_ARRAY),
-        init_flag("--tabu-search", 0, set_tabu_search,false, (struct FlagsArray){tabu_children, 2})
+        init_flag("--nodes", 1, set_nodes, true),
+        init_flag("--seed", 1, set_seed, false),
+        init_flag("--x-square", 1, set_x_square, true),
+        init_flag("--y-square", 1, set_y_square, true),
+        init_flag("--square-side", 1, set_square_side, true),
+        init_flag("--seconds", 1, set_time_limit, false),
+        init_flag("--help", 0, set_help, false),
+        init_flag_with_children("--vns", 0, set_vns, false,
+                                (struct FlagsArray){vns_children, 1}),
+        init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false),
+        init_flag_with_children("--tabu-search", 0, set_tabu_search,false,
+                                (struct FlagsArray){tabu_children, 2})
     };
     const Flag **tsp_flags = malloc_from_stack(tsp_flags_data, sizeof(const Flag *) * tsp_count);
 

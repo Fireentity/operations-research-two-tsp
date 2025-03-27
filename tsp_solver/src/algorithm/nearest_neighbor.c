@@ -1,3 +1,5 @@
+#include <constants.h>
+#include <costs_plotter.h>
 #include <c_util.h>
 #include <nearest_neighbor.h>
 #include <float.h>
@@ -23,82 +25,64 @@ static void free_this(const TspAlgorithm *self) {
     free((void *) self);
 }
 
-static void nearest_neighbor_tour(const int starting_node,
-                                  int *tour,
-                                  const int number_of_nodes,
-                                  const double *edge_cost_array,
-                                  double *cost) {
-    if (starting_node > number_of_nodes) {
-        printf("The starting node (%d) cannot be greater than the number of nodes (%d)",
-               starting_node, number_of_nodes);
-        exit(EXIT_FAILURE);
-    }
-
-    int visited = 1;
-
-    // Start from the node in input
-    swap_int(tour, 0, starting_node);
-    int current = tour[0];
-
-    // Closing the tour
-    tour[number_of_nodes] = tour[0];
-
-    while (visited < number_of_nodes) {
-        double best_cost = DBL_MAX;
-        int best_index = visited;
-
-        // Find the nearest unvisited node
-        for (int i = visited; i < number_of_nodes; i++) {
-            const double cost_candidate = edge_cost_array[current * number_of_nodes + tour[i]];
-            if (cost_candidate < best_cost) {
-                best_cost = cost_candidate;
-                best_index = i;
-            }
-        }
-        // Move the best found node to the next position in the tour
-        swap_int(tour, visited, best_index);
-        current = tour[visited];
-        visited++;
-    }
-
-    // Compute the total cost of the generated tour
-    *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
-}
 
 static void solve(const TspAlgorithm *tsp_algorithm,
-                  int *tour,
+                  int tour[],
                   const int number_of_nodes,
-                  const double *edge_cost_array,
+                  const double edge_cost_array[],
                   double *cost) {
-    double costs[number_of_nodes];
-    const NearestNeighbor *nearest_neighbor = tsp_algorithm->extended->nearest_neighbor;
-    const double time_limit = nearest_neighbor->time_limit;
+    // Start the timer
+    const int time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
     const TimeLimiter *time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
-    double best_cost = DBL_MAX;
-    int best_tour[number_of_nodes];
-    int starting_nodes[number_of_nodes];
 
-    copy_int_array(tour, starting_nodes, number_of_nodes);
+    // Start the costs plotter
+    const CostsPlotter* plotter = init_plotter(number_of_nodes);
+
+    // Work on my own tour.
+    int current_tour[number_of_nodes+1];
+    int best_tour[number_of_nodes+1];
+    double current_cost;
+
+    // Initialize current_tour by copying the input tour.
+    memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
+
+    // Prepare an array of starting nodes from the initial tour and shuffle them.
+    int starting_nodes[number_of_nodes];
+    memcpy(starting_nodes, tour, number_of_nodes * sizeof(int));
     shuffle_int_array(starting_nodes, number_of_nodes);
 
-    int iteration = 0;
-    do {
-        nearest_neighbor_tour(starting_nodes[iteration], tour, number_of_nodes, edge_cost_array, cost);
-        *cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
-        if (*cost < best_cost) {
-            copy_int_array(tour, best_tour, number_of_nodes);
-            best_cost = *cost;
-        }
-        costs[iteration] = *cost;
-        iteration++;
-    } while (!time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes);
+    // Initialize best_cost to a large value.
+    double best_cost = DBL_MAX;
 
-    copy_int_array(best_tour, tour, number_of_nodes);
-    *cost = best_cost;
-    plot_costs_evolution(costs, iteration, "neighbor_cost_eval.png");
+    int iteration = 0;
+    // Main loop: try each starting node or run until the time limit expires.
+    while (!time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes) {
+        // Build a NN solution starting from starting_nodes[iteration].
+        nearest_neighbor_tour(starting_nodes[iteration], current_tour, number_of_nodes, edge_cost_array, &current_cost);
+        // Improve the solution with 2-opt and update the cost.
+        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter);
+        plotter->add_cost(plotter, current_cost);
+        // If the current solution is better than the best found so far, update best_tour and best_cost.
+        if (current_cost < best_cost - EPSILON) {
+            best_cost = current_cost;
+            memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
+        }
+        iteration++;
+    }
+
+    // Copy the best found tour back to the provided output and update cost.
+    // TODO make it thread safe
+    if (best_cost < *cost) {
+        memcpy(tour, best_tour, (number_of_nodes + 1) * sizeof(int));
+        *cost = best_cost;
+    }
+    plotter->plot_costs(plotter, "NN-costs.png");
+    // Cleanup.
     time_limiter->free(time_limiter);
+    plotter->free(plotter);
 }
+
 
 const TspAlgorithm *init_nearest_neighbor(const double time_limit, const TspInstance *instance) {
     const NearestNeighbor nearest_neighbor = {

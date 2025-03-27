@@ -40,6 +40,7 @@ ParsingResult parse_flags_with_parser(CmdOptions *cmd_options, const FlagParser 
  *
  * @param parser Pointer to the FlagParser to free.
  */
+//TODO mettila dentro lo struct
 void free_flag_parser(FlagParser *parser);
 
 #endif //FLAG_PARSER_H

@@ -71,9 +71,10 @@ void plot_costs_evolution(const double *costs, const int length, const char *out
         output_name = "costs_evolution.png";
     FILE *gp = popen("gnuplot", "w");
     check_popen(gp);
-    fprintf(gp, "set terminal png size 800,600\n");
+    fprintf(gp, "set terminal png size 1920,1080\n");
     fprintf(gp, "set xlabel 'Time'\nset ylabel 'Cost'\n");
 
+    // Prepare time array and compute bounds
     double *time = malloc(sizeof(double) * length);
     for (int i = 0; i < length; i++)
         time[i] = (double)i;
@@ -83,10 +84,30 @@ void plot_costs_evolution(const double *costs, const int length, const char *out
     fprintf(gp, "set xrange [%lf:%lf]\n", bounds.min_x, bounds.max_x);
     fprintf(gp, "set yrange [%lf:%lf]\n", bounds.min_y, bounds.max_y);
     fprintf(gp, "set output '%s'\n", output_name);
-    fprintf(gp, "plot '-' with linespoints lw 2 pt 7 notitle\n");
+
+    // Compute cumulative (best-so-far) minimum values
+    double *cum_min = malloc(sizeof(double) * length);
+    cum_min[0] = costs[0];
+    for (int i = 1; i < length; i++) {
+        cum_min[i] = (costs[i] < cum_min[i-1]) ? costs[i] : cum_min[i-1];
+    }
+
+    // Plot the original cost evolution and overlay the cumulative min (best-so-far) as a red step line.
+    fprintf(gp, "plot '-' with linespoints lw 2 pt 7 notitle, '-' with lines lw 2 lc rgb 'red' title 'Best so far'\n");
+
+    // First dataset: the cost evolution
     for (int i = 0; i < length; i++)
         fprintf(gp, "%d %lf\n", i, costs[i]);
     fprintf(gp, "e\n");
+
+    // Second dataset: the cumulative minimum values
+    for (int i = 0; i < length; i++)
+        fprintf(gp, "%d %lf\n", i, cum_min[i]);
+    fprintf(gp, "e\n");
+
     fflush(gp);
     check_pclose(pclose(gp));
+    free(cum_min);
 }
+
+

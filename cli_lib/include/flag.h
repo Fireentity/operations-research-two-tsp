@@ -77,10 +77,15 @@ struct Flag {
  * @param children
  * @return Pointer to the initialized flag.
  */
-const Flag *init_flag(const char *label,
+const Flag *init_flag_with_children(const char *label,
                       unsigned int number_of_params,
                       ParsingResult (*param_function)(CmdOptions *cmd_options, const char **arg),
                       bool mandatory, struct FlagsArray children);
+
+const Flag *init_flag(const char *label,
+                      unsigned int number_of_params,
+                      ParsingResult (*param_function)(CmdOptions *cmd_options, const char **arg),
+                      bool mandatory);
 
 
 void add_children(Flag *self, struct FlagsArray children);

@@ -29,11 +29,10 @@ static ParsingResult parse(const Flag *flag,
     return result;
 }
 
-const Flag *init_flag(const char *label,
+const Flag *init_flag_with_children(const char *label,
                       const unsigned int number_of_params,
                       ParsingResult (*const param_function)(CmdOptions *cmd_option, const char **arg),
-                      const bool mandatory, const struct FlagsArray children
-) {
+                      const bool mandatory, const struct FlagsArray children) {
     const FlagState state = {
         .number_of_params = number_of_params,
         .parse_function = param_function,
@@ -51,7 +50,14 @@ const Flag *init_flag(const char *label,
     return malloc_from_stack(&flag, sizeof(flag));
 }
 
-void free_flags_array(struct FlagsArray self) {
+const Flag *init_flag(const char *label,
+                      const unsigned int number_of_params,
+                      ParsingResult (*const param_function)(CmdOptions *cmd_option, const char **arg),
+                      const bool mandatory) {
+    return init_flag_with_children(label, number_of_params, param_function, mandatory, EMPTY_FLAGS_ARRAY);
+}
+
+void free_flags_array(const struct FlagsArray self) {
     if (!self.flags) return;
     for (int i = 0; i < self.number_of_flags; i++) {
         free_flag((Flag *) self.flags[i]);

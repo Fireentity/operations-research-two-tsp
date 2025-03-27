@@ -56,9 +56,6 @@ ParsingResult dummy_parse(CmdOptions *cmd_options, const char **arg) {
     return PARSE_SUCCESS;
 }
 
-// An empty FlagsArray to be used when no child flags are needed.
-struct FlagsArray empty_children = {NULL, 0};
-
 /**
  * @brief Tests basic flag parsing scenarios.
  *
@@ -68,9 +65,9 @@ struct FlagsArray empty_children = {NULL, 0};
  */
 void test_basic_flags() {
     const Flag *flags[] = {
-        init_flag("--integer", 1, set_integer, true, empty_children),
-        init_flag("--u_integer", 3, set_u_integer, true, empty_children),
-        init_flag("--boolean", 0, set_boolean, true, empty_children)
+        init_flag("--integer", 1, set_integer, true),
+        init_flag("--u_integer", 3, set_u_integer, true),
+        init_flag("--boolean", 0, set_boolean, true)
     };
     const FlagParser *parser = init_flag_parser((struct FlagsArray){flags, 3});
     CmdOptions option;
@@ -120,9 +117,9 @@ void test_basic_flags() {
 
     // Test: Repeated non-mandatory flag.
     const Flag *flags2[] = {
-        init_flag("--integer", 1, set_integer, true, empty_children),
-        init_flag("--u_integer", 3, set_u_integer, true, empty_children),
-        init_flag("--boolean", 0, set_boolean, false, empty_children)
+        init_flag("--integer", 1, set_integer, true),
+        init_flag("--u_integer", 3, set_u_integer, true),
+        init_flag("--boolean", 0, set_boolean, false)
     };
     const FlagParser *parser2 = init_flag_parser((struct FlagsArray){flags2, 3});
     option = (CmdOptions){0, 0, false};
@@ -141,11 +138,11 @@ void test_basic_flags() {
 void test_nested_flags() {
     CmdOptions option;
     // One-level nested flag.
-    const Flag *child1[] = { init_flag("--child", 1, set_integer, true, empty_children) };
+    const Flag *child1[] = { init_flag("--child", 1, set_integer, true) };
     const struct FlagsArray child_arr1 = {child1, 1};
     const Flag *top1[] = {
-        init_flag("--parent", 0, dummy_parse, true, child_arr1),
-        init_flag("--boolean", 0, set_boolean, true, empty_children)
+        init_flag_with_children("--parent", 0, dummy_parse, true, child_arr1),
+        init_flag("--boolean", 0, set_boolean, true)
     };
     const FlagParser *parser1 = init_flag_parser((struct FlagsArray){top1, 2});
     option = (CmdOptions){0, 0, false};
@@ -155,13 +152,13 @@ void test_nested_flags() {
     assert(150 == option.integer && true == option.boolean);
 
     // Two-level nested flag.
-    const Flag *grandchild[] = { init_flag("--grandchild", 1, set_integer, true, empty_children) };
+    const Flag *grandchild[] = { init_flag("--grandchild", 1, set_integer, true) };
     const struct FlagsArray grandchild_arr = {grandchild, 1};
-    const Flag *child2[] = { init_flag("--child", 0, dummy_parse, true, grandchild_arr) };
+    const Flag *child2[] = { init_flag_with_children("--child", 0, dummy_parse, true, grandchild_arr) };
     const struct FlagsArray child_arr2 = {child2, 1};
     const Flag *top2[] = {
-        init_flag("--parent", 0, dummy_parse, true, child_arr2),
-        init_flag("--boolean", 0, set_boolean, true, empty_children)
+        init_flag_with_children("--parent", 0, dummy_parse, true, child_arr2),
+        init_flag("--boolean", 0, set_boolean, true)
     };
     const FlagParser *parser2 = init_flag_parser((struct FlagsArray){top2, 2});
     option = (CmdOptions){0, 0, false};
@@ -177,11 +174,11 @@ void test_nested_flags() {
     assert(PARSE_MISSING_MANDATORY_FLAG == result);
 
     // Test: Optional nested flag omitted.
-    const Flag *child3[] = { init_flag("--child", 1, set_integer, false, empty_children) };
+    const Flag *child3[] = { init_flag("--child", 1, set_integer, false) };
     const struct FlagsArray child_arr3 = {child3, 1};
     const Flag *top3[] = {
-        init_flag("--parent", 0, dummy_parse, true, child_arr3),
-        init_flag("--boolean", 0, set_boolean, true, empty_children)
+        init_flag_with_children("--parent", 0, dummy_parse, true, child_arr3),
+        init_flag("--boolean", 0, set_boolean, true)
     };
     const FlagParser *parser3 = init_flag_parser((struct FlagsArray){top3, 2});
     option = (CmdOptions){0, 0, false};
@@ -202,33 +199,33 @@ void test_exhaustive_flags() {
 
     // Group 1: Two child flags.
     const Flag *group1_children[] = {
-        init_flag("--child1", 0, dummy_parse, false, empty_children),
-        init_flag("--child2", 0, dummy_parse, false, empty_children)
+        init_flag("--child1", 0, dummy_parse, false),
+        init_flag("--child2", 0, dummy_parse, false)
     };
     const struct FlagsArray group1_arr = {group1_children, 2};
 
     // Group 2: Child4 has a nested grandchild.
     const Flag *group2_child4_children[] = {
-        init_flag("--grandchild1", 0, dummy_parse, true, empty_children)
+        init_flag("--grandchild1", 0, dummy_parse, true)
     };
     const struct FlagsArray group2_child4_arr = {group2_child4_children, 1};
 
     // Group 2: Two child flags.
     const Flag *group2_children[] = {
-        init_flag("--child3", 0, dummy_parse, false, empty_children),
-        init_flag("--child4", 0, dummy_parse, true, group2_child4_arr)
+        init_flag("--child3", 0, dummy_parse, false),
+        init_flag_with_children("--child4", 0, dummy_parse, true, group2_child4_arr)
     };
     const struct FlagsArray group2_arr = {group2_children, 2};
 
     // Exhaustive flags including extra groups and options.
     const Flag *exhaustive_flags[] = {
-        init_flag("--extra1", 0, dummy_parse, false, empty_children),
-        init_flag("--group1", 0, dummy_parse, true, group1_arr),
-        init_flag("--set_int", 1, set_integer, true, empty_children),
-        init_flag("--set_uint", 3, set_u_integer, true, empty_children),
-        init_flag("--set_bool", 0, set_boolean, true, empty_children),
-        init_flag("--extra2", 0, dummy_parse, false, empty_children),
-        init_flag("--group2", 0, dummy_parse, true, group2_arr)
+        init_flag("--extra1", 0, dummy_parse, false),
+        init_flag_with_children("--group1", 0, dummy_parse, true, group1_arr),
+        init_flag("--set_int", 1, set_integer, true),
+        init_flag("--set_uint", 3, set_u_integer, true),
+        init_flag("--set_bool", 0, set_boolean, true),
+        init_flag("--extra2", 0, dummy_parse, false),
+        init_flag_with_children("--group2", 0, dummy_parse, true, group2_arr)
     };
     const FlagParser *parser = init_flag_parser((struct FlagsArray){exhaustive_flags, 7});
 

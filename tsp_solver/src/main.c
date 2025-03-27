@@ -58,7 +58,7 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
-                  "plot_vns.png");
+                  "VNS-plot.png");
         printf("VNS solution: %lf\n", solution->get_cost(solution));
         solution->free(solution);
         algorithm->free(algorithm);
@@ -71,7 +71,7 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
-                  "plot_nearest_neighbor.png");
+                  "NN-plot.png");
         printf("Nearest-neighbor solution: %lf\n", solution->get_cost(solution));
         solution->free(solution);
         algorithm->free(algorithm);
@@ -84,7 +84,7 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
-                  "plot_tabu_search.png");
+                  "TS-plot.png");
         printf("Tabu Search solution: %lf\n", solution->get_cost(solution));
         solution->free(solution);
         algorithm->free(algorithm);
