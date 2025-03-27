@@ -13,10 +13,11 @@ struct TspSolutionState {
     double cost;
     int *const tour;
     const TspInstance *const instance;
+
 };
 
 const int *get_tour(const TspSolution *solution) { return solution->state->tour; }
-const double get_cost(const TspSolution *solution) { return solution->state->cost; }
+double get_cost(const TspSolution *solution) { return solution->state->cost; }
 
 double compute_cost(const TspSolution *solution) {
     const TspInstance *instance = solution->state->instance;

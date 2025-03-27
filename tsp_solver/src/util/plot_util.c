@@ -34,7 +34,7 @@ static Bounds calculate_bounds(const double *x, const double *y, const int lengt
     return b;
 }
 
-void plot_tour(const int *tour, const int number_of_nodes, const Node* nodes, const char *output_name) {
+void plot_tour(const int *tour, const int number_of_nodes, const Node *nodes, const char *output_name) {
     if (!output_name)
         output_name = "tsp_solution.png";
     FILE *gp = popen("gnuplot", "w");
@@ -42,7 +42,9 @@ void plot_tour(const int *tour, const int number_of_nodes, const Node* nodes, co
     fprintf(gp, "set terminal png size 800,600\n");
 
     double *x = malloc(sizeof(double) * (number_of_nodes + 1));
+    check_alloc(x);
     double *y = malloc(sizeof(double) * (number_of_nodes + 1));
+    check_alloc(y);
     for (int i = 0; i < number_of_nodes; i++) {
         x[i] = nodes[tour[i]].x;
         y[i] = nodes[tour[i]].y;
@@ -52,7 +54,8 @@ void plot_tour(const int *tour, const int number_of_nodes, const Node* nodes, co
     y[number_of_nodes] = nodes[tour[0]].y;
 
     const Bounds bounds = calculate_bounds(x, y, number_of_nodes + 1);
-    free(x); free(y);
+    free(x);
+    free(y);
 
     fprintf(gp, "set xrange [%lf:%lf]\n", bounds.min_x, bounds.max_x);
     fprintf(gp, "set yrange [%lf:%lf]\n", bounds.min_y, bounds.max_y);
@@ -67,6 +70,7 @@ void plot_tour(const int *tour, const int number_of_nodes, const Node* nodes, co
 }
 
 void plot_costs_evolution(const double *costs, const int length, const char *output_name) {
+    if (length <= 0) return;
     if (!output_name)
         output_name = "costs_evolution.png";
     FILE *gp = popen("gnuplot", "w");
@@ -76,8 +80,9 @@ void plot_costs_evolution(const double *costs, const int length, const char *out
 
     // Prepare time array and compute bounds
     double *time = malloc(sizeof(double) * length);
+    check_alloc(time);
     for (int i = 0; i < length; i++)
-        time[i] = (double)i;
+        time[i] = (double) i;
     const Bounds bounds = calculate_bounds(time, costs, length);
     free(time);
 
@@ -87,9 +92,10 @@ void plot_costs_evolution(const double *costs, const int length, const char *out
 
     // Compute cumulative (best-so-far) minimum values
     double *cum_min = malloc(sizeof(double) * length);
+    check_alloc(cum_min);
     cum_min[0] = costs[0];
     for (int i = 1; i < length; i++) {
-        cum_min[i] = (costs[i] < cum_min[i-1]) ? costs[i] : cum_min[i-1];
+        cum_min[i] = (costs[i] < cum_min[i - 1]) ? costs[i] : cum_min[i - 1];
     }
 
     // Plot the original cost evolution and overlay the cumulative min (best-so-far) as a red step line.
@@ -109,5 +115,3 @@ void plot_costs_evolution(const double *costs, const int length, const char *out
     check_pclose(pclose(gp));
     free(cum_min);
 }
-
-
