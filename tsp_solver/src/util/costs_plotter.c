@@ -1,11 +1,10 @@
 #include "costs_plotter.h"
-
 #include <plot_util.h>
 #include <stdlib.h>
 #include "c_util.h"
 
 struct PlotterState {
-    size_t index; // index of the lowerest free cell
+    size_t index; // index of the lowermost free cell
     size_t capacity;
     double *costs;
 

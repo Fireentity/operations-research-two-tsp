@@ -26,7 +26,7 @@ void free_this(const TimeLimiter* self)
     free((void*)self);
 }
 
-const TimeLimiter* init_time_limiter(const double time_limit_seconds)
+TimeLimiter *init_time_limiter(const double time_limit_seconds)
 {
     const TimeLimiterState state = {
         .start_seconds = 0,

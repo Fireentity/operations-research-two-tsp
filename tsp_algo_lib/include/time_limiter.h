@@ -15,6 +15,6 @@ struct TimeLimiter
     void (*const free)(const TimeLimiter*);
 };
 
-const TimeLimiter* init_time_limiter(double time_limit_seconds);
+TimeLimiter *init_time_limiter(double time_limit_seconds);
 
 #endif //TIME_LIMITER_H

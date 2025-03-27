@@ -52,7 +52,6 @@ static const char *parsing_messages[] = {
 void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) {
     if (cmd_options->variable_neighborhood_search) {
         const TspSolution *solution = init_solution(instance);
-
         const TspAlgorithm *algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->time_limit);
         solution->solve(solution, algorithm);
         plot_tour(solution->get_tour(solution),
