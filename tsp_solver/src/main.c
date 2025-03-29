@@ -14,22 +14,38 @@
 #define CONCAT(a, b) a ## b
 
 #define HELP_MESSAGE "Usage: %s [OPTION]...\n" \
-                "Generates and solves Traveling Salesman Problem (TSP) instances with specified parameters.\n" \
+                "Solves the Traveling Salesman Problem (TSP) using various algorithms.\n" \
+                "\n" \
+                "Mandatory options:\n" \
+                "  --nodes=N                 Number of nodes (N > 0)\n" \
+                "  --seed=N                  Seed for random number generation\n" \
+                "  --x-square=N              X-coordinate of the square\n" \
+                "  --y-square=N              Y-coordinate of the square\n" \
+                "  --square-side=N           Side length of the square\n" \
+                "\n" \
+                "Other options:\n" \
+                "  -h, --help                 Display this help message and exit\n" \
+                "  --version                  Output version information\n" \
+                "  --seconds=N                Set the time limit for the algorithm execution\n" \
+                "  --vns                      Enable Variable Neighborhood Search (VNS) algorithm\n" \
+                "  --kick-repetitions=N       Set the number of kick repetitions for VNS\n" \
+                "  --nearest-neighbor         Use the Nearest Neighbor heuristic for solving TSP\n" \
+                "  --tabu-search              Use the Tabu Search algorithm for solving TSP\n" \
+                "  --tenure=N                 Set the tenure for Tabu Search\n" \
+                "  --max-stagnation=N         Set the maximum stagnation for Tabu Search\n" \
+                "  --time-limit=N             Set the time limit for algorithm execution (in seconds)\n" \
                 "\n" \
                 "Examples:\n" \
                 "  tsp_solver --nodes 10 --seed 42 --x-square 5 --y-square 5 --square-side 10\n" \
                 "  tsp_solver --nodes 20 --seed 99 --x-square 3 --y-square 3 --square-side 15\n" \
+                "  tsp_solver --nodes 50 --seed 100 --x-square 10 --y-square 10 --square-side 20 --vns --kick-repetitions 10 --time-limit 300\n" \
+                "  tsp_solver --nodes 100 --seed 200 --x-square 5 --y-square 5 --square-side 15 --nearest-neighbor\n" \
+                "  tsp_solver --nodes 30 --seed 150 --x-square 5 --y-square 5 --square-side 10 --tabu-search --tenure 50 --max-stagnation 10 --time-limit 180\n" \
                 "\n" \
-                "Mandatory options:\n" \
-                "      --nodes=N               specify number of nodes (N must be > 0)\n" \
-                "      --seed=N                set random seed for reproducibility\n" \
-                "      --x-square=N            define x-coordinate of the square\n" \
-                "      --y-square=N            define y-coordinate of the square\n" \
-                "      --square-side=N         set side length of the square\n" \
-                "\n" \
-                "Other options:\n" \
-                "  -?, --help                 display this help message\n" \
-                "      --version              output version information\n;"
+                "Exit status:\n" \
+                "  0   if the program finishes successfully\n" \
+                "  1   if an error occurs\n"
+
 #define ERROR "Internal error this message should not appear. Report it to the developer."
 #define PARSE_UNKNOWN_ARG "Argument not recognized.\n\nUsage:\n" HELP_MESSAGE
 #define PARSE_USAGE_ERROR HELP_MESSAGE
@@ -48,7 +64,6 @@ static const char *parsing_messages[] = {
     PARSE_MISSING_MANDATORY_FLAG
 };
 
-//TODO change this
 void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) {
     if (cmd_options->variable_neighborhood_search) {
         const TspSolution *solution = init_solution(instance);
