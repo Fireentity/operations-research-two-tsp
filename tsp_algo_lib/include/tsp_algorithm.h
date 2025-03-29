@@ -1,5 +1,6 @@
 #ifndef TSP_ALGORITHM_H
 #define TSP_ALGORITHM_H
+#include <pthread.h>
 
 /**
  * @brief TSP algorithm interface.
@@ -31,7 +32,8 @@ struct TspAlgorithm {
                         int *tour,
                         int number_of_nodes,
                         const double *edge_cost_array,
-                        double *cost);
+                        double *cost,
+                        pthread_mutex_t *mutex);
 
     /**
      * @brief Frees the memory allocated for the TSP algorithm instance.

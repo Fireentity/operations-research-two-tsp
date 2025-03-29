@@ -31,7 +31,8 @@ static void improve(const TspAlgorithm *tsp_algorithm,
                     int tour[],
                     const int number_of_nodes,
                     const double edge_cost_array[],
-                    double *cost) {
+                    double *cost,
+                    pthread_mutex_t *mutex) {
     // Initialize time limiter and cost plotter.
     const double time_limit = tsp_algorithm->extended->tabu_search->time_limit;
     const TimeLimiter *time_limiter = init_time_limiter(time_limit);
@@ -40,8 +41,10 @@ static void improve(const TspAlgorithm *tsp_algorithm,
 
     // Make a local copy of the tour and current cost.
     int current_tour[number_of_nodes + 1];
-    memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
-    double current_cost = *cost;
+    double current_cost;
+    WITH_MUTEX(mutex, memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
+               current_cost = *cost);
+
     current_cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
 
 
@@ -124,8 +127,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
 
     // If an improved solution was found, update the input tour and cost.
     if (best_cost < *cost) {
-        memcpy(tour, best_tour, (number_of_nodes + 1) * sizeof(int));
-        *cost = best_cost;
+        WITH_MUTEX(mutex, memcpy(tour, best_tour, (number_of_nodes + 1) * sizeof(int));*cost = best_cost);
     }
 
     // Plot the cost progression.
@@ -143,15 +145,14 @@ static void solve(const TspAlgorithm *tsp_algorithm,
                   int tour[],
                   const int number_of_nodes,
                   const double edge_cost_array[],
-                  double *cost) {
+                  double *cost,
+                  pthread_mutex_t *mutex) {
     // Create initial tour using nearest neighbor and 2‑opt.
     nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
 
     // Further improve the tour.
-    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost);
+    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);
 }
-
-
 
 
 const TspAlgorithm *init_tabu(const int tenure, const int max_stagnation, const double time_limit) {

@@ -13,7 +13,7 @@ struct TspSolutionState {
     double cost;
     int *const tour;
     const TspInstance *const instance;
-
+    pthread_mutex_t mutex;
 };
 
 const int *get_tour(const TspSolution *solution) { return solution->state->tour; }
@@ -68,7 +68,8 @@ FeasibilityResult solve(const TspSolution *solution, const TspAlgorithm *tsp_alg
                          solution->state->tour,
                          instance->get_number_of_nodes(instance),
                          instance->get_edge_cost_array(instance),
-                         &solution->state->cost);
+                         &solution->state->cost,
+                         &solution->state->mutex);
     return is_feasible(solution);
 }
 
@@ -98,9 +99,10 @@ TspSolution *init_solution(const TspInstance *instance) {
     const TspSolutionState state = {
         .cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance)),
         .tour = tour,
-        .instance = instance
+        .instance = instance,
+        .mutex = 0 //Completa
     };
-    const TspSolution solution = {
+    const TspSolution stack = {
         .free = free_this,
         .is_feasible = is_feasible,
         .solve = solve,
@@ -108,5 +110,7 @@ TspSolution *init_solution(const TspInstance *instance) {
         .get_cost = get_cost,
         .state = malloc_from_stack(&state, sizeof(state))
     };
-    return malloc_from_stack(&solution, sizeof(solution));
+    TspSolution *solution = malloc_from_stack(&stack, sizeof(stack));
+    pthread_mutex_init(&solution->state->mutex, NULL);
+    return solution;
 }
