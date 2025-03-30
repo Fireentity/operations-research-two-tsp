@@ -31,10 +31,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 echo
 # Define the path to the tsp_solver binary relative to the script's directory.
 solver_path="$SCRIPT_DIR/../build/tsp_solver/tsp_solver"
-fixed="$solver_path --square-side 500 --x-square 2 --y-square 2 --seconds 5 --nodes 500"
+fixed="$solver_path --square-side 10000 --x-square 0 --y-square 0 --seconds 60 --nodes 1000"
 
 seeds=(100 105 110)
-tenure_values=(70 75 80 85 90)
+tenure_values=(4 7 10 13 16)
 max_stag_values=(900 1000 1100)
 kicks=(1 3 5 7 9)
 nopts=(3 5 7 9)
