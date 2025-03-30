@@ -24,8 +24,20 @@
 # Each main experiment loop is run in a separate background process (thread).
 
 # Fixed parameters common to all runs.
-fixed="./build/tsp_solver/tsp_solver --square-side 500 --x-square 2 --y-square 2 --seconds 5 --nodes 500"
+
+
+# Get the directory where the script is located.
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+echo
+# Define the path to the tsp_solver binary relative to the script's directory.
+solver_path="$SCRIPT_DIR/../build/tsp_solver/tsp_solver"
+fixed="$solver_path --square-side 500 --x-square 2 --y-square 2 --seconds 5 --nodes 500"
+
 seeds=(100 105 110)
+tenure_values=(70 75 80 85 90)
+max_stag_values=(900 1000 1100)
+kicks=(1 3 5 7 9)
+nopts=(3 5 7 9)
 #####################################
 # Function for Nearest-neighbor experiments (NN)
 #####################################
@@ -49,8 +61,8 @@ run_vns () {
     VNS_FILE="results-VNS.csv"
     echo "KickRepetitions,Nopt,Seed,Solution" > "$VNS_FILE"
     echo "Running VNS experiments..."
-    for kick in {1..10}; do
-        for nopt in {3..11}; do
+    for kick in "${kicks[@]}"; do
+        for nopt in "${nopts[@]}"; do
             for seed in "${seeds[@]}"; do
                 cmd="$fixed --vns --kick-repetitions $kick --n-opt $nopt --seed $seed"
                 output=$($cmd)
@@ -69,8 +81,7 @@ run_ts () {
     TS_FILE="results-TS.csv"
     echo "Tenure,MaxStagnation,Seed,Solution" > "$TS_FILE"
     echo "Running Tabu Search experiments..."
-    tenure_values=(70 75 80 85 90)
-    max_stag_values=(900 1000 1100)
+
     for tenure in "${tenure_values[@]}"; do
         for maxstag in "${max_stag_values[@]}"; do
             for seed in "${seeds[@]}"; do
