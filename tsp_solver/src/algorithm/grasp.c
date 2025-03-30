@@ -80,9 +80,11 @@ void grasp_tour(const int starting_node,
     RCL* rcl = init_RCL(number_of_nodes);
 
     while (visited < number_of_nodes) {
-        fill_rcl(visited, number_of_nodes, edge_cost_array, current, rcl, );
+        // TODO 0 only for making in compile
+        fill_rcl(visited, number_of_nodes, edge_cost_array, current, rcl, 0);
         // Move the best found node to the next position in the tour
-        swap_int(tour, visited, best_index);
+        // TODO 0 only for making in compile
+        swap_int(tour, visited, 0);
         current = tour[visited];
         visited++;
     }

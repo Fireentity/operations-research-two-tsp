@@ -27,9 +27,10 @@ struct CmdOptions
     bool variable_neighborhood_search;
     bool nearest_neighbor;
     bool tabu_search;
-    int kick_repetitions;
-    int tenure;
-    int max_stagnation;
+    unsigned int kick_repetitions;
+    unsigned int n_opt;
+    unsigned int tenure;
+    unsigned int max_stagnation;
     unsigned int timer_limit;
     unsigned int time_limit;      /**< Time limit for algorithm execution. */
 };

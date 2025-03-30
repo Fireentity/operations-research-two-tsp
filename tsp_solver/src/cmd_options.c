@@ -98,15 +98,15 @@ ParsingResult set_vns(CmdOptions *cmd_options, const char **arg) {
  * @return ParsingResult indicating success or failure.
  */
 ParsingResult set_kick_repetitions(CmdOptions *cmd_options, const char **arg) {
-    return parse_int(*(arg + 1), &cmd_options->kick_repetitions);
+    return parse_unsigned_int(*(arg + 1), &cmd_options->kick_repetitions);
 }
 
 ParsingResult set_tenure(CmdOptions *cmd_options, const char **arg) {
-    return parse_int(*(arg + 1), &cmd_options->tenure);
+    return parse_unsigned_int(*(arg + 1), &cmd_options->tenure);
 }
 
 ParsingResult set_max_stagnation(CmdOptions *cmd_options, const char **arg) {
-    return parse_int(*(arg + 1), &cmd_options->max_stagnation);
+    return parse_unsigned_int(*(arg + 1), &cmd_options->max_stagnation);
 }
 
 /**
@@ -118,6 +118,10 @@ ParsingResult set_max_stagnation(CmdOptions *cmd_options, const char **arg) {
  */
 ParsingResult set_time_limit(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->time_limit);
+}
+
+ParsingResult set_n_opt(CmdOptions *cmd_options, const char **arg) {
+    return parse_unsigned_int(*(arg + 1), &cmd_options->n_opt);
 }
 
 /**
@@ -147,9 +151,10 @@ ParsingResult set_tabu_search(CmdOptions *cmd_options, const char **arg) {
 struct FlagsArray init_flags_array() {
     // Init VNS flags
     const Flag *vns_children_data[] = {
-        init_flag("--kick-repetitions", 1, set_kick_repetitions, true)
+        init_flag("--kick-repetitions", 1, set_kick_repetitions, true),
+        init_flag("--n-opt", 1, set_n_opt, true)
     };
-    const Flag **vns_children = malloc_from_stack(vns_children_data, sizeof(const Flag *) * 1);
+    const Flag **vns_children = malloc_from_stack(vns_children_data, sizeof(const Flag *) * 2);
 
     // Init Tabu flags
     const Flag *tabu_children_data[] = {
@@ -169,7 +174,7 @@ struct FlagsArray init_flags_array() {
         init_flag("--seconds", 1, set_time_limit, false),
         init_flag("--help", 0, set_help, false),
         init_flag_with_children("--vns", 0, set_vns, false,
-                                (struct FlagsArray){vns_children, 1}),
+                                (struct FlagsArray){vns_children, 2}),
         init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false),
         init_flag_with_children("--tabu-search", 0, set_tabu_search,false,
                                 (struct FlagsArray){tabu_children, 2})

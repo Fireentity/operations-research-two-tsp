@@ -10,7 +10,6 @@
 typedef struct
 {
     const double time_limit; /**< Maximum allowed time for the algorithm execution. */
-    const TspInstance*const instance; //TODO remove this is for testing only
 } NearestNeighbor;
 
 /**
@@ -19,6 +18,6 @@ typedef struct
  * @param time_limit The time limit for the algorithm execution.
  * @return Pointer to a TspAlgorithm instance configured to use the nearest neighbor approach.
  */
-const TspAlgorithm* init_nearest_neighbor(double time_limit, const TspInstance* instance);
+const TspAlgorithm* init_nearest_neighbor(double time_limit);
 
 #endif //NEAREST_NEIGHBOR_H

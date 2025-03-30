@@ -73,12 +73,12 @@ static void improve(const TspAlgorithm *tsp_algorithm,
     double best_cost = current_cost;
 
     const int kick_repetition = tsp_algorithm->extended->variable_neighborhood_search->kick_repetition;
-
+    const int n_opt = tsp_algorithm->extended->variable_neighborhood_search->n_opt;
     // Improvement loop: continue until the time limit is reached.
     while (!time_limiter->is_time_over(time_limiter)) {
         // Apply a series of kick moves.
         for (int i = 0; i < kick_repetition; i++) {
-            current_cost += kick(current_tour, number_of_nodes, edge_cost_array, 5);
+            current_cost += kick(current_tour, number_of_nodes, edge_cost_array, n_opt);
         }
         // Improve the solution using 2‑opt.
         current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter);
@@ -131,10 +131,11 @@ static void free_this(const TspAlgorithm *self) {
     free((void *) self);
 }
 
-const TspAlgorithm *init_vns(const int kick_repetition, const double time_limit) {
+const TspAlgorithm *init_vns(const int kick_repetition, const int n_opt, const double time_limit) {
     const VariableNeighborhoodSearch vns = {
         .kick_repetition = kick_repetition,
         .time_limit = time_limit,
+        .n_opt = n_opt,
     };
     const TspExtendedAlgorithms extended_algorithms = {
         .variable_neighborhood_search = malloc_from_stack(&vns, sizeof(vns))

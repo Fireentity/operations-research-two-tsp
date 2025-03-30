@@ -9,6 +9,7 @@ typedef struct
 {
     const int kick_repetition; /**< Number of kick repetitions. */
     const double time_limit;   /**< Maximum allowed time for the search. */
+    const int n_opt;
 } VariableNeighborhoodSearch;
 
 /**
@@ -18,7 +19,7 @@ typedef struct
  * @param time_limit Maximum allowed execution time in seconds.
  * @return Pointer to a TspAlgorithm instance configured for VNS.
  */
-const TspAlgorithm* init_vns(int kick_repetition, double time_limit);
+const TspAlgorithm* init_vns(int kick_repetition, int n_opt, double time_limit);
 
 
 #endif //VARIABLE_NEIGHBORHOOD_SEARCH_H

@@ -102,10 +102,9 @@ static void solve(const TspAlgorithm *tsp_algorithm,
 
 
 
-const TspAlgorithm *init_nearest_neighbor(const double time_limit, const TspInstance *instance) {
+const TspAlgorithm *init_nearest_neighbor(const double time_limit) {
     const NearestNeighbor nearest_neighbor = {
         .time_limit = time_limit,
-        .instance = instance
     };
 
     const TspExtendedAlgorithms extended_algorithms = {
