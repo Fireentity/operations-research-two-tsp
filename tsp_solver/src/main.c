@@ -87,7 +87,7 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
                   "NN-plot.png");
-        printf("Nearest-neighbor solution: %lf\n", solution->get_cost(solution));
+        printf("NN solution: %lf\n", solution->get_cost(solution));
         solution->free(solution);
         algorithm->free(algorithm);
     }
@@ -100,7 +100,7 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
                   "TS-plot.png");
-        printf("Tabu Search solution: %lf\n", solution->get_cost(solution));
+        printf("TS solution: %lf\n", solution->get_cost(solution));
         solution->free(solution);
         algorithm->free(algorithm);
     }
