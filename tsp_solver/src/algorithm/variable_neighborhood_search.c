@@ -113,9 +113,11 @@ static void solve(const TspAlgorithm *tsp_algorithm,
                   const double edge_cost_array[],
                   double *cost,
                   pthread_mutex_t *mutex) {
-    // Create initial tour using nearest neighbor and 2‑opt.
-    WITH_MUTEX(mutex, nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost));
-    // Further improve the tour using VNS.
+    // Create the initial tour in a thread-safe manner.
+    WITH_MUTEX(mutex,
+               nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
+    );
+    // Improve the tour.
     improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);
 }
 
@@ -139,6 +141,7 @@ const TspAlgorithm *init_vns(const int kick_repetition, const double time_limit)
     };
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
+        .improve = improve,
         .free = free_this,
         .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };

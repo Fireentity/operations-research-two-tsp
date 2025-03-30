@@ -147,10 +147,11 @@ static void solve(const TspAlgorithm *tsp_algorithm,
                   const double edge_cost_array[],
                   double *cost,
                   pthread_mutex_t *mutex) {
-    // Create initial tour using nearest neighbor and 2‑opt.
-    nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
-
-    // Further improve the tour.
+    // Create the initial tour in a thread-safe manner.
+    WITH_MUTEX(mutex,
+               nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
+    );
+    // Improve the tour.
     improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);
 }
 
@@ -169,6 +170,7 @@ const TspAlgorithm *init_tabu(const int tenure, const int max_stagnation, const 
     // Initialize main TspAlgorithm structure with solve and free functions.
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
+        .improve = improve,
         .free = free_this,
         .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };
