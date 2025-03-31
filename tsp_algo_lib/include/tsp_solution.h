@@ -42,7 +42,7 @@ struct TspSolution
      */
     const int* (* const get_tour)(const TspSolution* solution);
 
-    const double (* const get_cost)(const TspSolution* solution);
+    double (* const get_cost)(const TspSolution* solution);
 };
 
 /**

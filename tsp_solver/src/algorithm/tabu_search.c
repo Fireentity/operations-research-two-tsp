@@ -4,6 +4,8 @@
 #include <float.h>
 #include <stdlib.h>
 #include <time_limiter.h>
+#include <tsp_math_util.h>
+
 #include "c_util.h"
 #include "algorithms.h"
 
@@ -104,11 +106,13 @@ static void improve(const TspAlgorithm *tsp_algorithm,
             break;
 
         // Apply the best 2‑opt move by reversing the segment from best_i to best_j.
-        for (int k = 0; k < (best_j - best_i + 1) / 2; k++) {
+        /*for (int k = 0; k < (best_j - best_i + 1) / 2; k++) {
             const int tmp = current_tour[best_i + k];
             current_tour[best_i + k] = current_tour[best_j - k];
             current_tour[best_j - k] = tmp;
-        }
+        }*/
+        const int edges[2] = {best_i-1,best_j};
+        compute_n_opt_move(2,current_tour,edges, number_of_nodes);
         current_cost += best_delta;
 
         // Update tabu list: mark the move as forbidden until (iteration + tabu_tenure).

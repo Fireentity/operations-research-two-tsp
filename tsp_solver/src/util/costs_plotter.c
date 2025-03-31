@@ -12,12 +12,12 @@ struct PlotterState {
 };
 
 
-static void free_costs_plotter(CostsPlotter *self) {
+static void free_costs_plotter(const CostsPlotter *self) {
     if (!self) return;
     if (self->state) {
         self->state->free(self->state);
     }
-    free(self);
+    free((void*)self);
 }
 
 static void free_plotter_state(PlotterState *self) {

@@ -12,36 +12,46 @@ inline double two_opt(int* tour,
                       const TimeLimiter* time_limiter)
 {
     double cost_improvement = 0;
-    // Iterate over possible starting indices for a two-opt move
-    int i = 0;
-    while (i < number_of_nodes)
+    // Si assume che tour abbia dimensione number_of_nodes+1
+    int i = 1;
+    while (i < number_of_nodes - 1)
     {
         if (time_limiter->is_time_over(time_limiter))
-        {
             return cost_improvement;
-        }
 
-        double delta = 0;
-
-        // Iterate over possible end indices for the segment to be reversed
-        for (int k = i + 2; k < number_of_nodes; k++)
+        bool improvement_found = false;
+        // j rappresenta l'indice di fine del segmento da invertire
+        for (int j = i + 1; j < number_of_nodes; j++)
         {
-            if (i == 0 && k == number_of_nodes - 1) continue;
-            // Define the endpoints of the segment to remove
-            const int edge_to_remove[] = {i, k};
-            // Compute the cost difference for the proposed two-opt move
-            delta = compute_n_opt_cost(2, tour, edge_to_remove, edge_cost_array, number_of_nodes);
-            // If the move does not improve the tour cost, skip it
-            if (delta > -EPSILON)
+            // Evita la mossa che invertirebbe l'intero tour
+            if (i == 1 && j == number_of_nodes - 1)
                 continue;
 
-            cost_improvement += delta;
-            // Apply the two-opt move to modify the tour
-            compute_n_opt_move(2, tour, edge_to_remove, number_of_nodes);
-            break;
+            const int a = tour[i - 1];
+            const int b = tour[i];
+            const int c = tour[j];
+            const int d = tour[j + 1]; // tour è di dimensione number_of_nodes+1
+
+            // Calcola il delta in modo ottimizzato:
+            // delta = (costo arco a-c + costo arco b-d) - (costo arco a-b + costo arco c-d)
+            const double delta = (edge_cost_array[a * number_of_nodes + c] +
+                                    edge_cost_array[b * number_of_nodes + d]) -
+                                   (edge_cost_array[a * number_of_nodes + b] +
+                                    edge_cost_array[c * number_of_nodes + d]);
+
+            // Se la mossa porta a un miglioramento
+            if (delta < -EPSILON)
+            {
+                cost_improvement += delta;
+                // Inverte il segmento tra gli indici i e j utilizzando la macro definita
+                reverse_array_int(tour, i, j);
+                improvement_found = true;
+                break;
+            }
         }
 
-        i = delta < -EPSILON ? 0 : i + 1;
+        // Se è stato applicato un miglioramento, si riavvia da i = 1
+        i = improvement_found ? 1 : i + 1;
     }
 
     return cost_improvement;
