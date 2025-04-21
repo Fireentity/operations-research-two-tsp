@@ -1,115 +1,100 @@
-# Traveling Salesman Problem (TSP) Solver
-Progetto di Ricerca Operativa 2 – Università degli Studi di Padova
+# Traveling Salesman Problem (TSP) Solver
+Operations Research 2 Project – University of Padua
 
-> **TL;DR**: motore di ottimizzazione in **C**, orchestrato da **Bash** e **GNU Make/CMake**, che implementa euristiche avanzate (Nearest‑Neighbor, Tabu Search, Variable Neighborhood Search, GRASP) per il TSP. Il codice usa **pthread**, gestione manuale della memoria e script di **profiling**/debug—tutte competenze direttamente trasferibili al progetto **“Linux Kernel Bug Fixing Summer 2025”**.
+> **TL;DR**: An optimization engine in **C**, orchestrated with **Bash** and **GNU Make/CMake**, implementing advanced heuristics (Nearest‑Neighbor, Tabu Search, Variable Neighborhood Search, GRASP) for the TSP. The code uses **pthread**, manual memory management, and **profiling**/debug scripts—all skills directly transferable to the **“Linux Kernel Bug Fixing Summer 2025”** project.
 
----
+## Contents
 
-## Contenuti
-
-1. [Motivazioni e inquadramento](#motivazioni-e-inquadramento)
-2. [Architettura del repository](#architettura-del-repository)
-3. [Costruzione (CMake→GNUMake∙Ninja)](#costruzione)
-4. [Esecuzione rapida](#esecuzione-rapida)
+1. [Motivation and Context](#motivation-and-context)
+2. [Repository Architecture](#repository-architecture)
+3. [Building (CMake → GNU Make/Ninja)](#building-cmake→gnumakeninja)
+4. [Quick Run](#quick-run)
 5. [Profiling & Benchmark](#profiling--benchmark)
 6. [Testing & Continuous Integration](#testing--continuous-integration)
-7. [Debug e qualità del codice](#debug-e-qualità-del-codice)
-8. [Aderenza ai requisiti “Linux Kernel Bug Fixing Summer 2025”](#aderenza-ai-requisiti-linux-kernel-bug-fixing-summer-2025)
-9. [Road‑map e contributi futuri](#road-map-e-contributi-futuri)
-10. [Licenza](#licenza)
+7. [Debugging and Code Quality](#debugging-and-code-quality)
+8. [Alignment with “Linux Kernel Bug Fixing Summer 2025” Requirements](#alignment-with-linux-kernel-bug-fixing-summer-2025-requirements)
+9. [Roadmap and Future Contributions](#roadmap-and-future-contributions)
+10. [License](#license)
 
 ---
 
-## Motivazioni e inquadramento
-Questo progetto nasce come homework di *Operations Research2* e traduce in codice i contenuti del syllabus (algoritmi di programmazione matematica, modellazione, ottimizzazione combinatoria) applicandoli ad un prototipo di problema: il TravelingSalesmanProblem. Il risultato è un solver modulare in linguaggio **C99**, corredato di script POSIX shell per build, test e misurazioni, adatto a scenari di *systems programming* tipici del kernel Linux.
+## Motivation and Context
+This project started as a homework assignment for *Operations Research 2* and turns syllabus content (mathematical programming algorithms, modeling, combinatorial optimization) into code by applying it to a prototype problem: the Traveling Salesman Problem. The outcome is a modular solver in **C99**, accompanied by POSIX shell scripts for building, testing and measurement, suitable for *systems programming* scenarios typical of the Linux kernel.
 
----
-
-## Architettura del repository
+## Repository Architecture
 ```
-.
-├── cli_lib/                 # parser di opzioni da linea di comando  (C)
-├── common/                  # utilità generiche, hashmap, chrono     (C)
-├── tsp_algo_lib/            # core algoritmico e strutture TSP       (C)
-├── tsp_solver/              # executable, algoritmi, plotting        (C)
-├── profiler/                # script Bash per esperimenti            (sh)
-├── build.sh                 # build helper                           (sh)
-└── CMakeLists.txt           # root build definition                  (cmake)
+cli_lib/                 # Command‑line option parser           (C)
+common/                  # Generic utilities, hashmap, timing  (C)
+tsp_algo_lib/            # Algorithmic core and TSP structures  (C)
+tsp_solver/              # Executable, algorithms, plotting    (C)
+profiler/                # Bash scripts for experiments        (sh)
+build.sh                 # Build helper                        (sh)
+CMakeLists.txt           # Root build definition               (cmake)
 ```
-*Esempio di header C*: strutture dati per l’istanza TSP   
-*Esempio di script Bash*: orchestrazione esperimenti con profiler.sh
 
----
-
-## Costruzione
-Il progetto è gestito da **CMake**, ma può generare **Makefile GNU** oppure buildNinja:
+## Building (CMake → GNU Make/Ninja)
+The project is managed with **CMake**, but can generate **GNU Makefiles** or use Ninja:
 
 ```bash
-# Build di produzione con Makefile GNU
+# Production build with GNU Makefiles
 cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo -B build
 make -C build -j$(nproc)
 
-# Build di debug con sanitizzatori
+# Debug build with sanitizers
 cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DENABLE_ASAN=ON -B build_dbg
 ninja -C build_dbg
 ```
 
-> **Nota:** il wrapper `build.sh` automatizza i passi sopra
+> **Note:** The `build.sh` wrapper automates the steps above.
 
-### Dipendenze
-* GCC≥12 / Clang≥16
-* CMake≥3.25 (genera Makefile o Ninja)
-* GNUMake (se si usa il generator “UnixMakefiles”)
-* Bash ≥5, *coreutils*
-* gnuplot (per i grafici)
+### Dependencies
+* GCC ≥ 12 / Clang ≥ 16
+* CMake ≥ 3.25 (generates Makefile or Ninja)
+* GNU Make (if using the “Unix Makefiles” generator)
+* Bash ≥ 5, *coreutils*
+* gnuplot (for plots)
 
----
-
-## Esecuzione rapida
+## Quick Run
 ```bash
-# Istanza casuale da 1000 nodi, 60s time‑limit, euristica Nearest‑Neighbor
+# Random instance with 1000 nodes, 60s time limit, Nearest‑Neighbor heuristic
 ./build/tsp_solver/tsp_solver \
     --nodes 1000 --seconds 60 --nearest-neighbor
 ```
 
-Per la lista completa di opzioni:
+For the full list of options:
 ```bash
 ./tsp_solver --help
 ```
 
-Algoritmi disponibili:
+Available algorithms:
 - **Nearest Neighbor**
-- **Variable Neighborhood Search (VNS)** ‑ parametri `--kick-repetitions` & `--n-opt`
-- **Tabu Search** ‑ parametri `--tenure` & `--max-stagnation`
-- **GRASP** (greedy‑randomised)
-
----
+- **Variable Neighborhood Search (VNS)** – parameters `--kick-repetitions` & `--n-opt`
+- **Tabu Search** – parameters `--tenure` & `--max-stagnation`
+- **GRASP** (greedy‑randomized)
 
 ## Profiling & Benchmark
-La cartella `profiler/` contiene due script:
+The `profiler/` directory contains two scripts:
 
-* `profiler.sh` – lancia esperimenti in parallelo (NN,VNS,TS) su range di parametri
-* `analyzer.sh` – analizza CSV e produce medie/plot
+* `profiler.sh` – runs experiments in parallel (NN, VNS, TS) over a range of parameters
+* `analyzer.sh` – analyzes CSVs and produces averages/plots
 
 Output:
 ```
 profiler/
 ├── results-*.csv       # raw data
-├── *_avg.csv           # medie per configurazione
-└── *-plot.png          # grafici costi vs tempo
+├── *_avg.csv           # averages per configuration
+└── *-plot.png          # cost vs. time graphs
 ```
 
----
-
-## Testing & Continuous Integration
-Unit‑test scritti in C (basati su `<assert.h>`) risiedono in `*/tests/`.  
-Esecuzione con CTest:
+## Testing & Continuous Integration
+Unit tests written in C (using `<assert.h>`) reside in `*/tests/`.  
+Run them with CTest:
 
 ```bash
 cd build && ctest --output-on-failure
 ```
 
-Pipeline CI suggerita (GitHub Actions):
+Suggested CI pipeline (GitHub Actions):
 
 ```yaml
 - uses: actions/checkout@v4
@@ -119,11 +104,7 @@ Pipeline CI suggerita (GitHub Actions):
 - run: ctest --test-dir build --output-on-failure
 ```
 
----
+## License
+This project is released under the **MIT** license (see `LICENSE`).
 
-## Licenza
-Questo progetto è rilasciato sotto licenza **MIT** (vedi `LICENSE`).
-
----
-
-*Autore: Lorenzo Croce and Alberto Bottari* – aprile 2025
+*Author: Lorenzo Croce and Alberto Bottari* – April 2025
