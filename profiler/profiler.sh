@@ -34,7 +34,7 @@ solver_path="$SCRIPT_DIR/../build/tsp_solver/tsp_solver"
 fixed="$solver_path --square-side 10000 --x-square 0 --y-square 0 --seconds 60 --nodes 1000"
 
 seeds=(100 105 110)
-tenure_values=(4 7 10 13 16)
+tenure_values=(100 200 300 400 500)
 max_stag_values=(900 1000 1100)
 kicks=(1 3 5 7 9)
 nopts=(3 5 7 9)

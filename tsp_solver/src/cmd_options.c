@@ -163,7 +163,7 @@ struct FlagsArray init_flags_array() {
     };
     const Flag **tabu_children = malloc_from_stack(tabu_children_data, sizeof(const Flag *) * 2);
 
-    // Inizializzazione dei flag TSP
+    // Initialization of TSP flags
     const size_t tsp_count = 10;
     const Flag *tsp_flags_data[] = {
         init_flag("--nodes", 1, set_nodes, true),

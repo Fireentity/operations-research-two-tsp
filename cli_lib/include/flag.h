@@ -13,19 +13,21 @@ typedef struct Flag Flag;
 /** Forward declaration of CmdOptions. */
 typedef struct CmdOptions CmdOptions;
 
-struct FlagsArray {
+struct FlagsArray
+{
     const Flag** flags;
     const unsigned int number_of_flags;
 };
+
 #define EMPTY_FLAGS_ARRAY (struct FlagsArray){NULL,0}
 
 
 /**
  * @brief Represents a flag with its state and operations.
  */
-struct Flag {
-
-    FlagState *state; /**< Pointer to the flag's state. */
+struct Flag
+{
+    FlagState* state; /**< Pointer to the flag's state. */
 
     struct FlagsArray children;
     /**
@@ -37,10 +39,10 @@ struct Flag {
      * @param index Current index in argv.
      * @return ParsingResult outcome of the parsing.
      */
-    ParsingResult (*const parse)(const Flag *flag,
-                                 CmdOptions *cmd_options,
-                                 const char **argv,
-                                 unsigned int *index);
+    ParsingResult (*const parse)(const Flag* flag,
+                                 CmdOptions* cmd_options,
+                                 const char** argv,
+                                 unsigned int* index);
 
     /**
      * @brief Checks if the flag is mandatory.
@@ -48,7 +50,7 @@ struct Flag {
      * @param self Pointer to the flag instance.
      * @return true if mandatory, false otherwise.
      */
-    bool (*const is_mandatory)(const Flag *self);
+    bool (*const is_mandatory)(const Flag* self);
 
     /**
      * @brief Returns the expected number of parameters for the flag.
@@ -56,7 +58,7 @@ struct Flag {
      * @param self Pointer to the flag instance.
      * @return Number of parameters.
      */
-    unsigned int (*const get_number_of_params)(const Flag *self);
+    unsigned int (*const get_number_of_params)(const Flag* self);
 
     /**
      * @brief Retrieves the label of the flag.
@@ -64,7 +66,7 @@ struct Flag {
      * @param self Pointer to the flag instance.
      * @return String label of the flag.
      */
-    const char* (*const get_label)(const Flag *self);
+    const char* (*const get_label)(const Flag* self);
 };
 
 /**
@@ -77,19 +79,19 @@ struct Flag {
  * @param children
  * @return Pointer to the initialized flag.
  */
-const Flag *init_flag_with_children(const char *label,
-                      unsigned int number_of_params,
-                      ParsingResult (*param_function)(CmdOptions *cmd_options, const char **arg),
-                      bool mandatory, struct FlagsArray children);
+const Flag* init_flag_with_children(const char* label,
+                                    unsigned int number_of_params,
+                                    ParsingResult (*param_function)(CmdOptions* cmd_options, const char** arg),
+                                    bool mandatory, struct FlagsArray children);
 
-const Flag *init_flag(const char *label,
+const Flag* init_flag(const char* label,
                       unsigned int number_of_params,
-                      ParsingResult (*param_function)(CmdOptions *cmd_options, const char **arg),
+                      ParsingResult (*param_function)(CmdOptions* cmd_options, const char** arg),
                       bool mandatory);
 
 
-void add_children(Flag *self, struct FlagsArray children);
+void add_children(Flag* self, struct FlagsArray children);
 
-void free_flag(Flag *self);
+void free_flag(Flag* self);
 void free_flags_array(struct FlagsArray self);
 #endif //FLAG_H
