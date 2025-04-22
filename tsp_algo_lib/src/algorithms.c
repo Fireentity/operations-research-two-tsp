@@ -1,15 +1,14 @@
 #include "algorithms.h"
 #include <tsp_math_util.h>
-#include <constants.h>
 #include <float.h>
-
 #include "c_util.h"
 
 
 inline double two_opt(int* tour,
                       const int number_of_nodes,
                       const double* edge_cost_array,
-                      const TimeLimiter* time_limiter)
+                      const TimeLimiter* time_limiter,
+                      const double epsilon)
 {
     double cost_improvement = 0;
     // Si assume che tour abbia dimensione number_of_nodes+1
@@ -40,7 +39,7 @@ inline double two_opt(int* tour,
                     edge_cost_array[c * number_of_nodes + d]);
 
             // Se la mossa porta a un miglioramento
-            if (delta < -EPSILON)
+            if (delta < -epsilon)
             {
                 cost_improvement += delta;
                 // Inverte il segmento tra gli indici i e j utilizzando la macro definita
@@ -184,56 +183,56 @@ void grasp_nearest_neighbor_tour(const int starting_node,
             }
         }
 
-        // Pick among the 2nd, 3rd, or 4th found nodes with probabilities p2, p3, p4 if possible.
-
+        // Pick the first node with probability p1
         int chosen_index = -1;
         const double r = normalized_rand();
 
-        if (candidates_found >= 4)
+        if (r < p1 && candidates_found > 0)
         {
-            // We have at least 4 unvisited nodes
-            //   - skip the 1st nearest (which is min_index[0])
-            //   - pick among min_index[1], min_index[2], min_index[3]
-            if (r < p2)
-            {
-                chosen_index = min_index[1]; // 2nd nearest
-            }
-            else if (r < p2 + p3)
-            {
-                chosen_index = min_index[2]; // 3rd nearest
-            }
-            else
-            {
-                chosen_index = min_index[3]; // 4th nearest
-            }
+            chosen_index = min_index[0]; // First node is chosen with probability p1
         }
         else
         {
-            // Fewer than 4 nodes remain unvisited. Fallback logic:
-            // If only 3 left, pick from min_index[1] and min_index[2].
-            // If only 2 left, pick min_index[1].
-            // If only 1 left, must pick min_index[0].
-            // These are arbitrary fallback rules—adapt them to your preference.
-            if (candidates_found == 3)
+            // If the first node is not chosen, pick among the remaining candidates
+            if (candidates_found >= 4)
             {
-                const double p_sum = p2 + p3;
-                if (r < p2 / p_sum)
+                // We have at least 4 unvisited nodes
+                if (r < p2)
+                {
+                    chosen_index = min_index[1]; // 2nd nearest
+                }
+                else if (r < p2 + p3)
+                {
+                    chosen_index = min_index[2]; // 3rd nearest
+                }
+                else
+                {
+                    chosen_index = min_index[3]; // 4th nearest
+                }
+            }
+            else
+            {
+                // Fewer than 4 nodes remain unvisited. Fallback logic:
+                if (candidates_found == 3)
+                {
+                    const double p_sum = p2 + p3;
+                    if (r < p2 / p_sum)
+                    {
+                        chosen_index = min_index[1];
+                    }
+                    else
+                    {
+                        chosen_index = min_index[2];
+                    }
+                }
+                else if (candidates_found == 2)
                 {
                     chosen_index = min_index[1];
                 }
                 else
                 {
-                    chosen_index = min_index[2];
+                    chosen_index = min_index[0]; // Only 1 candidate left
                 }
-            }
-            else if (candidates_found == 2)
-            {
-                chosen_index = min_index[1];
-            }
-            else
-            {
-                // Only 1 candidate left
-                chosen_index = min_index[0];
             }
         }
 
@@ -248,3 +247,4 @@ void grasp_nearest_neighbor_tour(const int starting_node,
     // Compute the total cost of the generated tour
     *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
 }
+

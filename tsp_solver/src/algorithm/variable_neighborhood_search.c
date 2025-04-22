@@ -1,11 +1,12 @@
-#include <constants.h>
-#include <costs_plotter.h>
-#include <variable_neighborhood_search.h>
 #include <c_util.h>
-#include <nearest_neighbor.h>
 #include <time_limiter.h>
 #include <tsp_math_util.h>
 #include "algorithms.h"
+#include "tsp_algorithm.h"
+#include <variable_neighborhood_search.h>
+
+#include "constants.h"
+#include "costs_plotter.h"
 
 union TspExtendedAlgorithms {
     VariableNeighborhoodSearch *variable_neighborhood_search;
@@ -31,7 +32,7 @@ static double kick(int tour[],
     int edges_to_remove[n_opt];
 
     // Compute the number of edges to remove.
-    const int number_of_edges_to_remove = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
+    const int number_of_edges_to_remove = (int) (sizeof(edges_to_remove) / sizeof(edges_to_remove[0]));
 
     // Randomly select non-contiguous edges for removal.
     rand_k_non_contiguous(0, number_of_nodes - 1, number_of_edges_to_remove, edges_to_remove);
@@ -54,7 +55,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
                     double *cost,
                     pthread_mutex_t *mutex) {
     // Initialize time limiter and cost plotter.
-    const int time_limit = tsp_algorithm->extended->variable_neighborhood_search->time_limit;
+    const double time_limit = tsp_algorithm->extended->variable_neighborhood_search->time_limit;
     const TimeLimiter *time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
     const CostsPlotter *plotter = init_plotter(number_of_nodes);

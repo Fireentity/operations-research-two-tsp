@@ -109,6 +109,18 @@ ParsingResult set_max_stagnation(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->max_stagnation);
 }
 
+ParsingResult set_p1(CmdOptions *cmd_options, const char **arg) {
+    return parse_float(*(arg + 1), &cmd_options->p1);
+}
+
+ParsingResult set_p2(CmdOptions *cmd_options, const char **arg) {
+    return parse_float(*(arg + 1), &cmd_options->p2);
+}
+
+ParsingResult set_p3(CmdOptions *cmd_options, const char **arg) {
+    return parse_float(*(arg + 1), &cmd_options->p3);
+}
+
 /**
  * @brief Sets the time limit for the TSP algorithm.
  *
@@ -148,6 +160,18 @@ ParsingResult set_tabu_search(CmdOptions *cmd_options, const char **arg) {
     return PARSE_SUCCESS;
 }
 
+/**
+ * @brief Enables the Nearest Neighbor heuristic for the TSP algorithm.
+ *
+ * @param cmd_options Pointer to the CmdOptions structure.
+ * @param arg Array of argument strings.
+ * @return ParsingResult indicating success or failure.
+ */
+ParsingResult set_grasp(CmdOptions *cmd_options, const char **arg) {
+    cmd_options->grasp = true;
+    return PARSE_SUCCESS;
+}
+
 struct FlagsArray init_flags_array() {
     // Init VNS flags
     const Flag *vns_children_data[] = {
@@ -163,6 +187,14 @@ struct FlagsArray init_flags_array() {
     };
     const Flag **tabu_children = malloc_from_stack(tabu_children_data, sizeof(const Flag *) * 2);
 
+    // Init Grasp flags
+    const Flag *grasp_children_data[] = {
+        init_flag("--p1", 1, set_p1, true),
+        init_flag("--p2", 1, set_p2, true),
+        init_flag("--p3", 1, set_p3, true)
+    };
+    const Flag **grasp_children = malloc_from_stack(grasp_children_data, sizeof(const Flag *) * 2);
+
     // Initialization of TSP flags
     const size_t tsp_count = 10;
     const Flag *tsp_flags_data[] = {
@@ -177,7 +209,9 @@ struct FlagsArray init_flags_array() {
                                 (struct FlagsArray){vns_children, 2}),
         init_flag("--nearest-neighbor", 0, set_nearest_neighbor, false),
         init_flag_with_children("--tabu-search", 0, set_tabu_search,false,
-                                (struct FlagsArray){tabu_children, 2})
+                                (struct FlagsArray){tabu_children, 2}),
+        init_flag_with_children("--grasp", 0, set_grasp,false,
+                        (struct FlagsArray){grasp_children, 2})
     };
     const Flag **tsp_flags = malloc_from_stack(tsp_flags_data, sizeof(const Flag *) * tsp_count);
 

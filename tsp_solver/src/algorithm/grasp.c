@@ -15,22 +15,6 @@ union TspExtendedAlgorithms
     Grasp* grasp;
 };
 
-// TODO finish this
-void grasp_tour(const int starting_node,
-                int* tour,
-                const int number_of_nodes,
-                const double* edge_cost_array,
-                double* cost)
-{
-    if (starting_node > number_of_nodes)
-    {
-        printf("The starting node (%d) cannot be greater than the number of nodes (%d)",
-               starting_node, number_of_nodes);
-        exit(EXIT_FAILURE);
-    }
-}
-
-
 // The improvement function for GRASP performs the iterative improvement using NN + 2‑opt.
 static void improve(const TspAlgorithm* tsp_algorithm,
                     int* tour,
@@ -40,7 +24,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
                     pthread_mutex_t* mutex)
 {
     // Initialize the time limiter and the cost plotter.
-    const int time_limit = tsp_algorithm->extended->grasp->time_limit;
+    const double time_limit = tsp_algorithm->extended->grasp->time_limit;
     const TimeLimiter* time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
     const CostsPlotter* plotter = init_plotter(number_of_nodes);
@@ -74,7 +58,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
             edge_cost_array,
             &current_cost);
         // Improve the solution using 2‑opt and update the cost.
-        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter);
+        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
         // Record the current cost for plotting.
         plotter->add_cost(plotter, current_cost);
         // If the current solution is better than the best found so far, update best_tour and best_cost.

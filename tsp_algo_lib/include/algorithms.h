@@ -13,13 +13,15 @@
  * @param number_of_nodes Total number of nodes in the tour.
  * @param edge_cost_array Flattened 2D array containing edge costs.
  * @param time_limiter    Maximum allowed time for optimization, in seconds. If exceeded, the function terminates early.
+ * @param epsilon
  *
  * @returns The cost improvement of the 2-opt application
  */
 double two_opt(int* tour,
                       int number_of_nodes,
                       const double* edge_cost_array,
-                      const TimeLimiter* time_limiter);
+                      const TimeLimiter* time_limiter,
+                      double epsilon);
 
 
 void nearest_neighbor_tour(int starting_node,
