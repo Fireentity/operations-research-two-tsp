@@ -28,6 +28,14 @@ void nearest_neighbor_tour(int starting_node,
                            const double *edge_cost_array,
                            double *cost);
 
+void grasp_nearest_neighbor_tour(int starting_node,
+                           int *tour,
+                           int number_of_nodes,
+                           const double *edge_cost_array,
+                           double *cost,
+                           double p1,
+                           double p2,
+                           double p3);
 
 #define MAX_NO_IMPROVEMENT_CYCLE 1000
 #endif //ALGORITHMS_H

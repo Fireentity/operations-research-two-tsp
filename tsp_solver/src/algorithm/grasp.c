@@ -1,13 +1,12 @@
 #include "grasp.h"
+#include <float.h>
 #include <algorithms.h>
 #include "c_util.h"
 #include <stdlib.h>
-#include <float.h>
 #include <time_limiter.h>
 #include <constants.h>
 #include <costs_plotter.h>
 #include <nearest_neighbor.h>
-#include <tsp_math_util.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -16,45 +15,6 @@ union TspExtendedAlgorithms
     Grasp* grasp;
 };
 
-typedef struct {
-    int rcl_size;
-    int current_rcl_elements;
-    int elements[];  // Flexible array member
-} RCL;
-
-RCL* init_RCL(const int rcl_size) {
-    // Allocate and zero-initialize memory for the structure and its flexible array member
-    RCL* rcl = calloc(1, sizeof(RCL) + sizeof(int) * rcl_size);
-    check_alloc(rcl);
-    rcl->rcl_size = rcl_size;
-
-    return rcl;
-}
-
-
-void insert_element(RCL* rcl, const int node)
-{
-    const int index = rcl->current_rcl_elements == rcl->rcl_size ? rand()%rcl->current_rcl_elements : rcl->current_rcl_elements;
-    rcl->elements[index] = node;
-    rcl->current_rcl_elements++;
-}
-
-void fill_rcl(const int number_of_visited_nodes,
-                 const int number_of_nodes,
-                 const double edge_cost_array[],
-                 const int current_node_index,
-                 RCL* restricted_candidates,
-                 const double threshold)
-{
-    for (int i = number_of_visited_nodes; i < number_of_nodes; i++)
-    {
-        const double edge_cost = edge_cost_array[current_node_index*number_of_nodes + i];
-        if (edge_cost< threshold)
-        {
-            insert_element(restricted_candidates, i);
-        }
-    }
-}
 // TODO finish this
 void grasp_tour(const int starting_node,
                 int* tour,
@@ -62,47 +22,22 @@ void grasp_tour(const int starting_node,
                 const double* edge_cost_array,
                 double* cost)
 {
-    if (starting_node > number_of_nodes) {
+    if (starting_node > number_of_nodes)
+    {
         printf("The starting node (%d) cannot be greater than the number of nodes (%d)",
                starting_node, number_of_nodes);
         exit(EXIT_FAILURE);
     }
-
-    int visited = 1;
-
-    // Start from the node in input
-    swap_int(tour, 0, starting_node);
-    int current = tour[0];
-
-    // Closing the tour
-    tour[number_of_nodes] = tour[0];
-
-    RCL* rcl = init_RCL(number_of_nodes);
-
-    while (visited < number_of_nodes) {
-        // TODO 0 only for making in compile
-        fill_rcl(visited, number_of_nodes, edge_cost_array, current, rcl, 0);
-        // Move the best found node to the next position in the tour
-        // TODO 0 only for making in compile
-        swap_int(tour, visited, 0);
-        current = tour[visited];
-        visited++;
-    }
-
-    // Compute the total cost of the generated tour
-    *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
-
-    // TODO check with valgrind free rcl
-    free(rcl);
 }
 
-// The improve function for GRASP performs the iterative improvement using NN + 2‑opt.
+
+// The improvement function for GRASP performs the iterative improvement using NN + 2‑opt.
 static void improve(const TspAlgorithm* tsp_algorithm,
                     int* tour,
                     const int number_of_nodes,
                     const double* edge_cost_array,
                     double* cost,
-                    pthread_mutex_t *mutex)
+                    pthread_mutex_t* mutex)
 {
     // Initialize the time limiter and the cost plotter.
     const int time_limit = tsp_algorithm->extended->grasp->time_limit;
@@ -132,7 +67,12 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     while (!time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes)
     {
         // Build a NN solution starting from starting_nodes[iteration].
-        nearest_neighbor_tour(starting_nodes[iteration], current_tour, number_of_nodes, edge_cost_array, &current_cost);
+        nearest_neighbor_tour(
+            starting_nodes[iteration],
+            current_tour,
+            number_of_nodes,
+            edge_cost_array,
+            &current_cost);
         // Improve the solution using 2‑opt and update the cost.
         current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter);
         // Record the current cost for plotting.
@@ -169,11 +109,20 @@ static void solve(const TspAlgorithm* tsp_algorithm,
                   const int number_of_nodes,
                   const double* edge_cost_array,
                   double* cost,
-                  pthread_mutex_t *mutex)
+                  pthread_mutex_t* mutex)
 {
     // Create the initial tour in a thread-safe manner.
+
     WITH_MUTEX(mutex,
-               nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
+               grasp_nearest_neighbor_tour(
+                   rand() % number_of_nodes,
+                   tour,
+                   number_of_nodes,
+                   edge_cost_array,
+                   cost,
+                   tsp_algorithm->extended->grasp->p1,
+                   tsp_algorithm->extended->grasp->p2,
+                   tsp_algorithm->extended->grasp->p3);
     );
     // Improve the tour using the GRASP iterative improvement.
     improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);

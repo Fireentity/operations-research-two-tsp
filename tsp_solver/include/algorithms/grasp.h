@@ -5,6 +5,9 @@
 typedef struct
 {
     const double time_limit;
+    const double p1;
+    const double p2;
+    const double p3;
 } Grasp;
 
 /**
