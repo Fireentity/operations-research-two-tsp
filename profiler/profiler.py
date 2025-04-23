@@ -7,7 +7,6 @@ from enum import Enum
 from itertools import product
 from pathlib import Path
 from typing import Any, List
-
 from pydantic import BaseModel, Field, ValidationError
 
 
@@ -34,7 +33,7 @@ class AlgorithmTest(BaseModel):
 
 
 class TestsConfig(BaseModel):
-    cmd: List[str]
+    cmd: str
     tests: List[AlgorithmTest] = Field(default_factory=list)
 
 
@@ -43,8 +42,11 @@ def load_config(path: Path) -> TestsConfig:
     Load the JSON config from path into a TestsConfig via Pydantic.
     """
     try:
-        # Pydantic will read & validate nested models and enums automatically
-        return TestsConfig.parse_file(str(path))
+        # Read the file content
+        json_content = path.read_text()
+
+        # Validate and parse the content using model_validate_json
+        return TestsConfig.model_validate_json(json_content)
     except ValidationError as e:
         sys.exit(f"Error parsing config file {path!s}:\n{e}")
 
@@ -53,12 +55,12 @@ def build_calls(cfg: TestsConfig) -> List[List[str]]:
     """
     Given a TestsConfig, build the list of argv calls to run.
     """
-    base: List[str] = cfg.cmd
+    base: str = cfg.cmd
     calls: List[List[str]] = []
 
     for test in cfg.tests:
         # e.g. "--grasp"
-        algorithm_flag = test.algorithm_flag
+        algorithm_flag = str(test.algorithm_flag)  # Convert AlgorithmName to string
         # flags: ["--iter", "--alpha", ...]
         flags = [p.flag for p in test.parameters_to_test]
         # values: [[10,100], [0.1,0.5], ...]
@@ -66,13 +68,14 @@ def build_calls(cfg: TestsConfig) -> List[List[str]]:
 
         for combo in product(*test_values):
             # start with base + algorithm flag
-            command = base + [algorithm_flag]
+            command = [base, algorithm_flag]  # Ensure this is a list
             # interleave flags and their chosen values
             for flag, value in zip(flags, combo):
                 command.extend([flag, str(value)])
             calls.append(command)
 
     return calls
+
 
 
 def main() -> None:
@@ -102,10 +105,10 @@ def main() -> None:
         argv = [str(solver_path), *argv_tail]
         # stampa per verifica
         print("→", " ".join(shlex.quote(a) for a in argv))
-        #ret = subprocess.run(argv, cwd=script_dir.parent)
-        #if ret.returncode:
-        #    print(f"  …solver returned non-zero code {ret.returncode}, aborting.")
-        #    sys.exit(ret.returncode)
+        ret = subprocess.run(argv, cwd=script_dir.parent)
+        if ret.returncode:
+            print(f"  …solver returned non-zero code {ret.returncode}, aborting.")
+            sys.exit(ret.returncode)
 
 
 if __name__ == "__main__":

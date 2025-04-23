@@ -68,7 +68,8 @@ static const char *parsing_messages[] = {
 void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) {
     if (cmd_options->variable_neighborhood_search) {
         const TspSolution *solution = init_solution(instance);
-        const TspAlgorithm *algorithm = init_vns(cmd_options->kick_repetitions, cmd_options->n_opt, cmd_options->time_limit);
+        const TspAlgorithm *algorithm = init_vns((int) cmd_options->kick_repetitions, (int) cmd_options->n_opt,
+                                                 (int) cmd_options->time_limit);
         solution->solve(solution, algorithm);
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
@@ -94,7 +95,8 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
     if (cmd_options->tabu_search) {
         const TspSolution *solution = init_solution(instance);
 
-        const TspAlgorithm *algorithm = init_tabu(cmd_options->tenure, cmd_options->max_stagnation, cmd_options->time_limit);
+        const TspAlgorithm *algorithm = init_tabu(cmd_options->tenure, cmd_options->max_stagnation,
+                                                  cmd_options->time_limit);
         solution->solve(solution, algorithm);
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
@@ -110,7 +112,7 @@ int main(const int argc, const char *argv[]) {
     CmdOptions *cmd_options = init_cmd_options();
     const struct FlagsArray flags_array = init_flags_array();
     FlagParser *parser = init_flag_parser(flags_array);
-    const ParsingResult parsing_result = parse_flags_with_parser(cmd_options, parser, argv+1);
+    const ParsingResult parsing_result = parse_flags_with_parser(cmd_options, parser, argv + 1);
     if (parsing_result != PARSE_SUCCESS) {
         printf("%s", parsing_messages[parsing_result]);
         return 1;
