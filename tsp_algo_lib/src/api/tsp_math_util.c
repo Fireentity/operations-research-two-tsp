@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
-#include <tsp_math_util.h>
 #include "c_util.h"
+#include "tsp_instance.h"
 
 double calculate_tour_cost(const int* const tour,
                            const int number_of_nodes,

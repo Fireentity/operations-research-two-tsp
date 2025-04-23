@@ -1,11 +1,13 @@
 #include <math.h>
-#include <tsp_solution.h>
-#include <feasibility_result.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tsp_math_util.h>
-#include <tsp_algorithm.h>
 #include <c_util.h>
+
+#include "tsp_solution.h"
+#include "feasibility_result.h"
+#include "tsp_algorithm.h"
+#include "tsp_instance.h"
+#include "tsp_math_util.h"
 
 #define EPSILON 1e-10
 
@@ -62,14 +64,15 @@ FeasibilityResult is_feasible(const TspSolution *solution) {
     return FEASIBLE;
 }
 
-FeasibilityResult solve(const TspSolution *solution, const TspAlgorithm *tsp_algorithm) {
+FeasibilityResult solve(const TspSolution *solution, const TspAlgorithm *tsp_algorithm, const CostsPlotter* plotter) {
     const TspInstance *instance = solution->state->instance;
     tsp_algorithm->solve(tsp_algorithm,
                          solution->state->tour,
                          instance->get_number_of_nodes(instance),
                          instance->get_edge_cost_array(instance),
                          &solution->state->cost,
-                         &solution->state->mutex);
+                         &solution->state->mutex,
+                         plotter);
     return is_feasible(solution);
 }
 

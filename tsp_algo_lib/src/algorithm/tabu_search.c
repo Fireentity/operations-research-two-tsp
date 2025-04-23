@@ -1,13 +1,14 @@
 #include "tabu_search.h"
-#include <constants.h>
-#include <costs_plotter.h>
+#include "algorithm_constants.h"
 #include <float.h>
 #include <stdlib.h>
-#include <time_limiter.h>
-#include <tsp_math_util.h>
 
 #include "c_util.h"
 #include "algorithms.h"
+#include "costs_plotter.h"
+#include "time_limiter.h"
+#include "tsp_algorithm.h"
+#include "tsp_math_util.h"
 
 // Union for extended TSP algorithms (currently only Tabu Search is used).
 union TspExtendedAlgorithms {
@@ -34,12 +35,12 @@ static void improve(const TspAlgorithm *tsp_algorithm,
                     const int number_of_nodes,
                     const double edge_cost_array[],
                     double *cost,
-                    pthread_mutex_t *mutex) {
+                    pthread_mutex_t *mutex,
+                    const CostsPlotter * plotter) {
     // Initialize time limiter and cost plotter.
     const double time_limit = tsp_algorithm->extended->tabu_search->time_limit;
     const TimeLimiter *time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
-    const CostsPlotter *plotter = init_plotter(number_of_nodes);
 
     // Make a local copy of the tour and current cost.
     int current_tour[number_of_nodes + 1];
@@ -47,7 +48,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
     WITH_MUTEX(mutex, memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
                current_cost = *cost);
 
-    current_cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
+    current_cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
 
 
     // Save the current tour as the best found solution so far.
@@ -135,7 +136,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
     }
 
     // Plot the cost progression.
-    plotter->plot_costs(plotter, "TS-costs.png");
+    plotter->plot(plotter, "TS-costs.png");
 
     // Cleanup resources.
     free(tabu);
@@ -150,13 +151,14 @@ static void solve(const TspAlgorithm *tsp_algorithm,
                   const int number_of_nodes,
                   const double edge_cost_array[],
                   double *cost,
-                  pthread_mutex_t *mutex) {
+                  pthread_mutex_t *mutex,
+                  const CostsPlotter * plotter) {
     // Create the initial tour in a thread-safe manner.
     WITH_MUTEX(mutex,
                nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
     );
     // Improve the tour.
-    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);
+    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex, plotter);
 }
 
 
@@ -174,7 +176,6 @@ const TspAlgorithm *init_tabu(const int tenure, const int max_stagnation, const 
     // Initialize main TspAlgorithm structure with solve and free functions.
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
-        .improve = improve,
         .free = free_this,
         .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };

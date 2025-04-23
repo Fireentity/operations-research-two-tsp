@@ -4,6 +4,7 @@
 #include <tsp_math_util.h>
 
 #include "c_util.h"
+#include "tsp_instance.h"
 
 /**
  * Test reversing a segment in a square tour.

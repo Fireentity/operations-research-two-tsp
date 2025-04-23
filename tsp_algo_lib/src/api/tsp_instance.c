@@ -1,7 +1,6 @@
-#include <tsp_instance.h>
 #include <c_util.h>
 #include <stdlib.h>
-#include <tsp_math_util.h>
+#include "tsp_math_util.h"
 
 struct TspInstanceState {
     double *const edge_cost_array; // Precomputed array of edge costs

@@ -1,6 +1,6 @@
 #ifndef VARIABLE_NEIGHBORHOOD_SEARCH_H
 #define VARIABLE_NEIGHBORHOOD_SEARCH_H
-#include <tsp_algorithm.h>
+#include "tsp_algorithm.h"
 
 /**
  * @brief Configuration for the Variable Neighborhood Search algorithm.

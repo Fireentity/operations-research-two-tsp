@@ -1,12 +1,11 @@
 #include <c_util.h>
-#include <time_limiter.h>
-#include <tsp_math_util.h>
-#include "algorithms.h"
-#include "tsp_algorithm.h"
 #include <variable_neighborhood_search.h>
 
-#include "constants.h"
+#include "algorithm_constants.h"
 #include "costs_plotter.h"
+#include "algorithms.h"
+#include "time_limiter.h"
+#include "tsp_math_util.h"
 
 union TspExtendedAlgorithms {
     VariableNeighborhoodSearch *variable_neighborhood_search;
@@ -53,19 +52,19 @@ static void improve(const TspAlgorithm *tsp_algorithm,
                     const int number_of_nodes,
                     const double edge_cost_array[],
                     double *cost,
-                    pthread_mutex_t *mutex) {
+                    pthread_mutex_t *mutex,
+                    const CostsPlotter * plotter) {
     // Initialize time limiter and cost plotter.
     const double time_limit = tsp_algorithm->extended->variable_neighborhood_search->time_limit;
     const TimeLimiter *time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
-    const CostsPlotter *plotter = init_plotter(number_of_nodes);
 
     // Copy the input tour into a local working copy.
     int current_tour[number_of_nodes + 1];
     double current_cost;
     WITH_MUTEX(mutex, memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
                current_cost = *cost);
-    current_cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter);
+    current_cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
 
 
     // Save the current tour as the best found solution so far.
@@ -75,6 +74,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
 
     const int kick_repetition = tsp_algorithm->extended->variable_neighborhood_search->kick_repetition;
     const int n_opt = tsp_algorithm->extended->variable_neighborhood_search->n_opt;
+
     // Improvement loop: continue until the time limit is reached.
     while (!time_limiter->is_time_over(time_limiter)) {
         // Apply a series of kick moves.
@@ -82,7 +82,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
             current_cost += kick(current_tour, number_of_nodes, edge_cost_array, n_opt);
         }
         // Improve the solution using 2‑opt.
-        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter);
+        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
 
         // If an improved solution is found, update the best.
         if (current_cost < best_cost - EPSILON) {
@@ -99,7 +99,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
     }
 
     // Plot the cost progression.
-    plotter->plot_costs(plotter, "VNS-costs.png");
+    plotter->plot(plotter, "VNS-costs.png");
 
     // Cleanup resources.
     time_limiter->free(time_limiter);
@@ -113,13 +113,14 @@ static void solve(const TspAlgorithm *tsp_algorithm,
                   const int number_of_nodes,
                   const double edge_cost_array[],
                   double *cost,
-                  pthread_mutex_t *mutex) {
+                  pthread_mutex_t *mutex,
+                  const CostsPlotter * plotter) {
     // Create the initial tour in a thread-safe manner.
     WITH_MUTEX(mutex,
                nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
     );
     // Improve the tour.
-    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);
+    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex, plotter);
 }
 
 
@@ -143,7 +144,6 @@ const TspAlgorithm *init_vns(const int kick_repetition, const int n_opt, const d
     };
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
-        .improve = improve,
         .free = free_this,
         .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };

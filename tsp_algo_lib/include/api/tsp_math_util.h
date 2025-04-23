@@ -1,6 +1,6 @@
 #ifndef MATH_UTIL_H
 #define MATH_UTIL_H
-#include <tsp_instance.h>
+#include "tsp_instance.h"
 
 /**
  * @brief Calculates the total cost of a given tour.

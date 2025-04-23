@@ -1,8 +1,8 @@
+#include "plot_util.h"
+
 #include <stdio.h>
-#include <plot_util.h>
 #include <c_util.h>
-#include <tsp_math_util.h>
-#include <constants.h>
+#include "constants.h"
 
 /**
  * @brief Generic boundaries calculator for plots.
@@ -95,7 +95,7 @@ void plot_costs_evolution(const double *costs, const int length, const char *out
     check_alloc(cum_min);
     cum_min[0] = costs[0];
     for (int i = 1; i < length; i++) {
-        cum_min[i] = (costs[i] < cum_min[i - 1]) ? costs[i] : cum_min[i - 1];
+        cum_min[i] = costs[i] < cum_min[i - 1] ? costs[i] : cum_min[i - 1];
     }
 
     // Plot the original cost evolution and overlay the cumulative min (best-so-far) as a red step line.

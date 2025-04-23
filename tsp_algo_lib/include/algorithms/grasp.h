@@ -1,6 +1,6 @@
 #ifndef GRASP_H
 #define GRASP_H
-#include <tsp_algorithm.h>
+#include "tsp_algorithm.h"
 
 typedef struct
 {

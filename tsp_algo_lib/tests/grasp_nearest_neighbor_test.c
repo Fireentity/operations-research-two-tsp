@@ -1,6 +1,7 @@
-#include <algorithms.h>
 #include <assert.h>
 #include <stdlib.h>
+
+#include "algorithms.h"
 
 // Helper function to create a simple edge cost matrix for testing
 void create_simple_edge_costs(double* edge_costs, const int num_nodes) {

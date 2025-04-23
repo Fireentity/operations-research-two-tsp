@@ -1,8 +1,9 @@
+#include "grasp.h"
+
 #include <assert.h>
 #include <stdlib.h>
 #include <math.h>
 #include "algorithms.h"
-#include "c_util.h"
 #include "tsp_algorithm.h"
 
 // Helper function to create a simple edge cost matrix for testing

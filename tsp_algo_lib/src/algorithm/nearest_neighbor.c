@@ -1,12 +1,12 @@
-#include <constants.h>
-#include <costs_plotter.h>
+#include "costs_plotter.h"
 #include <c_util.h>
 #include <nearest_neighbor.h>
 #include <float.h>
-#include <plot_util.h>
 #include <stdlib.h>
-#include <time_limiter.h>
+
+#include "algorithm_constants.h"
 #include "algorithms.h"
+#include "time_limiter.h"
 
 union TspExtendedAlgorithms {
     NearestNeighbor *nearest_neighbor;
@@ -28,12 +28,12 @@ static void improve(const TspAlgorithm *tsp_algorithm,
                     const int number_of_nodes,
                     const double edge_cost_array[],
                     double *cost,
-                    pthread_mutex_t *mutex) {
+                    pthread_mutex_t *mutex,
+                    const CostsPlotter* plotter) {
     // Initialize the time limiter and the cost plotter.
-    const int time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
+    const double time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
     const TimeLimiter *time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
-    const CostsPlotter* plotter = init_plotter(number_of_nodes);
 
     // Work on a local tour copy.
     int current_tour[number_of_nodes + 1];
@@ -58,7 +58,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
         // Generate an NN solution starting from starting_nodes[iteration].
         nearest_neighbor_tour(starting_nodes[iteration], current_tour, number_of_nodes, edge_cost_array, &current_cost);
         // Improve the solution using 2‑opt.
-        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter);
+        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
         // Record the current cost for plotting.
         plotter->add_cost(plotter, current_cost);
         // If the current solution is better, update best_tour and best_cost.
@@ -77,7 +77,7 @@ static void improve(const TspAlgorithm *tsp_algorithm,
         );
     }
     // Plot the cost progression.
-    plotter->plot_costs(plotter, "NN-costs.png");
+    plotter->plot(plotter, "NN-costs.png");
 
     // Cleanup resources.
     time_limiter->free(time_limiter);
@@ -91,13 +91,14 @@ static void solve(const TspAlgorithm *tsp_algorithm,
                   const int number_of_nodes,
                   const double edge_cost_array[],
                   double *cost,
-                  pthread_mutex_t *mutex) {
+                  pthread_mutex_t *mutex,
+                  const CostsPlotter* plotter) {
     // Create the initial tour in a thread-safe manner.
     WITH_MUTEX(mutex,
                nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
     );
     // Improve the tour.
-    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);
+    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex, plotter);
 }
 
 
@@ -113,7 +114,6 @@ const TspAlgorithm *init_nearest_neighbor(const double time_limit) {
 
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
-        .improve = improve,
         .free = free_this,
         .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };

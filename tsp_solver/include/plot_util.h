@@ -1,7 +1,7 @@
 #ifndef PLOT_UTIL_H
 #define PLOT_UTIL_H
+#include "tsp_instance.h"
 
-#include <tsp_instance.h>
 
 /**
  * @brief Structure representing plotting boundaries.
@@ -23,7 +23,7 @@ typedef struct {
  * @param nodes Array of node coordinates.
  * @param output_name Name of the output file.
  */
-void plot_tour(const int *tour, int number_of_nodes, const Node* nodes, const char *output_name);
+void plot_tour(const int *tour, int number_of_nodes, const Node *nodes, const char *output_name);
 
 /**
  * @brief Plots the evolution of costs over time.

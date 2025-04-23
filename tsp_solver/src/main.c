@@ -2,8 +2,14 @@
 #include <flag_parser.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <tsp_instance.h>
-#include <tsp_solution.h>
+
+#include "algorithm_plotter.h"
+#include "cmd_options.h"
+#include "nearest_neighbor.h"
+#include "plot_util.h"
+#include "tabu_search.h"
+#include "tsp_solution.h"
+#include "variable_neighborhood_search.h"
 
 #define CONCAT(a, b) a ## b
 
@@ -60,10 +66,13 @@ static const char *parsing_messages[] = {
 
 void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) {
     if (cmd_options->variable_neighborhood_search) {
+        const CostsPlotter *plotter = init_plotter(instance->get_number_of_nodes(instance));
         const TspSolution *solution = init_solution(instance);
-        const TspAlgorithm *algorithm = init_vns((int) cmd_options->kick_repetitions, (int) cmd_options->n_opt,
+        const TspAlgorithm *algorithm = init_vns((int) cmd_options->kick_repetitions,
+                                                 (int) cmd_options->n_opt,
                                                  (int) cmd_options->time_limit);
-        solution->solve(solution, algorithm);
+
+        solution->solve(solution, algorithm, plotter);
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
@@ -73,10 +82,11 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
         algorithm->free(algorithm);
     }
     if (cmd_options->nearest_neighbor) {
+        const CostsPlotter *plotter = init_plotter(instance->get_number_of_nodes(instance));
         const TspSolution *solution = init_solution(instance);
-
         const TspAlgorithm *algorithm = init_nearest_neighbor(cmd_options->time_limit);
-        solution->solve(solution, algorithm);
+
+        solution->solve(solution, algorithm, plotter);
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
@@ -86,11 +96,12 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
         algorithm->free(algorithm);
     }
     if (cmd_options->tabu_search) {
+        const CostsPlotter *plotter = init_plotter(instance->get_number_of_nodes(instance));
         const TspSolution *solution = init_solution(instance);
 
-        const TspAlgorithm *algorithm = init_tabu(cmd_options->tenure, cmd_options->max_stagnation,
+        const TspAlgorithm *algorithm = init_tabu((int) cmd_options->tenure, (int) cmd_options->max_stagnation,
                                                   cmd_options->time_limit);
-        solution->solve(solution, algorithm);
+        solution->solve(solution, algorithm, plotter);
         plot_tour(solution->get_tour(solution),
                   instance->get_number_of_nodes(instance),
                   instance->get_nodes(instance),
@@ -111,7 +122,7 @@ int main(const int argc, const char *argv[]) {
         return 1;
     }
 
-    const TspInstance *instance = init_random_tsp_instance(cmd_options->number_of_nodes,
+    const TspInstance *instance = init_random_tsp_instance((int) cmd_options->number_of_nodes,
                                                            cmd_options->seed,
                                                            (TspGenerationArea){
                                                                .square_side = cmd_options->generation_area.square_side,

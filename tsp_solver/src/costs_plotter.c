@@ -1,11 +1,12 @@
 #include "costs_plotter.h"
-#include <plot_util.h>
+#include "algorithm_plotter.h"
 #include <stdlib.h>
 #include "c_util.h"
+#include "plot_util.h"
 
 struct PlotterState {
-    size_t index; // index of the lowermost free cell
-    size_t capacity;
+    int index; // index of the lowermost free cell
+    int capacity;
     double *costs;
 
     void (*const free)(PlotterState *self);
@@ -28,20 +29,20 @@ static void free_plotter_state(PlotterState *self) {
     free(self);
 }
 
-static void add_cost(const CostsPlotter *plotter, const double cost) {
-    if (plotter->state->index >= plotter->state->capacity) {
-        plotter->state->capacity *= 2;
-        plotter->state->costs = realloc(plotter->state->costs, sizeof(double) * plotter->state->capacity);
-        check_alloc(plotter->state->costs);
+static void add_cost(const CostsPlotter *self, const double cost) {
+    if (self->state->index >= self->state->capacity) {
+        self->state->capacity *= 2;
+        self->state->costs = realloc(self->state->costs, sizeof(double) * self->state->capacity);
+        check_alloc(self->state->costs);
     }
-    plotter->state->costs[plotter->state->index++] = cost;
+    self->state->costs[self->state->index++] = cost;
 }
 
-static void plot_costs(const CostsPlotter *plotter, const char *file_name) {
-    plot_costs_evolution(plotter->state->costs, plotter->state->index, file_name);
+static void plot_costs(const CostsPlotter *self, const char *file_name) {
+    plot_costs_evolution(self->state->costs, self->state->index, file_name);
 }
 
-CostsPlotter *init_plotter(const size_t capacity) {
+CostsPlotter *init_plotter(const int capacity) {
     double *costs = malloc(sizeof(double) * capacity);
     check_alloc(costs);
     const PlotterState state = {
@@ -54,7 +55,7 @@ CostsPlotter *init_plotter(const size_t capacity) {
         .state = malloc_from_stack(&state, sizeof(state)),
         .free = free_costs_plotter,
         .add_cost = add_cost,
-        .plot_costs = plot_costs
+        .plot = plot_costs
     };
     return malloc_from_stack(&stack, sizeof(stack));
 }

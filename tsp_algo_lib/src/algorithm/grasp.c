@@ -1,14 +1,12 @@
 #include "grasp.h"
 #include <float.h>
-#include <algorithms.h>
 #include "c_util.h"
 #include <stdlib.h>
-#include <time_limiter.h>
-#include <constants.h>
-#include <costs_plotter.h>
+#include "algorithm_constants.h"
 #include <nearest_neighbor.h>
-#include <stdio.h>
-#include <math.h>
+
+#include "algorithms.h"
+#include "time_limiter.h"
 
 union TspExtendedAlgorithms
 {
@@ -21,13 +19,13 @@ static void improve(const TspAlgorithm* tsp_algorithm,
                     const int number_of_nodes,
                     const double* edge_cost_array,
                     double* cost,
-                    pthread_mutex_t* mutex)
+                    pthread_mutex_t* mutex,
+                    const CostsPlotter* plotter)
 {
     // Initialize the time limiter and the cost plotter.
     const double time_limit = tsp_algorithm->extended->grasp->time_limit;
     const TimeLimiter* time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
-    const CostsPlotter* plotter = init_plotter(number_of_nodes);
 
     // Work on a local copy of the tour.
     int current_tour[number_of_nodes + 1];
@@ -79,7 +77,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
         );
     }
     // Plot the cost progression.
-    plotter->plot_costs(plotter, "GRASP-costs.png");
+    plotter->plot(plotter, "GRASP-costs.png");
 
     // Cleanup resources.
     time_limiter->free(time_limiter);
@@ -93,7 +91,8 @@ static void solve(const TspAlgorithm* tsp_algorithm,
                   const int number_of_nodes,
                   const double* edge_cost_array,
                   double* cost,
-                  pthread_mutex_t* mutex)
+                  pthread_mutex_t* mutex,
+                  const CostsPlotter* plotter)
 {
     // Create the initial tour in a thread-safe manner.
 
@@ -109,7 +108,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
                    tsp_algorithm->extended->grasp->p3);
     );
     // Improve the tour using the GRASP iterative improvement.
-    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex);
+    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex, plotter);
 }
 
 
@@ -140,7 +139,6 @@ const TspAlgorithm* init_grasp(const double time_limit)
     };
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
-        .improve = improve,
         .free = free_this,
         .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
     };

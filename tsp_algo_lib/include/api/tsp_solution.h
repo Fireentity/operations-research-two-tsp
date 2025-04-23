@@ -21,9 +21,10 @@ struct TspSolution
      * @brief Solves the TSP using a given algorithm.
      * @param self Pointer to the solution.
      * @param tsp_algorithm TSP algorithm to use.
+     * @param plotter The plotter for generate how the solution is being optimized
      * @return Feasibility result.
      */
-    FeasibilityResult (*const solve)(const TspSolution* self, const TspAlgorithm* tsp_algorithm);
+    FeasibilityResult (*const solve)(const TspSolution* self, const TspAlgorithm* tsp_algorithm, const CostsPlotter* plotter);
     /**
      * @brief Checks if the solution is feasible.
      * @param self Pointer to the solution.
