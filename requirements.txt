@@ -1,0 +1,2 @@
+# Use Pydantic v2.x series
+pydantic>=2.0,<3.0
