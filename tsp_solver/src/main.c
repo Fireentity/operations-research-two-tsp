@@ -1,15 +1,9 @@
-#include <cmd_options.h>
-#include <feasibility_result.h>
+#include <flag.h>
 #include <flag_parser.h>
-#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <tsp_instance.h>
 #include <tsp_solution.h>
-#include <nearest_neighbor.h>
-#include <plot_util.h>
-#include <stdlib.h>
-#include <tabu_search.h>
-#include <variable_neighborhood_search.h>
 
 #define CONCAT(a, b) a ## b
 
@@ -53,7 +47,6 @@
 #define PARSE_WRONG_VALUE_TYPE "Wrong value type for the argument.\n\nUsage:\n" HELP_MESSAGE
 #define PARSE_MISSING_VALUE "Missing value for the argument.\n\nUsage:\n" HELP_MESSAGE
 #define PARSE_MISSING_MANDATORY_FLAG "Missing mandatory argument.\n\nUsage:\n" HELP_MESSAGE
-
 
 static const char *parsing_messages[] = {
     ERROR,

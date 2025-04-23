@@ -1,8 +1,9 @@
-# common/CMakeLists.txt
 project(common)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  ")
+# Set compile options for common
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
+# Define the sources for common
 set(COMMON_SOURCES
         include/c_util.h
         src/chrono.c
@@ -10,6 +11,11 @@ set(COMMON_SOURCES
         include/uthash.h
 )
 
+# Create a library for common
 add_library(common ${COMMON_SOURCES})
+
+# Include directories for common
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# Link common to cli_lib
 target_link_libraries(cli_lib PRIVATE common)

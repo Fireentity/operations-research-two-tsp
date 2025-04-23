@@ -1,8 +1,8 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <tsp_math_util.h>
+
 #include "c_util.h"
 
 /**
@@ -215,16 +215,4 @@ void test_6()
     assert(delta == delta_result);
 
     free(edge_cost_array);
-}
-
-
-int main()
-{
-    test_square_reverse_segment();
-    test_octagon_multiple_segment_reverse();
-    test_hexagon_reverse_segment_case1();
-    test_hexagon_reverse_segment_case2();
-    test_square_alternate_segment_reverse();
-    test_6();
-    return 0;
 }
