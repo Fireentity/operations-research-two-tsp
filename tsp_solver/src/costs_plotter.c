@@ -1,5 +1,5 @@
-#include "costs_plotter.h"
 #include "algorithm_plotter.h"
+#include "costs_plotter.h"
 #include <stdlib.h>
 #include "c_util.h"
 #include "plot_util.h"

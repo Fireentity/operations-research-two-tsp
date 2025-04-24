@@ -104,7 +104,7 @@ def main() -> None:
     for argv_tail in build_calls(cfg):
         argv = [str(solver_path), *argv_tail]
         # stampa per verifica
-        print("→", " ".join(shlex.quote(a) for a in argv))
+        print("→", " ".join(a for a in argv))
         ret = subprocess.run(argv, cwd=script_dir.parent)
         if ret.returncode:
             print(f"  …solver returned non-zero code {ret.returncode}, aborting.")

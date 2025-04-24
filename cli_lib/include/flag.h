@@ -39,7 +39,7 @@ struct Flag
      * @param index Current index in argv.
      * @return ParsingResult outcome of the parsing.
      */
-    ParsingResult (*const parse)(const Flag* flag,
+    const ParsingResult* (*const parse)(const Flag* flag,
                                  CmdOptions* cmd_options,
                                  const char** argv,
                                  unsigned int* index);
@@ -81,12 +81,13 @@ struct Flag
  */
 const Flag* init_flag_with_children(const char* label,
                                     unsigned int number_of_params,
-                                    ParsingResult (*param_function)(CmdOptions* cmd_options, const char** arg),
-                                    bool mandatory, struct FlagsArray children);
+                                    const ParsingResult* (*param_function)(CmdOptions* cmd_options, const char** arg),
+                                    bool mandatory,
+                                    struct FlagsArray children);
 
 const Flag* init_flag(const char* label,
                       unsigned int number_of_params,
-                      ParsingResult (*param_function)(CmdOptions* cmd_options, const char** arg),
+                      const ParsingResult* (*param_function)(CmdOptions* cmd_options, const char** arg),
                       bool mandatory);
 
 

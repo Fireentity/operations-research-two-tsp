@@ -29,7 +29,7 @@ FlagParser *init_flag_parser(struct FlagsArray flags);
  * @param labels Null-terminated array of command-line arguments.
  * @return ParsingResult indicating success or the type of parsing error.
  */
-ParsingResult parse_flags_with_parser(CmdOptions *cmd_options, const FlagParser *parser, const char **labels);
+const ParsingResult* parse_flags_with_parser(CmdOptions *cmd_options, const FlagParser *parser, const char **labels);
 
 /**
  * @brief Frees the memory allocated for a FlagParser.

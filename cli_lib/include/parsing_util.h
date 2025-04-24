@@ -2,43 +2,42 @@
 #define PARSING_UTIL_H
 
 #include <stdbool.h>
-#include <parsing_result.h>
-
+#include "parsing_result.h"
 
 /**
  * @brief Parses an unsigned integer from a string.
  *
  * @param arg String containing the unsigned integer.
  * @param parsed Pointer to store the parsed unsigned integer.
- * @return ParsingResult outcome of the parsing.
+ * @return Pointer to a ParsingResult indicating success or error.
  */
-ParsingResult parse_unsigned_int(const char* arg, unsigned int* parsed);
+const ParsingResult* parse_unsigned_int(const char* arg, unsigned int* parsed);
 
 /**
- * @brief Parses an integer from a string.
+ * @brief Parses a signed integer from a string.
  *
  * @param arg String containing the integer.
  * @param parsed Pointer to store the parsed integer.
- * @return ParsingResult outcome of the parsing.
+ * @return Pointer to a ParsingResult indicating success or error.
  */
-ParsingResult parse_int(const char* arg, int* parsed);
+const ParsingResult* parse_int(const char* arg, int* parsed);
 
 /**
  * @brief Parses a floating point number from a string.
  *
  * @param arg String containing the float.
  * @param parsed Pointer to store the parsed float.
- * @return ParsingResult outcome of the parsing.
+ * @return Pointer to a ParsingResult indicating success or error.
  */
-ParsingResult parse_float(const char* arg, float* parsed);
+const ParsingResult* parse_float(const char* arg, float* parsed);
 
 /**
  * @brief Parses a boolean value from a string.
  *
  * @param arg String containing the boolean.
  * @param parsed Pointer to store the parsed boolean.
- * @return ParsingResult outcome of the parsing.
+ * @return Pointer to a ParsingResult indicating success or error.
  */
-ParsingResult parse_bool(const char* arg, bool* parsed);
+const ParsingResult* parse_bool(const char* arg, bool* parsed);
 
 #endif //PARSING_UTIL_H

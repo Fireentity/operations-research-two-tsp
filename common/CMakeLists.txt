@@ -9,6 +9,7 @@ set(COMMON_SOURCES
         src/chrono.c
         src/hashmap.c
         include/uthash.h
+        tests/str_format_test.c
 )
 
 # Create a library for common
@@ -18,4 +19,4 @@ add_library(common ${COMMON_SOURCES})
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Link common to cli_lib
-target_link_libraries(cli_lib PRIVATE common)
+target_link_libraries(common PRIVATE m)

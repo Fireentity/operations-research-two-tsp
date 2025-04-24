@@ -1,7 +1,6 @@
 #include <cmd_options.h>
 #include <c_util.h>
 #include <flag.h>
-#include <flag_parser.h>
 #include <parsing_result.h>
 #include <parsing_util.h>
 
@@ -18,7 +17,7 @@ CmdOptions *init_cmd_options() {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_nodes(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_nodes(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->number_of_nodes);
 }
 
@@ -29,7 +28,7 @@ ParsingResult set_nodes(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_seed(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_seed(CmdOptions *cmd_options, const char **arg) {
     return parse_int(*(arg + 1), &cmd_options->seed);
 }
 
@@ -40,7 +39,7 @@ ParsingResult set_seed(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_x_square(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_x_square(CmdOptions *cmd_options, const char **arg) {
     return parse_int(*(arg + 1), &cmd_options->generation_area.x_square);
 }
 
@@ -51,7 +50,7 @@ ParsingResult set_x_square(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_y_square(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_y_square(CmdOptions *cmd_options, const char **arg) {
     return parse_int(*(arg + 1), &cmd_options->generation_area.y_square);
 }
 
@@ -62,7 +61,7 @@ ParsingResult set_y_square(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_square_side(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_square_side(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->generation_area.square_side);
 }
 
@@ -73,9 +72,9 @@ ParsingResult set_square_side(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_help(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_help(CmdOptions *cmd_options, const char **arg) {
     cmd_options->help = true;
-    return PARSE_SUCCESS;
+    return SUCCESS;
 }
 
 /**
@@ -85,9 +84,9 @@ ParsingResult set_help(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_vns(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_vns(CmdOptions *cmd_options, const char **arg) {
     cmd_options->variable_neighborhood_search = true;
-    return PARSE_SUCCESS;
+    return SUCCESS;
 }
 
 /**
@@ -97,27 +96,27 @@ ParsingResult set_vns(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_kick_repetitions(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_kick_repetitions(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->kick_repetitions);
 }
 
-ParsingResult set_tenure(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_tenure(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->tenure);
 }
 
-ParsingResult set_max_stagnation(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_max_stagnation(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->max_stagnation);
 }
 
-ParsingResult set_p1(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_p1(CmdOptions *cmd_options, const char **arg) {
     return parse_float(*(arg + 1), &cmd_options->p1);
 }
 
-ParsingResult set_p2(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_p2(CmdOptions *cmd_options, const char **arg) {
     return parse_float(*(arg + 1), &cmd_options->p2);
 }
 
-ParsingResult set_p3(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_p3(CmdOptions *cmd_options, const char **arg) {
     return parse_float(*(arg + 1), &cmd_options->p3);
 }
 
@@ -128,11 +127,11 @@ ParsingResult set_p3(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_time_limit(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_time_limit(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->time_limit);
 }
 
-ParsingResult set_n_opt(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_n_opt(CmdOptions *cmd_options, const char **arg) {
     return parse_unsigned_int(*(arg + 1), &cmd_options->n_opt);
 }
 
@@ -143,9 +142,9 @@ ParsingResult set_n_opt(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_nearest_neighbor(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_nearest_neighbor(CmdOptions *cmd_options, const char **arg) {
     cmd_options->nearest_neighbor = true;
-    return PARSE_SUCCESS;
+    return SUCCESS;
 }
 
 /**
@@ -155,9 +154,9 @@ ParsingResult set_nearest_neighbor(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_tabu_search(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_tabu_search(CmdOptions *cmd_options, const char **arg) {
     cmd_options->tabu_search = true;
-    return PARSE_SUCCESS;
+    return SUCCESS;
 }
 
 /**
@@ -167,9 +166,9 @@ ParsingResult set_tabu_search(CmdOptions *cmd_options, const char **arg) {
  * @param arg Array of argument strings.
  * @return ParsingResult indicating success or failure.
  */
-ParsingResult set_grasp(CmdOptions *cmd_options, const char **arg) {
+const ParsingResult* set_grasp(CmdOptions *cmd_options, const char **arg) {
     cmd_options->grasp = true;
-    return PARSE_SUCCESS;
+    return SUCCESS;
 }
 
 struct FlagsArray init_flags_array() {

@@ -47,23 +47,6 @@
                 "  0   if the program finishes successfully\n" \
                 "  1   if an error occurs\n"
 
-#define ERROR "Internal error this message should not appear. Report it to the developer."
-#define PARSE_UNKNOWN_ARG "Argument not recognized.\n\nUsage:\n" HELP_MESSAGE
-#define PARSE_USAGE_ERROR HELP_MESSAGE
-#define PARSE_WRONG_VALUE_TYPE "Wrong value type for the argument.\n\nUsage:\n" HELP_MESSAGE
-#define PARSE_MISSING_VALUE "Missing value for the argument.\n\nUsage:\n" HELP_MESSAGE
-#define PARSE_MISSING_MANDATORY_FLAG "Missing mandatory argument.\n\nUsage:\n" HELP_MESSAGE
-
-static const char *parsing_messages[] = {
-    ERROR,
-    ERROR,
-    PARSE_UNKNOWN_ARG,
-    PARSE_USAGE_ERROR,
-    PARSE_WRONG_VALUE_TYPE,
-    PARSE_MISSING_VALUE,
-    PARSE_MISSING_MANDATORY_FLAG
-};
-
 void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) {
     if (cmd_options->variable_neighborhood_search) {
         const CostsPlotter *plotter = init_plotter(instance->get_number_of_nodes(instance));
@@ -116,9 +99,9 @@ int main(const int argc, const char *argv[]) {
     CmdOptions *cmd_options = init_cmd_options();
     const struct FlagsArray flags_array = init_flags_array();
     FlagParser *parser = init_flag_parser(flags_array);
-    const ParsingResult parsing_result = parse_flags_with_parser(cmd_options, parser, argv + 1);
-    if (parsing_result != PARSE_SUCCESS) {
-        printf("%s", parsing_messages[parsing_result]);
+    const ParsingResult* parsing_result = parse_flags_with_parser(cmd_options, parser, argv + 1);
+    if (parsing_result->state != PARSE_SUCCESS) {
+        printf("%s", parsing_result->error_message);
         return 1;
     }
 

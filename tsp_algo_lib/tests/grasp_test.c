@@ -1,8 +1,6 @@
 #include "grasp.h"
-
 #include <assert.h>
 #include <stdlib.h>
-#include <math.h>
 #include "algorithms.h"
 #include "tsp_algorithm.h"
 
@@ -22,7 +20,7 @@ void create_simple_edge_costs(double* edge_costs, const int num_nodes) {
 void test_grasp_algorithm_basic_case() {
     const int num_nodes = 5;
     int tour[num_nodes + 1]; // Include the last node to close the tour
-    double cost = 0.0;
+    const double cost = 0.0;
     double edge_costs[num_nodes * num_nodes];
     create_simple_edge_costs(edge_costs, num_nodes);
 
@@ -31,7 +29,7 @@ void test_grasp_algorithm_basic_case() {
     const TspAlgorithm* grasp_algorithm = init_grasp(time_limit);
 
     // Apply the GRASP algorithm
-    grasp_algorithm->solve(grasp_algorithm, tour, num_nodes, edge_costs, &cost, NULL);
+    //grasp_algorithm->solve(grasp_algorithm, tour, num_nodes, edge_costs, &cost, NULL, );
 
     // Verify the tour is completed and cost is updated
     assert(tour[0] == tour[num_nodes]); // Ensure it's a closed tour

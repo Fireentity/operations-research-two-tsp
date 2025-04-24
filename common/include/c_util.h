@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 /**
  * @brief Checks if the given pointer is not NULL.
@@ -36,6 +37,44 @@ static inline void check_popen(FILE* gp)
         exit(EXIT_FAILURE);
     }
 }
+
+/**
+ * Allocate and return a formatted string, like printf, but returns
+ * a malloc’d buffer instead of writing into one you provide.
+ *
+ * @param format
+ *   A printf-style format string (e.g. "Hello %s, you have %d new msgs")
+ * @param ...
+ *   The arguments to fill into fmt.
+ * @return
+ *   A malloc’ed C‐string containing the formatted result, or NULL on OOM.
+ *   Caller is responsible for free()’ing it.
+ */
+static inline char *str_format(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+
+    // First, measure how long the final string will be:
+    const int needed = vsnprintf(NULL, 0, format, args);
+    va_end(args);
+
+    if (needed < 0) {
+        // encoding error
+        return NULL;
+    }
+
+    // Allocate exactly the right size (+1 for NUL)
+    char *buf = malloc((size_t)needed + 1);
+    if (!buf) return NULL;
+
+    // Actually format into our buffer
+    va_start(args, format);
+    vsnprintf(buf, (size_t)needed + 1, format, args);
+    va_end(args);
+
+    return buf;
+}
+
 
 /**
  * @brief Checks the status returned by pclose.

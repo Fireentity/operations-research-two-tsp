@@ -5,8 +5,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
 
 # Define the sources for tsp_algo_lib
 set(TSP_ALGO_SOURCES
-        ../tsp_solver/src/plot_util.c
-        ../tsp_solver/src/costs_plotter.c
         src/algorithm/grasp.c
         src/algorithm/nearest_neighbor.c
         src/algorithm/tabu_search.c

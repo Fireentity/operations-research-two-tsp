@@ -106,8 +106,8 @@ void test_case2()
 
 int main()
 {
-    // test_case1();
-    // test_case2();
+    test_case1();
+    test_case2();
     testcase3();
     return 0;
 }
