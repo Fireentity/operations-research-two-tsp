@@ -49,12 +49,15 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     while (!time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes)
     {
         // Build a NN solution starting from starting_nodes[iteration].
-        nearest_neighbor_tour(
+        grasp_nearest_neighbor_tour(
             starting_nodes[iteration],
             current_tour,
             number_of_nodes,
             edge_cost_array,
-            &current_cost);
+            &current_cost,
+            tsp_algorithm->extended->grasp->p1,
+            tsp_algorithm->extended->grasp->p2,
+            tsp_algorithm->extended->grasp->p3);
         // Improve the solution using 2‑opt and update the cost.
         current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
         // Record the current cost for plotting.
@@ -129,10 +132,13 @@ static void free_this(const TspAlgorithm* self)
 }
 
 // Initialize the GRASP algorithm with the time limit parameter
-const TspAlgorithm* init_grasp(const double time_limit)
+const TspAlgorithm* init_grasp(const double time_limit, const double p1, const double p2)
 {
     const Grasp grasp = {
         .time_limit = time_limit,
+        .p1 = p1,
+        .p2 = p2,
+        .p3 = 1 - p1 - p2
     };
     const TspExtendedAlgorithms extended_algorithms = {
         .grasp = malloc_from_stack(&grasp, sizeof(grasp))

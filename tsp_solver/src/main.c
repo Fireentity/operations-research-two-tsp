@@ -5,6 +5,7 @@
 
 #include "algorithm_plotter.h"
 #include "cmd_options.h"
+#include "grasp.h"
 #include "nearest_neighbor.h"
 #include "plot_util.h"
 #include "tabu_search.h"
@@ -93,6 +94,20 @@ void run_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) 
         solution->free(solution);
         algorithm->free(algorithm);
     }
+    if (cmd_options->grasp) {
+        const CostsPlotter *plotter = init_plotter(instance->get_number_of_nodes(instance));
+        const TspSolution *solution = init_solution(instance);
+
+        const TspAlgorithm *algorithm = init_grasp(cmd_options->time_limit, cmd_options->p1, cmd_options->p2);
+        solution->solve(solution, algorithm, plotter);
+        plot_tour(solution->get_tour(solution),
+                  instance->get_number_of_nodes(instance),
+                  instance->get_nodes(instance),
+                  "GR-plot.png");
+        printf("GR solution: %lf\n", solution->get_cost(solution));
+        solution->free(solution);
+        algorithm->free(algorithm);
+    }
 }
 
 int main(const int argc, const char *argv[]) {
@@ -116,6 +131,6 @@ int main(const int argc, const char *argv[]) {
     instance->free(instance);
     free_flag_parser(parser);
     free(cmd_options);
-    free_flags_array(flags_array);
+    free_flags_array_content(flags_array);
     return 0;
 }

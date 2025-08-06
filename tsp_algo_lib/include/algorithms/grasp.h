@@ -14,7 +14,9 @@ typedef struct
  * Initialize a grasp algorithm for the Traveling Salesman Problem (TSP).
  *
  * @param time_limit The maximum time allowed for the search.
+ * @param p1
+ * @param p2
  * @return A pointer to an initialized TspAlgorithm structure.
  */
-const TspAlgorithm* init_grasp(double time_limit);
+const TspAlgorithm* init_grasp(double time_limit, double p1, double p2);
 #endif //GRASP_H

@@ -5,7 +5,7 @@
 #include <parsing_util.h>
 
 CmdOptions *init_cmd_options() {
-    const CmdOptions cmd_options;
+    const CmdOptions cmd_options = {};
     return malloc_from_stack(&cmd_options, sizeof(cmd_options));
 }
 
@@ -116,10 +116,6 @@ const ParsingResult* set_p2(CmdOptions *cmd_options, const char **arg) {
     return parse_float(*(arg + 1), &cmd_options->p2);
 }
 
-const ParsingResult* set_p3(CmdOptions *cmd_options, const char **arg) {
-    return parse_float(*(arg + 1), &cmd_options->p3);
-}
-
 /**
  * @brief Sets the time limit for the TSP algorithm.
  *
@@ -190,12 +186,11 @@ struct FlagsArray init_flags_array() {
     const Flag *grasp_children_data[] = {
         init_flag("--p1", 1, set_p1, true),
         init_flag("--p2", 1, set_p2, true),
-        init_flag("--p3", 1, set_p3, true)
     };
     const Flag **grasp_children = malloc_from_stack(grasp_children_data, sizeof(const Flag *) * 2);
 
     // Initialization of TSP flags
-    const size_t tsp_count = 10;
+    const size_t tsp_count = 11;
     const Flag *tsp_flags_data[] = {
         init_flag("--nodes", 1, set_nodes, true),
         init_flag("--seed", 1, set_seed, false),

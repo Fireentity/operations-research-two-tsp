@@ -1,5 +1,5 @@
 {
-  "cmd": "--square-side 10000 --x-square 0 --y-square 0 --seconds 60 --nodes 1000",
+  "cmd": "--square-side 1000 --x-square 0 --y-square 0 --seconds 60 --nodes 1000",
   "tests": [
     {
       "algorithm": "grasp",

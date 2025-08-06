@@ -1,4 +1,3 @@
-/* parsing_result.c */
 #include "parsing_result.h"
 #include "c_util.h"
 #include <stdarg.h>
@@ -15,7 +14,7 @@
 static const ParsingResult *of(const ParsingResult *self, ...) {
     va_list args;
     va_start(args, self);
-    char *formatted = str_format(self->error_message, args);
+    char *formatted = vstr_format(self->error_message, args);
     va_end(args);
 
     const ParsingResult tmp = {

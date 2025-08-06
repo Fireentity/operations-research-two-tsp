@@ -134,8 +134,8 @@ void test_basic_flags() {
     // Cleanup memory
     free_flag_parser(parser);
     free_flag_parser(parser2);
-    free_flags_array(flags_array_1);
-    free_flags_array(flags_array_2);
+    free_flags_array_content(flags_array_1);
+    free_flags_array_content(flags_array_2);
 }
 
 /**
@@ -196,16 +196,16 @@ void test_nested_flags() {
     option = (CmdOptions){0, 0, false};
     const char *argv4[] = {"test", "--parent", "--boolean", NULL};
     result = parse_flags_with_parser(&option, parser3, argv4 + 1);
-    assert(PARSE_SUCCESS == result);
+    assert(PARSE_SUCCESS == result->state);
     assert(true == option.boolean);
 
     // Cleanup memory
     free_flag_parser(parser1);
     free_flag_parser(parser2);
     free_flag_parser(parser3);
-    free_flags_array(flags_array_top1);
-    free_flags_array(flags_array_top2);
-    free_flags_array(flags_array_top3);
+    free_flags_array_content(flags_array_top1);
+    free_flags_array_content(flags_array_top2);
+    free_flags_array_content(flags_array_top3);
 }
 
 /**
@@ -247,12 +247,11 @@ void test_exhaustive_flags() {
         init_flag("--extra2", 0, dummy_parse, false),
         init_flag_with_children("--group2", 0, dummy_parse, true, group2_arr)
     };
-    const struct FlagsArray flags_array = {exhaustive_flags, 2};
+    const struct FlagsArray flags_array = {exhaustive_flags, 7};
     FlagParser *parser = init_flag_parser(flags_array);
 
     // Test: Complex flag configuration.
     const char *argv[] = {
-        "test",
         "--extra1",
         "--group1",
         "--child1",
@@ -273,8 +272,43 @@ void test_exhaustive_flags() {
 
     // Cleanup memory
     free_flag_parser(parser);
-    free_flags_array(flags_array);
+    free_flags_array_content(flags_array);
 }
+
+/**
+ * @brief Tests comprehensive parsing with multiple groups and nested flags.
+ *
+ * This function validates a complex configuration with extra groups,
+ * nested structures, and various flag types.
+ */
+void test_unrecognized_flags() {
+    CmdOptions option = {0, 0, false};
+
+    // Exhaustive flags including extra groups and options.
+    const Flag *exhaustive_flags[] = {
+        init_flag("--set_int", 1, set_integer, true),
+        init_flag("--set_uint", 3, set_u_integer, true),
+        init_flag("--set_bool", 0, set_boolean, true),
+    };
+    const struct FlagsArray flags_array = {exhaustive_flags, 3};
+    FlagParser *parser = init_flag_parser(flags_array);
+
+    // Test: Complex flag configuration.
+    const char *argv[] = {
+        "test",
+        "--aaaa", "111",
+        "--set_uint", "a", "222", "b",
+        "--set_bool",
+        NULL
+    };
+    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv + 1);
+    assert(PARSE_UNKNOWN_ARG == result->state);
+
+    // Cleanup memory
+    free_flag_parser(parser);
+    free_flags_array_content(flags_array);
+}
+
 
 /**
  * @brief Main entry point.
@@ -285,6 +319,7 @@ int main() {
     test_basic_flags();
     test_nested_flags();
     test_exhaustive_flags();
+    test_unrecognized_flags();
     printf("All tests passed.\n");
     return 0;
 }

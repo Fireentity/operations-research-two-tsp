@@ -37,7 +37,7 @@ double* init_edge_cost_array(const Node* nodes, const int number_of_nodes)
 
 
 double compute_n_opt_cost(const int number_of_segments,
-                          int tour[],
+                          const int tour[],
                           const int* edges_to_remove,
                           const double edge_cost_array[],
                           const int number_of_nodes)

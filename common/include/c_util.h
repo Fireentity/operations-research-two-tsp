@@ -75,6 +75,26 @@ static inline char *str_format(const char *format, ...) {
     return buf;
 }
 
+static inline char *vstr_format(const char *format, va_list args) {
+    va_list args_copy;
+    va_copy(args_copy, args);
+
+    // Figure out how big the resulting string will be
+    int needed = vsnprintf(NULL, 0, format, args_copy);
+    va_end(args_copy);
+
+    if (needed < 0) return NULL;
+
+    // Allocate space (needed + 1 for the NUL)
+    char *buf = malloc((size_t)needed + 1);
+    if (!buf) return NULL;
+
+    // Actually format into it
+    vsnprintf(buf, (size_t)needed + 1, format, args);
+    return buf;
+}
+
+
 
 /**
  * @brief Checks the status returned by pclose.

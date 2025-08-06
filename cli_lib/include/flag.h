@@ -15,7 +15,7 @@ typedef struct CmdOptions CmdOptions;
 
 struct FlagsArray
 {
-    const Flag** flags;
+    const Flag** const flags;
     const unsigned int number_of_flags;
 };
 
@@ -94,5 +94,5 @@ const Flag* init_flag(const char* label,
 void add_children(Flag* self, struct FlagsArray children);
 
 void free_flag(Flag* self);
-void free_flags_array(struct FlagsArray self);
+void free_flags_array_content(struct FlagsArray self);
 #endif //FLAG_H
