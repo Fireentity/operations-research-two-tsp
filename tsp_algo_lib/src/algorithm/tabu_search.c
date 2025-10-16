@@ -166,14 +166,14 @@ const TspAlgorithm *init_tabu(const int tenure, const int max_stagnation, const 
     };
     // Allocate and initialize extended algorithm structure with TabuSearch pointer.
     const TspExtendedAlgorithms extended_algorithms = {
-        .tabu_search = malloc_from_stack(&tabu_search, sizeof(tabu_search))
+        .tabu_search = memdup(&tabu_search, sizeof(tabu_search))
     };
     // Initialize main TspAlgorithm structure with solve and free functions.
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
         .free = free_this,
-        .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
+        .extended = memdup(&extended_algorithms, sizeof(extended_algorithms)),
     };
     // Return the allocated TspAlgorithm structure.
-    return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
+    return memdup(&tsp_algorithm, sizeof(tsp_algorithm));
 }

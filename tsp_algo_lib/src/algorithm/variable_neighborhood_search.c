@@ -140,12 +140,12 @@ const TspAlgorithm *init_vns(const int kick_repetition, const int n_opt, const d
         .n_opt = n_opt,
     };
     const TspExtendedAlgorithms extended_algorithms = {
-        .variable_neighborhood_search = malloc_from_stack(&vns, sizeof(vns))
+        .variable_neighborhood_search = memdup(&vns, sizeof(vns))
     };
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
         .free = free_this,
-        .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
+        .extended = memdup(&extended_algorithms, sizeof(extended_algorithms)),
     };
-    return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
+    return memdup(&tsp_algorithm, sizeof(tsp_algorithm));
 }

@@ -121,7 +121,7 @@ static inline void check_pclose(const int status)
  * @param size Size of the object in bytes.
  * @return Pointer to the newly allocated memory containing the copied object.
  */
-static inline void *malloc_from_stack(const void *obj, const size_t size) {
+static inline void *memdup(const void *obj, const size_t size) {
     void *ptr = malloc(size);
     check_alloc(ptr);
     memcpy(ptr, obj, size);

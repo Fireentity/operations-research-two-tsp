@@ -22,7 +22,7 @@ static const ParsingResult *of(const ParsingResult *self, ...) {
         .error_message = formatted,
         .of = of
     };
-    return malloc_from_stack(&tmp, sizeof(tmp));
+    return memdup(&tmp, sizeof(tmp));
 }
 
 const ParsingResult SUCCESS_RESULT = {

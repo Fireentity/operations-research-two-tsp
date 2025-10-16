@@ -50,11 +50,11 @@ const TspInstance *init_random_tsp_instance(const int number_of_nodes,
     };
 
     const TspInstance instance = {
-        .state = malloc_from_stack(&state, sizeof(state)), // Use custom allocation that copies the stack object
+        .state = memdup(&state, sizeof(state)), // Use custom allocation that copies the stack object
         .get_edge_cost_array = get_edge_cost_array,
         .get_number_of_nodes = get_number_of_nodes,
         .get_nodes = get_nodes,
         .free = free_this
     };
-    return malloc_from_stack(&instance, sizeof(instance));
+    return memdup(&instance, sizeof(instance));
 }

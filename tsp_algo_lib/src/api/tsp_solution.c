@@ -111,9 +111,9 @@ TspSolution *init_solution(const TspInstance *instance) {
         .solve = solve,
         .get_tour = get_tour,
         .get_cost = get_cost,
-        .state = malloc_from_stack(&state, sizeof(state))
+        .state = memdup(&state, sizeof(state))
     };
-    TspSolution *solution = malloc_from_stack(&stack, sizeof(stack));
+    TspSolution *solution = memdup(&stack, sizeof(stack));
     pthread_mutex_init(&solution->state->mutex, NULL);
     return solution;
 }

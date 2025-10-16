@@ -141,12 +141,12 @@ const TspAlgorithm* init_grasp(const double time_limit, const double p1, const d
         .p3 = 1 - p1 - p2
     };
     const TspExtendedAlgorithms extended_algorithms = {
-        .grasp = malloc_from_stack(&grasp, sizeof(grasp))
+        .grasp = memdup(&grasp, sizeof(grasp))
     };
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
         .free = free_this,
-        .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
+        .extended = memdup(&extended_algorithms, sizeof(extended_algorithms)),
     };
-    return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
+    return memdup(&tsp_algorithm, sizeof(tsp_algorithm));
 }

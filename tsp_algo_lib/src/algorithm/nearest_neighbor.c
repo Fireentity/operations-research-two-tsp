@@ -109,14 +109,14 @@ const TspAlgorithm *init_nearest_neighbor(const double time_limit) {
     };
 
     const TspExtendedAlgorithms extended_algorithms = {
-        .nearest_neighbor = malloc_from_stack(&nearest_neighbor, sizeof(nearest_neighbor))
+        .nearest_neighbor = memdup(&nearest_neighbor, sizeof(nearest_neighbor))
     };
 
     const TspAlgorithm tsp_algorithm = {
         .solve = solve,
         .free = free_this,
-        .extended = malloc_from_stack(&extended_algorithms, sizeof(extended_algorithms)),
+        .extended = memdup(&extended_algorithms, sizeof(extended_algorithms)),
     };
 
-    return malloc_from_stack(&tsp_algorithm, sizeof(tsp_algorithm));
+    return memdup(&tsp_algorithm, sizeof(tsp_algorithm));
 }

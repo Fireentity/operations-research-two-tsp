@@ -52,10 +52,10 @@ CostsPlotter *init_plotter(const int capacity) {
         .free = free_plotter_state
     };
     const CostsPlotter stack = {
-        .state = malloc_from_stack(&state, sizeof(state)),
+        .state = memdup(&state, sizeof(state)),
         .free = free_costs_plotter,
         .add_cost = add_cost,
         .plot = plot_costs
     };
-    return malloc_from_stack(&stack, sizeof(stack));
+    return memdup(&stack, sizeof(stack));
 }

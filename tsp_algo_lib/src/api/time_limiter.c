@@ -37,7 +37,7 @@ TimeLimiter *init_time_limiter(const double time_limit_seconds)
         .is_time_over = is_time_over,
         .start = start,
         .free = free_this,
-        .state = malloc_from_stack(&state, sizeof(state)),
+        .state = memdup(&state, sizeof(state)),
     };
-    return malloc_from_stack(&time_limiter, sizeof(time_limiter));
+    return memdup(&time_limiter, sizeof(time_limiter));
 }
