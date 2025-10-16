@@ -20,6 +20,7 @@ typedef CmdOptions CmdOptions;
  */
 struct CmdOptions
 {
+    const char* config_file;
     unsigned int number_of_nodes; /**< Number of nodes to generate. */
     int seed;                     /**< Seed for random number generation. */
     Rectangle generation_area;    /**< Area parameters for node generation. */
@@ -37,7 +38,6 @@ struct CmdOptions
     float p1;
     float p2;
     float p3;
-
 };
 
 /**
@@ -49,4 +49,5 @@ CmdOptions* init_cmd_options();
 
 struct FlagsArray init_flags_array();
 
+void load_config(CmdOptions *cmd_options, const char **arg);
 #endif //TSP_PARAMS_H
