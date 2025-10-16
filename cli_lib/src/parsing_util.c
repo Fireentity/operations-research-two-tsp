@@ -4,9 +4,16 @@
 #include <string.h>
 #include <parsing_util.h>
 
+const ParsingResult* parse_string(const char* arg, const char** parsed) {
+    if (!arg) return MISSING_VALUE->of(MISSING_VALUE,arg);
+    const unsigned long arg_len = strlen(arg)+1;
+    *parsed = malloc(arg_len);
+     memcpy((void*)*parsed, arg, arg_len);
+    return SUCCESS;
+}
+
 // Parse an unsigned integer
-const ParsingResult* parse_unsigned_int(const char* arg, unsigned int* parsed)
-{
+const ParsingResult* parse_unsigned_int(const char* arg, unsigned int* parsed){
     if (!arg) return MISSING_VALUE->of(MISSING_VALUE,arg);
 
     char* end;
@@ -21,8 +28,7 @@ const ParsingResult* parse_unsigned_int(const char* arg, unsigned int* parsed)
 }
 
 // Parse a signed integer
-const ParsingResult* parse_int(const char* arg, int* parsed)
-{
+const ParsingResult* parse_int(const char* arg, int* parsed){
     if (!arg) return MISSING_VALUE;
 
     char* end;
@@ -37,34 +43,31 @@ const ParsingResult* parse_int(const char* arg, int* parsed)
 }
 
 // Parse a float
-const ParsingResult* parse_float(const char* arg, float* parsed)
-{
+const ParsingResult* parse_float(const char* arg, float* parsed){
     if (!arg) return MISSING_VALUE;
 
     char* end;
     errno = 0;
     const float val = strtof(arg, &end);
 
-    if (errno || *end != '\0') // Check for conversion errors
+    if (errno || *end != '\0') {
         return WRONG_VALUE_TYPE;
+    }
 
     *parsed = val;
     return SUCCESS;
 }
 
 // Parse a boolean
-const ParsingResult* parse_bool(const char* arg, bool* parsed)
-{
+const ParsingResult* parse_bool(const char* arg, bool* parsed){
     if (!arg) return MISSING_VALUE;
 
-    if (!strcasecmp(arg, "true") || strcmp(arg, "1") == 0)
-    {
+    if (!strcasecmp(arg, "true") || strcmp(arg, "1") == 0){
         *parsed = true;
         return SUCCESS;
     }
 
-    if (!strcasecmp(arg, "false") || strcmp(arg, "0") == 0)
-    {
+    if (!strcasecmp(arg, "false") || strcmp(arg, "0") == 0){
         *parsed = false;
         return SUCCESS;
     }

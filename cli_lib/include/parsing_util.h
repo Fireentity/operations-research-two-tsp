@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "parsing_result.h"
 
+
+const ParsingResult* parse_string(const char* arg, const char** parsed) ;
 /**
  * @brief Parses an unsigned integer from a string.
  *
