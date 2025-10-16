@@ -1,4 +1,4 @@
-#include <stdio.h>
+        #include <stdio.h>
 #include <assert.h>
 #include <flag_parser.h>
 #include "parsing_util.h"
@@ -77,44 +77,44 @@ void test_basic_flags() {
     // Test: All flags provided correctly.
     option = (CmdOptions){0, 0, false};
     const char *argv1[] = {"test", "--boolean", "--u_integer", "1", "10", "1", "--integer", "100", NULL};
-    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv1 + 1);
+    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv1 + 1, false);
     assert(PARSE_SUCCESS == result->state);
     assert(true == option.boolean && 100 == option.integer && 10 == option.u_integer);
 
     // Test: Missing value for --integer.
     option = (CmdOptions){0, 0, false};
     const char *argv2[] = {"test", "--boolean", "--integer", NULL};
-    result = parse_flags_with_parser(&option, parser, argv2 + 1);
+    result = parse_flags_with_parser(&option, parser, argv2 + 1, false);
     assert(PARSE_MISSING_VALUE == result->state);
 
     // Test: Missing mandatory flag (--boolean not provided).
     option = (CmdOptions){0, 0, false};
     const char *argv3[] = {"test", "--integer", "100", "--u_integer", "1", "10", "1", NULL};
-    result = parse_flags_with_parser(&option, parser, argv3 + 1);
+    result = parse_flags_with_parser(&option, parser, argv3 + 1, false);
     assert(PARSE_MISSING_MANDATORY_FLAG == result->state);
 
     // Test: Wrong value type for --integer.
     option = (CmdOptions){0, 0, false};
     const char *argv4[] = {"test", "--boolean", "--u_integer", "1", "10", "1", "--integer", "not_a_number", NULL};
-    result = parse_flags_with_parser(&option, parser, argv4 + 1);
+    result = parse_flags_with_parser(&option, parser, argv4 + 1, false);
     assert(PARSE_WRONG_VALUE_TYPE == result->state);
 
     // Test: Unknown flag provided.
     option = (CmdOptions){0, 0, false};
     const char *argv5[] = {"test", "--unknown", "--integer", "100", "--u_integer", "1", "10", "1", "--boolean", NULL};
-    result = parse_flags_with_parser(&option, parser, argv5 + 1);
+    result = parse_flags_with_parser(&option, parser, argv5 + 1, false);
     assert(PARSE_UNKNOWN_ARG == result->state);
 
     // Test: No flags provided.
     option = (CmdOptions){0, 0, false};
     const char *argv6[] = {"test", NULL};
-    result = parse_flags_with_parser(&option, parser, argv6 + 1);
+    result = parse_flags_with_parser(&option, parser, argv6 + 1, false);
     assert(PARSE_MISSING_MANDATORY_FLAG == result->state);
 
     // Test: Extra parameter provided to --boolean.
     option = (CmdOptions){0, 0, false};
     const char *argv7[] = {"test", "--boolean", "extra", "--integer", "100", "--u_integer", "1", "10", "1", NULL};
-    result = parse_flags_with_parser(&option, parser, argv7 + 1);
+    result = parse_flags_with_parser(&option, parser, argv7 + 1, false);
     assert(PARSE_UNKNOWN_ARG == result->state);
 
     // Test: Repeated non-mandatory flag.
@@ -127,7 +127,7 @@ void test_basic_flags() {
     FlagParser *parser2 = init_flag_parser(flags_array_2);
     option = (CmdOptions){0, 0, false};
     const char *argv8[] = {"test", "--boolean", "--boolean", "--integer", "100", "--u_integer", "1", "10", "1", NULL};
-    result = parse_flags_with_parser(&option, parser2, argv8 + 1);
+    result = parse_flags_with_parser(&option, parser2, argv8 + 1, false);
     assert(PARSE_SUCCESS == result->state);
     assert(true == option.boolean && 100 == option.integer && 10 == option.u_integer);
 
@@ -157,7 +157,7 @@ void test_nested_flags() {
     FlagParser *parser1 = init_flag_parser(flags_array_top1);
     option = (CmdOptions){0, 0, false};
     const char *argv1[] = {"test", "--parent", "--child", "150", "--boolean", NULL};
-    const ParsingResult* result = parse_flags_with_parser(&option, parser1, argv1 + 1);
+    const ParsingResult* result = parse_flags_with_parser(&option, parser1, argv1 + 1, false);
     assert(PARSE_SUCCESS == result->state);
     assert(150 == option.integer && true == option.boolean);
 
@@ -174,14 +174,14 @@ void test_nested_flags() {
     FlagParser *parser2 = init_flag_parser(flags_array_top2);
     option = (CmdOptions){0, 0, false};
     const char *argv2[] = {"test", "--parent", "--child", "--grandchild", "250", "--boolean", NULL};
-    result = parse_flags_with_parser(&option, parser2, argv2 + 1);
+    result = parse_flags_with_parser(&option, parser2, argv2 + 1, false);
     assert(PARSE_SUCCESS == result->state);
     assert(250 == option.integer && true == option.boolean);
 
     // Test: Mandatory nested flag missing.
     option = (CmdOptions){0, 0, false};
     const char *argv3[] = {"test", "--parent", "--boolean", "--child", "150", NULL};
-    result = parse_flags_with_parser(&option, parser1, argv3 + 1);
+    result = parse_flags_with_parser(&option, parser1, argv3 + 1, false);
     assert(PARSE_MISSING_MANDATORY_FLAG == result->state);
 
     // Test: Optional nested flag omitted.
@@ -195,7 +195,7 @@ void test_nested_flags() {
     FlagParser *parser3 = init_flag_parser(flags_array_top3);
     option = (CmdOptions){0, 0, false};
     const char *argv4[] = {"test", "--parent", "--boolean", NULL};
-    result = parse_flags_with_parser(&option, parser3, argv4 + 1);
+    result = parse_flags_with_parser(&option, parser3, argv4 + 1, false);
     assert(PARSE_SUCCESS == result->state);
     assert(true == option.boolean);
 
@@ -266,7 +266,7 @@ void test_exhaustive_flags() {
         "--grandchild1",
         NULL
     };
-    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv + 1);
+    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv + 1, false);
     assert(PARSE_SUCCESS == result->state);
     assert(111 == option.integer && 222 == option.u_integer && true == option.boolean);
 
@@ -301,7 +301,7 @@ void test_unrecognized_flags() {
         "--set_bool",
         NULL
     };
-    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv + 1);
+    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv + 1, false);
     assert(PARSE_UNKNOWN_ARG == result->state);
 
     // Cleanup memory
@@ -309,7 +309,83 @@ void test_unrecognized_flags() {
     free_flags_array_content(flags_array);
 }
 
+/**
+ * @brief Tests the functionality for handling unknown flags.
+ *
+ * This function verifies that the parser can be configured to either
+ * return an error for unknown flags (strict mode) or to skip them
+ * and continue parsing (flexible mode).
+ */
+void test_unknown_functionality() {
+    CmdOptions option;
 
+    // Define a simple set of flags for testing.
+    const Flag *flags[] = {
+        init_flag("--integer", 1, set_integer, true),
+        init_flag("--boolean", 0, set_boolean, true)
+    };
+    const struct FlagsArray flags_array = {.flags = flags, .number_of_flags = 2};
+
+    // --- SCENARIO 1: Strict mode (skip_unknowns = false) ---
+    // The parser should fail when it encounters an unknown flag.
+    FlagParser *strict_parser = init_flag_parser(flags_array);
+    option = (CmdOptions){0, 0, false};
+    const char *argv1[] = {
+        "test",
+        "--boolean",
+        "--unknown-flag", // This flag is not defined
+        "some_value",
+        "--integer", "123",
+        NULL
+    };
+
+    // We expect an UNKNOWN_ARG error.
+    const ParsingResult* result1 = parse_flags_with_parser(&option, strict_parser, argv1 + 1, false);
+    assert(PARSE_UNKNOWN_ARG == result1->state);
+
+    // --- SCENARIO 2: Flexible mode (skip_unknowns = true) ---
+    // The parser should ignore unknown flags and succeed.
+    FlagParser *flexible_parser = init_flag_parser(flags_array);
+    option = (CmdOptions){0, 0, false};
+    // We use the same arguments as before.
+    const char *argv2[] = {
+        "test",
+        "--boolean",
+        "--unknown-flag", // Should be skipped
+        "some_value",     // Should be skipped along with its flag
+        "--integer", "123",
+        NULL
+    };
+
+    // We expect SUCCESS because unknown flags are skipped.
+    const ParsingResult* result2 = parse_flags_with_parser(&option, flexible_parser, argv2 + 1, true);
+    assert(PARSE_SUCCESS == result2->state);
+    // Verify that the known flags were parsed correctly.
+    assert(true == option.boolean);
+    assert(123 == option.integer);
+
+    // --- SCENARIO 3: Flexible mode with multiple and nested unknown flags ---
+    option = (CmdOptions){0, 0, false};
+    const char* argv3[] = {
+        "test",
+        "--foo", // Unknown
+        "--integer", "456",
+        "--bar", "baz", // Unknown flag with a value
+        "--boolean",
+        "--end", // Another unknown flag at the end
+        NULL
+    };
+
+    const ParsingResult* result3 = parse_flags_with_parser(&option, flexible_parser, argv3 + 1, true);
+    assert(PARSE_SUCCESS == result3->state);
+    assert(456 == option.integer);
+    assert(true == option.boolean);
+
+    // Cleanup memory
+    free_flag_parser(strict_parser);
+    free_flag_parser(flexible_parser);
+    free_flags_array_content(flags_array);
+}
 /**
  * @brief Main entry point.
  *
@@ -320,6 +396,7 @@ int main() {
     test_nested_flags();
     test_exhaustive_flags();
     test_unrecognized_flags();
+    test_unknown_functionality();
     printf("All tests passed.\n");
     return 0;
 }
