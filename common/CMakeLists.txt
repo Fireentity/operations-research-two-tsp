@@ -10,6 +10,8 @@ set(COMMON_SOURCES
         src/hashmap.c
         include/uthash.h
         tests/str_format_test.c
+        include/ini.h
+        src/ini.c
 )
 
 # Create a library for common
