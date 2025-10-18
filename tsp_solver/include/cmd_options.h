@@ -47,7 +47,8 @@ struct CmdOptions
  */
 CmdOptions* init_cmd_options();
 
-struct FlagsArray init_flags_array();
+struct FlagsArray* init_flags_array();
 
 void load_config(CmdOptions *cmd_options, const char **arg);
+void free_cmd_option(CmdOptions *cmd_options);
 #endif //TSP_PARAMS_H

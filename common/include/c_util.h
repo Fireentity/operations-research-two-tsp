@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 /**
  * @brief Checks if the given pointer is not NULL.
  *
@@ -13,10 +14,8 @@
  *
  * @param ptr Pointer to check.
  */
-static inline void check_alloc(const void* ptr)
-{
-    if (!ptr)
-    {
+static inline void check_alloc(const void* ptr) {
+    if (!ptr) {
         perror("Memory allocation error");
         exit(EXIT_FAILURE);
     }
@@ -29,10 +28,8 @@ static inline void check_alloc(const void* ptr)
  *
  * @param gp FILE pointer returned by popen.
  */
-static inline void check_popen(FILE* gp)
-{
-    if (!gp)
-    {
+static inline void check_popen(FILE* gp) {
+    if (!gp) {
         perror("popen error");
         exit(EXIT_FAILURE);
     }
@@ -50,7 +47,7 @@ static inline void check_popen(FILE* gp)
  *   A malloc’ed C‐string containing the formatted result, or NULL on OOM.
  *   Caller is responsible for free()’ing it.
  */
-static inline char *str_format(const char *format, ...) {
+static inline char* str_format(const char* format, ...) {
     va_list args;
     va_start(args, format);
 
@@ -64,7 +61,7 @@ static inline char *str_format(const char *format, ...) {
     }
 
     // Allocate exactly the right size (+1 for NUL)
-    char *buf = malloc((size_t)needed + 1);
+    char* buf = malloc((size_t)needed + 1);
     if (!buf) return NULL;
 
     // Actually format into our buffer
@@ -75,7 +72,7 @@ static inline char *str_format(const char *format, ...) {
     return buf;
 }
 
-static inline char *vstr_format(const char *format, va_list args) {
+static inline char* vstr_format(const char* format, va_list args) {
     va_list args_copy;
     va_copy(args_copy, args);
 
@@ -86,14 +83,13 @@ static inline char *vstr_format(const char *format, va_list args) {
     if (needed < 0) return NULL;
 
     // Allocate space (needed + 1 for the NUL)
-    char *buf = malloc((size_t)needed + 1);
+    char* buf = malloc((size_t)needed + 1);
     if (!buf) return NULL;
 
     // Actually format into it
     vsnprintf(buf, (size_t)needed + 1, format, args);
     return buf;
 }
-
 
 
 /**
@@ -103,10 +99,8 @@ static inline char *vstr_format(const char *format, va_list args) {
  *
  * @param status Status returned by pclose.
  */
-static inline void check_pclose(const int status)
-{
-    if (status == -1)
-    {
+static inline void check_pclose(const int status) {
+    if (status == -1) {
         perror("pclose error");
         exit(EXIT_FAILURE);
     }
@@ -121,8 +115,8 @@ static inline void check_pclose(const int status)
  * @param size Size of the object in bytes.
  * @return Pointer to the newly allocated memory containing the copied object.
  */
-static inline void *memdup(const void *obj, const size_t size) {
-    void *ptr = malloc(size);
+static inline void* memdup(const void* obj, const size_t size) {
+    void* ptr = malloc(size);
     check_alloc(ptr);
     memcpy(ptr, obj, size);
     return ptr;
@@ -169,7 +163,7 @@ DEFINE_ARRAYS_EQUAL(double, double, a==b);
 static inline void rand_k_non_contiguous(const int low, const int high, const int k, int result[]) {
     // Calculate effective range size adjusted for required gaps.
     const int m = high - low + 1 - (k - 1);
-    int s[k];  // Array to store offset values.
+    int s[k]; // Array to store offset values.
 
     // Generate the first offset.
     s[0] = rand() % (m - (k - 1));

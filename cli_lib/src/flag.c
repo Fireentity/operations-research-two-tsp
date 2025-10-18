@@ -2,24 +2,29 @@
 #include <flag.h>
 #include <parsing_result.h>
 
-struct FlagState{
+struct FlagState {
     const unsigned int number_of_params;
     const char* label;
-    const bool mandatory;
-
+    bool mandatory;
     const ParsingResult* (* const parse_function)(CmdOptions* cmd_options, const char** arg);
 };
 
-static bool is_mandatory(const Flag* const self) { return self->state->mandatory; }
+static bool is_mandatory(const Flag* const self) {
+    return self->state->mandatory;
+}
 
-static unsigned int get_number_of_params(const Flag* const self) { return self->state->number_of_params; }
+static unsigned int get_number_of_params(const Flag* const self) {
+    return self->state->number_of_params;
+}
 
-static const char* get_label(const Flag* const self) { return self->state->label; }
+static const char* get_label(const Flag* const self) {
+    return self->state->label;
+}
 
 static const ParsingResult* parse(const Flag* flag,
                                   CmdOptions* const cmd_options,
                                   const char** argv,
-                                  unsigned int* index){
+                                  unsigned int* index) {
     const ParsingResult* result = flag->state->parse_function(cmd_options, argv + *index);
     if (result->state == PARSE_SUCCESS)
         *index += flag->state->number_of_params;
@@ -33,11 +38,11 @@ const Flag* init_flag_with_children(const char* label,
                                         const char** arg
                                     ),
                                     const bool mandatory,
-                                    const struct FlagsArray children){
+                                    struct FlagsArray* children) {
     const FlagState state = {
         .number_of_params = number_of_params,
         .parse_function = param_function,
-        .label = label,
+        .label = memdup(label, strlen(label) + 1),
         .mandatory = mandatory
     };
     const Flag flag = {
@@ -54,24 +59,30 @@ const Flag* init_flag_with_children(const char* label,
 const Flag* init_flag(const char* label,
                       const unsigned int number_of_params,
                       const ParsingResult* (*const param_function)(CmdOptions* cmd_option, const char** arg),
-                      const bool mandatory){
-    return init_flag_with_children(label, number_of_params, param_function, mandatory, EMPTY_FLAGS_ARRAY);
+                      const bool mandatory) {
+    return init_flag_with_children(label, number_of_params, param_function, mandatory, EMPTY_FLAGS_ARRAY_HEAP);
 }
 
-void free_flags_array_content(const struct FlagsArray self){
-    if (!self.flags) return;
-    for (int i = 0; i < self.number_of_flags; i++){
-        free_flag((Flag*)self.flags[i]);
-    }
-}
-
-void free_flag(Flag* self){
+void free_flags_array(struct FlagsArray* self) {
     if (!self) return;
-
-    free_flags_array_content(self->children);
-
-    if (self->state){
-        free(self->state);
+    if (self->flags) {
+        for (int i = 0; i < self->number_of_flags; i++) {
+            free_flag(self->flags[i]);
+        }
+        free(self->flags);
     }
+    free(self);
+}
+
+void free_flag_state(FlagState* self) {
+    if (!self) return;
+    if (self->label) free((void*)self->label);
+    free(self);
+}
+
+void free_flag(Flag* self) {
+    if (!self) return;
+    free_flags_array(self->children);
+    free_flag_state((FlagState*)self->state);
     free(self);
 }

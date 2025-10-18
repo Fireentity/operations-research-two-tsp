@@ -16,10 +16,10 @@ typedef struct ParserNode ParserNode;
 /**
  * @brief Initializes the flag parser with the provided flags.
  *
- * @param flags The array of flags.
+ * @param f_a The array of flags.
  * @return Pointer to the initialized FlagParser.
  */
-FlagParser *init_flag_parser(struct FlagsArray flags);
+FlagParser* init_flag_parser(struct FlagsArray *f_a);
 
 /**
  * @brief Parses command-line arguments using the provided flag parser.

@@ -13,23 +13,21 @@ typedef struct Flag Flag;
 /** Forward declaration of CmdOptions. */
 typedef struct CmdOptions CmdOptions;
 
-struct FlagsArray
-{
-    const Flag** const flags;
-    const unsigned int number_of_flags;
+struct FlagsArray {
+    Flag** flags;
+    unsigned int number_of_flags;
 };
 
-#define EMPTY_FLAGS_ARRAY (struct FlagsArray){NULL,0}
-
+#define EMPTY_FLAGS_ARRAY_STACK (struct FlagsArray){NULL,0}
+#define EMPTY_FLAGS_ARRAY_HEAP calloc(1, sizeof(struct FlagsArray))
 
 /**
  * @brief Represents a flag with its state and operations.
  */
-struct Flag
-{
-    FlagState* state; /**< Pointer to the flag's state. */
+struct Flag {
+    const FlagState* state; /**< Pointer to the flag's state. */
 
-    struct FlagsArray children;
+    struct FlagsArray* children;
     /**
      * @brief Parses the flag from command line arguments.
      *
@@ -40,9 +38,9 @@ struct Flag
      * @return ParsingResult outcome of the parsing.
      */
     const ParsingResult* (*const parse)(const Flag* flag,
-                                 CmdOptions* cmd_options,
-                                 const char** argv,
-                                 unsigned int* index);
+                                        CmdOptions* cmd_options,
+                                        const char** argv,
+                                        unsigned int* index);
 
     /**
      * @brief Checks if the flag is mandatory.
@@ -83,16 +81,14 @@ const Flag* init_flag_with_children(const char* label,
                                     unsigned int number_of_params,
                                     const ParsingResult* (*param_function)(CmdOptions* cmd_options, const char** arg),
                                     bool mandatory,
-                                    struct FlagsArray children);
+                                    struct FlagsArray* children);
 
 const Flag* init_flag(const char* label,
                       unsigned int number_of_params,
                       const ParsingResult* (*param_function)(CmdOptions* cmd_options, const char** arg),
                       bool mandatory);
 
-
-void add_children(Flag* self, struct FlagsArray children);
-
+void add_children(Flag* self, struct FlagsArray* children);
 void free_flag(Flag* self);
-void free_flags_array_content(struct FlagsArray self);
+void free_flags_array(struct FlagsArray* self);
 #endif //FLAG_H

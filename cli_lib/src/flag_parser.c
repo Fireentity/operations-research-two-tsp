@@ -72,7 +72,8 @@ static const ParsingResult *recursive_parse(const ParserNode *node, CmdOptions *
         }
         // Parse the flag.
         const ParsingResult *result = child->flag->parse(child->flag, cmd_options, labels, current_index);
-        // Advance to the next argument.
+        // Advance to the next argument. TODO
+        printf("%s\t",labels[*current_index]);
         (*current_index)++;
 
         if (PARSE_SUCCESS != result->state)
@@ -91,26 +92,26 @@ static const ParsingResult *recursive_parse(const ParserNode *node, CmdOptions *
     return parsed_mandatory == node->mandatory_flags_count ? SUCCESS : MISSING_MANDATORY_FLAG;
 }
 
-// Creates a hashmap of ParserNodes from an array of flags.
-static struct hashmap *make_hashmap_nodes_from_flags(const struct FlagsArray flags) {
-    if (!flags.number_of_flags || !flags.flags) return NULL;
-    struct hashmap *map = hashmap_new(sizeof(ParserNode), flags.number_of_flags, rand(), rand(), hash, compare,
+// Creates a hashmap of ParserNodes from an array of flags. //TODO
+static struct hashmap *make_hashmap_nodes_from_flags(const struct FlagsArray *flags) {
+    if (!flags->number_of_flags || !flags->flags) return NULL;
+    struct hashmap *map = hashmap_new(sizeof(ParserNode), flags->number_of_flags, rand(), rand(), hash, compare,
                                       free_parser_node, NULL);
-    for (int i = 0; i < flags.number_of_flags; i++) {
+    for (int i = 0; i < flags->number_of_flags; i++) {
         // Count how many child flags are mandatory.
         int child_mandatory_count = 0;
-        if (flags.flags[i]->children.flags && flags.flags[i]->children.number_of_flags > 0) {
-            for (int j = 0; j < flags.flags[i]->children.number_of_flags; j++) {
-                if (flags.flags[i]->children.flags[j]->is_mandatory(flags.flags[i]->children.flags[j]))
+        if (flags->flags[i]->children->flags && flags->flags[i]->children->number_of_flags > 0) {
+            for (int j = 0; j < flags->flags[i]->children->number_of_flags; j++) {
+                if (flags->flags[i]->children->flags[j]->is_mandatory(flags->flags[i]->children->flags[j]))
                     child_mandatory_count++;
             }
         }
         // Create the node for the current flag.
         ParserNode entry = {
-            .key = flags.flags[i]->get_label(flags.flags[i]),
-            .flag = flags.flags[i],
+            .key = flags->flags[i]->get_label(flags->flags[i]),
+            .flag = flags->flags[i],
             .mandatory_flags_count = child_mandatory_count,
-            .children = make_hashmap_nodes_from_flags(flags.flags[i]->children)
+            .children = make_hashmap_nodes_from_flags(flags->flags[i]->children)
         };
 
         // Insert the node into the hashmap; handle duplicates if needed.
@@ -122,15 +123,15 @@ static struct hashmap *make_hashmap_nodes_from_flags(const struct FlagsArray fla
 }
 
 // Initializes the FlagParser from an array of flags.
-FlagParser *init_flag_parser(const struct FlagsArray flags) {
+FlagParser* init_flag_parser(struct FlagsArray *f_a) {
     int top_mandatory_count = 0;
     // Count mandatory flags at the top level.
-    for (int i = 0; i < flags.number_of_flags; i++) {
-        if (flags.flags[i]->is_mandatory(flags.flags[i]))
+    for (int i = 0; i < f_a->number_of_flags; i++) {
+        if (f_a->flags[i]->is_mandatory(f_a->flags[i]))
             top_mandatory_count++;
     }
     const FlagParser parser = {
-        .map = make_hashmap_nodes_from_flags(flags),
+        .map = make_hashmap_nodes_from_flags(f_a),
         .mandatory_flags_count = top_mandatory_count
     };
     return memdup(&parser, sizeof(parser));
