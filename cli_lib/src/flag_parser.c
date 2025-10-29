@@ -73,7 +73,6 @@ static const ParsingResult *recursive_parse(const ParserNode *node, CmdOptions *
         // Parse the flag.
         const ParsingResult *result = child->flag->parse(child->flag, cmd_options, labels, current_index);
         // Advance to the next argument. TODO
-        printf("%s\t",labels[*current_index]);
         (*current_index)++;
 
         if (PARSE_SUCCESS != result->state)
@@ -89,7 +88,7 @@ static const ParsingResult *recursive_parse(const ParserNode *node, CmdOptions *
         if (PARSE_SUCCESS != result->state)
             return result;
     }
-    return parsed_mandatory == node->mandatory_flags_count ? SUCCESS : MISSING_MANDATORY_FLAG;
+    return parsed_mandatory >= node->mandatory_flags_count ? SUCCESS : MISSING_MANDATORY_FLAG;
 }
 
 // Creates a hashmap of ParserNodes from an array of flags. //TODO

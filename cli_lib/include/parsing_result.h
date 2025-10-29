@@ -1,8 +1,5 @@
-/* parsing_result.h */
 #ifndef PARSING_RESULT_H
 #define PARSING_RESULT_H
-
-#include "c_util.h"
 
 /**
  * @brief Enumeration of possible outcomes for parsing operations.

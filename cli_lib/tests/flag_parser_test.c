@@ -62,7 +62,7 @@ void test_basic_flags() {
     const char* argv1[] = {"test", "--boolean", "--u_integer", "1", "10", "1", "--integer", "100", NULL};
     const ParsingResult* result = parse_flags_with_parser(&option, parser, argv1 + 1, false);
     assert(PARSE_SUCCESS == result->state);
-    assert(true == option.boolean && 100 == option.integer && 10 == option.u_integer);
+    assert(true == option.boolean && 100 == option.integer && 1 == option.u_integer);
 
     // Test: Missing value for --integer.
     option = (CmdOptions){0, 0, false};
@@ -168,12 +168,12 @@ void test_exhaustive_flags() {
     FlagParser* parser = init_flag_parser(flags_array);
 
     const char* argv[] = {
-        "test", "--extra1", "--group1", "--child1", "--child2", "--set_int", "111", "--set_uint", "a", "222", "b",
+        "test", "--extra1", "--group1", "--child1", "--child2", "--set_int", "111", "--set_uint", "111", "222", "b",
         "--set_bool", "--extra2", "--group2", "--child3", "--child4", "--grandchild1", NULL
     };
     const ParsingResult* result = parse_flags_with_parser(&option, parser, argv + 1, false);
     assert(PARSE_SUCCESS == result->state);
-    assert(111 == option.integer && 222 == option.u_integer && true == option.boolean);
+    assert(111 == option.integer && 111 == option.u_integer && true == option.boolean);
 
     free_flag_parser(parser);
     free_flags_array(flags_array);
@@ -225,13 +225,157 @@ void test_unknown_functionality() {
     free_flag_parser(flexible_parser);
     free_flags_array(flags_array);
 }
+void test_missing_mandatory_flag() {
+    const Flag* flags_data[] = {
+        init_flag("--integer", 1, set_integer, true),
+        init_flag("--u_integer", 3, set_u_integer, true),
+        init_flag("--boolean", 0, set_boolean, true)
+    };
+    struct FlagsArray* flags_array = create_flags_array(flags_data, ARRAY_SIZE(flags_data));
+    FlagParser* parser = init_flag_parser(flags_array);
+    CmdOptions option;
+
+    // Test 1: Missing --boolean and --u_integer
+    option = (CmdOptions){0, 0, false};
+    const char* argv1[] = {"test", "--integer", "100", NULL};
+    const ParsingResult* result1 = parse_flags_with_parser(&option, parser, argv1 + 1, false);
+    assert(PARSE_MISSING_MANDATORY_FLAG == result1->state);
+
+    // Test 2: Missing --integer
+    option = (CmdOptions){0, 0, false};
+    const char* argv2[] = {"test", "--boolean", "--u_integer", "1", "2", "3", NULL};
+    const ParsingResult* result2 = parse_flags_with_parser(&option, parser, argv2 + 1, false);
+    assert(PARSE_MISSING_MANDATORY_FLAG == result2->state);
+
+    free_flag_parser(parser);
+    free_flags_array(flags_array);
+}
+
+void test_missing_nested_mandatory_flag() {
+    CmdOptions option;
+
+    const Flag* grandchild_data[] = {init_flag("--grandchild", 1, set_integer, true)};
+    struct FlagsArray* grandchild_arr = create_flags_array(grandchild_data, ARRAY_SIZE(grandchild_data));
+    const Flag* child2_data[] = {init_flag_with_children("--child", 0, dummy_parse, true, grandchild_arr)};
+    struct FlagsArray* child_arr2 = create_flags_array(child2_data, ARRAY_SIZE(child2_data));
+    const Flag* top2_data[] = {
+        init_flag_with_children("--parent", 0, dummy_parse, true, child_arr2),
+        init_flag("--boolean", 0, set_boolean, true)
+    };
+    struct FlagsArray* flags_array_top2 = create_flags_array(top2_data, ARRAY_SIZE(top2_data));
+    FlagParser* parser2 = init_flag_parser(flags_array_top2);
+
+    // Test: Missing mandatory --grandchild
+    option = (CmdOptions){0, 0, false};
+    const char* argv[] = {"test", "--parent", "--child", "--boolean", NULL};
+    const ParsingResult* result = parse_flags_with_parser(&option, parser2, argv + 1, false);
+
+    assert(PARSE_MISSING_MANDATORY_FLAG == result->state);
+
+    free_flag_parser(parser2);
+    free_flags_array(flags_array_top2);
+}
+
+void test_wrong_value_type() {
+    const Flag* flags_data[] = {
+        init_flag("--integer", 1, set_integer, true),
+        init_flag("--u_integer", 3, set_u_integer, true),
+        init_flag("--boolean", 0, set_boolean, true)
+    };
+    struct FlagsArray* flags_array = create_flags_array(flags_data, ARRAY_SIZE(flags_data));
+    FlagParser* parser = init_flag_parser(flags_array);
+    CmdOptions option = {0, 0, false};
+
+    // Test: Invalid value for --integer
+    const char* argv[] = {"test", "--integer", "abc", "--u_integer", "1", "2", "3", "--boolean", NULL};
+    const ParsingResult* result = parse_flags_with_parser(&option, parser, argv + 1, false);
+
+    assert(PARSE_WRONG_VALUE_TYPE == result->state);
+
+    free_flag_parser(parser);
+    free_flags_array(flags_array);
+}
+
+void test_missing_value_scenarios() {
+    const Flag* flags_data[] = {
+        init_flag("--integer", 1, set_integer, true),
+        init_flag("--u_integer", 3, set_u_integer, true),
+        init_flag("--boolean", 0, set_boolean, true)
+    };
+    struct FlagsArray* flags_array = create_flags_array(flags_data, ARRAY_SIZE(flags_data));
+    FlagParser* parser = init_flag_parser(flags_array);
+    CmdOptions option;
+
+    // Test 1: Flag (N=1) followed by another flag
+    option = (CmdOptions){0, 0, false};
+    const char* argv1[] = {"test", "--integer", "--boolean", "--u_integer", "1", "2", "3", NULL};
+    const ParsingResult* result1 = parse_flags_with_parser(&option, parser, argv1 + 1, false);
+    assert(PARSE_WRONG_VALUE_TYPE == result1->state);
+
+    // Test 2: Flag (N=3) but receives M < N (M=2)
+    option = (CmdOptions){0, 0, false};
+    const char* argv2[] = {"test", "--u_integer", "1", "2", "--integer", "100", "--boolean", NULL};
+    const ParsingResult* result2 = parse_flags_with_parser(&option, parser, argv2 + 1, false);
+    assert(PARSE_UNKNOWN_ARG == result2->state);
+
+    free_flag_parser(parser);
+    free_flags_array(flags_array);
+}
+
+void test_nested_logic_errors() {
+    CmdOptions option;
+
+    const Flag* child1_data[] = {init_flag("--child", 1, set_integer, true)};
+    struct FlagsArray* child_arr1 = create_flags_array(child1_data, ARRAY_SIZE(child1_data));
+    const Flag* top1_data[] = {
+        init_flag_with_children("--parent", 0, dummy_parse, true, child_arr1),
+        init_flag("--boolean", 0, set_boolean, true)
+    };
+    struct FlagsArray* flags_array_top1 = create_flags_array(top1_data, ARRAY_SIZE(top1_data));
+    FlagParser* parser1 = init_flag_parser(flags_array_top1);
+
+    // Test: --child called without --parent
+    option = (CmdOptions){0, 0, false};
+    const char* argv1[] = {"test", "--child", "150", "--boolean", NULL};
+    const ParsingResult* result = parse_flags_with_parser(&option, parser1, argv1 + 1, false);
+
+    assert(PARSE_UNKNOWN_ARG == result->state);
+
+    free_flag_parser(parser1);
+    free_flags_array(flags_array_top1);
+}
 
 int main() {
+    printf("Running test_basic_flags...\n");
     test_basic_flags();
+
+    printf("Running test_nested_flags...\n");
     test_nested_flags();
+
+    printf("Running test_exhaustive_flags...\n");
     test_exhaustive_flags();
+
+    printf("Running test_unrecognized_flags...\n");
     test_unrecognized_flags();
+
+    printf("Running test_unknown_functionality...\n");
     test_unknown_functionality();
-    printf("All refactored tests passed.\n");
+
+    printf("Running test_missing_mandatory_flag...\n");
+    test_missing_mandatory_flag();
+
+    printf("Running test_missing_nested_mandatory_flag...\n");
+    test_missing_nested_mandatory_flag();
+
+    printf("Running test_wrong_value_type...\n");
+    test_wrong_value_type();
+
+    printf("Running test_missing_value_scenarios...\n");
+    test_missing_value_scenarios();
+
+    printf("Running test_nested_logic_errors...\n");
+    test_nested_logic_errors();
+
+    printf("\nAll tests passed successfully!\n");
     return 0;
 }

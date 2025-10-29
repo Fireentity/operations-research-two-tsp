@@ -113,7 +113,7 @@ void run_algorithms(const TspInstance* instance, const CmdOptions* cmd_options) 
 int main(const int argc, const char* argv[]) {
     CmdOptions* cmd_options = init_cmd_options();
     load_config(cmd_options, argv);
-    const struct FlagsArray* flags_array = init_flags_array();
+    struct FlagsArray* flags_array = init_flags_array();
     FlagParser* parser = init_flag_parser(flags_array);
     const ParsingResult* parsing_result = parse_flags_with_parser(cmd_options, parser, argv + 1, false);
     if (parsing_result->state != PARSE_SUCCESS) {
