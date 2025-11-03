@@ -194,12 +194,9 @@ void load_config(CmdOptions* cmd_options, const char** arg) {
     const ParsingResult* parsing_result = parse_flags_with_parser(cmd_options, parser, arg + 1, true);
     if (parsing_result->state != PARSE_SUCCESS) {
         printf("%s", parsing_result->error_message);
-        goto FREE;
-    }
-    if (cmd_options->config_file && ini_parse(cmd_options->config_file, handler, cmd_options) < 0) {
+    } else if (cmd_options->config_file && ini_parse(cmd_options->config_file, handler, cmd_options) < 0) {
         printf("Can't open config file: '%s' \n", cmd_options->config_file);
     }
-FREE:
     free_flag_parser(parser);
     free_flags_array(f_a);
 }
