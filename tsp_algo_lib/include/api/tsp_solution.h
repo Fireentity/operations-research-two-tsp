@@ -1,49 +1,55 @@
 #ifndef TSP_SOLUTION_H
 #define TSP_SOLUTION_H
 
-#include <feasibility_result.h>
-#include <tsp_algorithm.h>
-#include <tsp_instance.h>
+#include <stdbool.h> // For bool
+#include "feasibility_result.h"
+
+// --- Forward Declarations to break include cycles ---
+typedef struct TspAlgorithm TspAlgorithm;
+typedef struct TspInstance TspInstance;
+typedef struct CostsPlotter CostsPlotter;
 
 /** Forward declaration of TspSolutionState. */
 typedef struct TspSolutionState TspSolutionState;
 
-/** Forward declaration of TspSolution. */
-typedef struct TspSolution TspSolution;
-
 /**
  * @brief Represents a TSP solution.
  */
-struct TspSolution
-{
+typedef struct TspSolution TspSolution;
+
+struct TspSolution {
     TspSolutionState* state; /**< Internal state. */
-    /**
-     * @brief Solves the TSP using a given algorithm.
-     * @param self Pointer to the solution.
-     * @param tsp_algorithm TSP algorithm to use.
-     * @param plotter The plotter for generate how the solution is being optimized
-     * @return Feasibility result.
-     */
-    FeasibilityResult (*const solve)(const TspSolution* self, const TspAlgorithm* tsp_algorithm, const CostsPlotter* plotter);
-    /**
-     * @brief Checks if the solution is feasible.
-     * @param self Pointer to the solution.
-     * @return Feasibility result.
-     */
+
+    FeasibilityResult (*const solve)(const TspSolution* self, const TspAlgorithm* tsp_algorithm,
+                                     const CostsPlotter* plotter);
     FeasibilityResult (*const is_feasible)(const TspSolution* self);
-    /**
-     * @brief Frees resources associated with the solution.
-     * @param self Pointer to the solution.
-     */
     void (*const free)(const TspSolution* self);
+
     /**
-     * @brief Returns the tour.
-     * @param solution Pointer to the solution.
-     * @return Pointer to the tour array.
+     * @brief Gets the current cost, thread-safe.
+     */
+    double (* const get_cost)(const TspSolution* solution);
+
+    /**
+     * @brief Safely copies the current best tour into the provided buffer.
+     * @param self Pointer to the solution.
+     * @param tour_buffer A pre-allocated buffer of size (number_of_nodes + 1).
+     */
+    void (*const get_tour_copy)(const TspSolution* self, int* tour_buffer);
+
+    /**
+     * @brief Atomically updates the solution's tour and cost if the new cost is better.
+     * @param self Pointer to the solution.
+     * @param new_tour The challenging tour.
+     * @param new_cost The cost of the challenging tour.
+     * @return true if the solution was updated, false otherwise.
+     */
+    bool (*const update_if_better)(const TspSolution* self, const int* new_tour, double new_cost);
+
+    /**
+     * @brief (DEPRECATED) Unsafe, non-thread-safe tour getter.
      */
     const int* (* const get_tour)(const TspSolution* solution);
-
-    double (* const get_cost)(const TspSolution* solution);
 };
 
 /**

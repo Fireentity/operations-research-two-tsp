@@ -15,6 +15,7 @@ typedef enum {
     FLAG_TYPE_INT,
     FLAG_TYPE_UINT,
     FLAG_TYPE_FLOAT,
+    FLAG_TYPE_UFLOAT,
     FLAG_TYPE_STRING
 } FlagType;
 
@@ -206,6 +207,14 @@ void flag_parser_add_float(FlagParser* parser,
                            const int properties) {
     add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_FLOAT);
 }
+void flag_parser_add_ufloat(FlagParser* parser,
+                           const char* name,
+                           const char* short_name,
+                           const char* description,
+                           float* destination,
+                           const int properties) {
+    add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_UFLOAT);
+}
 
 void flag_parser_add_string(FlagParser* parser,
                             const char* name,
@@ -287,10 +296,13 @@ const ParsingResult* flag_parser_parse(const FlagParser* parser,
             res = parse_int(value_str, def->destination);
             break;
         case FLAG_TYPE_UINT:
-            res = parse_unsigned_int(value_str, def->destination);
+            res = parse_uint(value_str, def->destination);
             break;
         case FLAG_TYPE_FLOAT:
             res = parse_float(value_str, def->destination);
+            break;
+        case FLAG_TYPE_UFLOAT:
+            res = parse_ufloat(value_str, def->destination);
             break;
         case FLAG_TYPE_STRING:
             // For strings, just assign the pointer. No parsing needed.

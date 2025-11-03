@@ -2,33 +2,36 @@
 
 #include <chrono.h>
 #include <stdbool.h>
+#include <stdlib.h> // For free
 
 #include "c_util.h"
+#include "logger.h" // For if_verbose
 
-struct TimeLimiterState
-{
+struct TimeLimiterState {
     double start_seconds;
     const double time_limit_seconds;
 };
 
-bool is_time_over(const TimeLimiter* self)
-{
+bool is_time_over(const TimeLimiter* self) {
     return second() - self->state->start_seconds > self->state->time_limit_seconds;
 }
 
-void start(const TimeLimiter* const self)
-{
+void start(const TimeLimiter* const self) {
+    if_verbose(VERBOSE_DEBUG, "    TimeLimiter: Timer started (limit: %.2fs).\n", self->state->time_limit_seconds);
     self->state->start_seconds = second();
 }
 
-void free_this(const TimeLimiter* self)
-{
-    free(self->state);
+void free_this(const TimeLimiter* self) {
+    if (!self) return;
+    if_verbose(VERBOSE_DEBUG, "    TimeLimiter: Freeing timer.\n");
+    if (self->state) {
+        free(self->state);
+    }
     free((void*)self);
 }
 
-TimeLimiter *init_time_limiter(const double time_limit_seconds)
-{
+TimeLimiter* init_time_limiter(const float time_limit_seconds) {
+    if_verbose(VERBOSE_DEBUG, "    TimeLimiter: Initializing with limit %.2fs.\n", time_limit_seconds);
     const TimeLimiterState state = {
         .start_seconds = 0,
         .time_limit_seconds = time_limit_seconds,

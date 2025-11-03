@@ -4,18 +4,16 @@
 /**
  * @brief Defines the area used for generating a random TSP instance.
  */
-typedef struct
-{
-    const int x_square;         /**< X-coordinate of the square grid. */
-    const int y_square;         /**< Y-coordinate of the square grid. */
+typedef struct {
+    const int x_square; /**< X-coordinate of the square grid. */
+    const int y_square; /**< Y-coordinate of the square grid. */
     const unsigned int square_side; /**< Side length of the square. */
 } TspGenerationArea;
 
 /**
  * @brief Represents a node with x and y coordinates.
  */
-typedef struct
-{
+typedef struct {
     double x; /**< X-coordinate. */
     double y; /**< Y-coordinate. */
 } Node;
@@ -29,8 +27,7 @@ typedef struct TspInstance TspInstance;
 /**
  * @brief Structure representing a TSP instance.
  */
-struct TspInstance
-{
+struct TspInstance {
     TspInstanceState* state; /**< Internal state of the TSP instance. */
     /**
      * @brief Retrieves the array of edge costs.

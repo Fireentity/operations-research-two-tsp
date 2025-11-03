@@ -1,139 +1,139 @@
+#include "variable_neighborhood_search.h"
+#include <string.h>
+#include <stdlib.h>
 #include <c_util.h>
-#include <variable_neighborhood_search.h>
-
-#include "algorithm_constants.h"
-#include "costs_plotter.h"
 #include "algorithms.h"
+#include "constants.h"
+#include "costs_plotter.h"
 #include "time_limiter.h"
+#include "tsp_instance.h"
+#include "tsp_solution.h"
 #include "tsp_math_util.h"
+#include "logger.h"
+
 
 union TspExtendedAlgorithms {
-    VariableNeighborhoodSearch *variable_neighborhood_search;
+    VariableNeighborhoodSearch* variable_neighborhood_search;
 };
 
-/**
- * @brief Performs a kick move on the tour by applying an n-opt operation.
- *
- * This function randomly selects a set of non-contiguous edges to remove from the tour,
- * computes the resulting cost change for a specific n-opt move, updates the overall cost,
- * and then applies the move to modify the tour configuration.
- *
- * @param tour             Array representing the current tour.
- * @param number_of_nodes  Total number of nodes in the tour.
- * @param edge_cost_array  Matrix of edge costs (flattened 2D array).
- * @param n_opt            Number of opt
- */
 static double kick(int tour[],
                    const int number_of_nodes,
-                   const double *edge_cost_array,
+                   const double* edge_cost_array,
                    const int n_opt) {
-    // Array to store indices of edges to remove.
     int edges_to_remove[n_opt];
 
-    // Compute the number of edges to remove.
-    const int number_of_edges_to_remove = (int) (sizeof(edges_to_remove) / sizeof(edges_to_remove[0]));
+    const int number_of_edges_to_remove = (int)(sizeof(edges_to_remove) / sizeof(edges_to_remove[0]));
 
-    // Randomly select non-contiguous edges for removal.
+    // Note: rand_k_non_contiguous must ensure the edges are sorted for compute_n_opt_move
     rand_k_non_contiguous(0, number_of_nodes - 1, number_of_edges_to_remove, edges_to_remove);
 
-    // Compute the cost change of the n-opt move and update the total cost.
     const double delta = compute_n_opt_cost(n_opt, tour, edges_to_remove, edge_cost_array, number_of_nodes);
 
-    // Apply the n-opt move to update the tour configuration.
     compute_n_opt_move(number_of_edges_to_remove, tour, edges_to_remove, number_of_nodes);
 
     return delta;
 }
 
-// The VNS improvement function handles time limiter and cost plotter initialization,
-// performs the improvement loop, and cleans up all resources.
-static void improve(const TspAlgorithm *tsp_algorithm,
-                    int tour[],
-                    const int number_of_nodes,
-                    const double edge_cost_array[],
-                    double *cost,
-                    pthread_mutex_t *mutex,
-                    const CostsPlotter * plotter) {
-    // Initialize time limiter and cost plotter.
+static void improve(const TspAlgorithm* tsp_algorithm,
+                    const TspInstance* instance,
+                    const TspSolution* solution,
+                    const CostsPlotter* plotter) {
+    if_verbose(VERBOSE_DEBUG, "  VNS: Starting improvement loop...\n");
+    const int number_of_nodes = instance->get_number_of_nodes(instance);
+    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+
     const double time_limit = tsp_algorithm->extended->variable_neighborhood_search->time_limit;
-    const TimeLimiter *time_limiter = init_time_limiter(time_limit);
-    time_limiter->start(time_limiter);
-
-    // Copy the input tour into a local working copy.
-    int current_tour[number_of_nodes + 1];
-    double current_cost;
-    WITH_MUTEX(mutex, memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
-               current_cost = *cost);
-    current_cost += two_opt(tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
-
-
-    // Save the current tour as the best found solution so far.
-    int best_tour[number_of_nodes + 1];
-    memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
-    double best_cost = current_cost;
-
     const int kick_repetition = tsp_algorithm->extended->variable_neighborhood_search->kick_repetition;
     const int n_opt = tsp_algorithm->extended->variable_neighborhood_search->n_opt;
 
-    // Improvement loop: continue until the time limit is reached.
+    if_verbose(VERBOSE_DEBUG, "  VNS: Time limit=%.2fs, Kicks=%d, N-Opt=%d\n",
+               time_limit, kick_repetition, n_opt);
+
+    const TimeLimiter* time_limiter = init_time_limiter(time_limit);
+    time_limiter->start(time_limiter);
+
+    int current_tour[number_of_nodes + 1];
+    solution->get_tour_copy(solution, current_tour);
+    double current_cost = solution->get_cost(solution);
+
+    if_verbose(VERBOSE_DEBUG, "  VNS: Running initial 2-Opt...\n");
+    current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
+
+    int best_tour[number_of_nodes + 1];
+    memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
+    double best_cost = current_cost;
+    if_verbose(VERBOSE_DEBUG, "  VNS: Initial cost after 2-Opt: %lf\n", best_cost);
+
     while (!time_limiter->is_time_over(time_limiter)) {
-        // Apply a series of kick moves.
+        // --- Shaking (Kicking) ---
         for (int i = 0; i < kick_repetition; i++) {
             current_cost += kick(current_tour, number_of_nodes, edge_cost_array, n_opt);
         }
-        // Improve the solution using 2‑opt.
+
+        // --- Local Search (2-Opt) ---
         current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
 
-        // If an improved solution is found, update the best.
         if (current_cost < best_cost - EPSILON) {
+            if_verbose(VERBOSE_DEBUG, "    VNS: Found new best cost: %lf\n", current_cost);
             memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
             best_cost = current_cost;
         }
-        // Record the current cost for plotting.
         plotter->add_cost(plotter, current_cost);
     }
 
-    // If a better solution was found, update the input tour and cost.
-    if (best_cost < *cost) {
-        WITH_MUTEX(mutex, memcpy(tour, best_tour, (number_of_nodes + 1) * sizeof(int));*cost = best_cost);
+    if (time_limiter->is_time_over(time_limiter)) {
+        if_verbose(VERBOSE_DEBUG, "  VNS: Improvement loop stopped due to time limit.\n");
     }
 
-    // Plot the cost progression.
+    solution->update_if_better(solution, best_tour, best_cost);
+
     plotter->plot(plotter, "VNS-costs.png");
 
-    // Cleanup resources.
+    if_verbose(VERBOSE_DEBUG, "  VNS: Cleaning up time limiter.\n");
     time_limiter->free(time_limiter);
-    plotter->free(plotter);
 }
 
-// The refactored solve function for VNS first generates an initial solution
-// and then calls vns_improve to further optimize the tour.
-static void solve(const TspAlgorithm *tsp_algorithm,
-                  int tour[],
-                  const int number_of_nodes,
-                  const double edge_cost_array[],
-                  double *cost,
-                  pthread_mutex_t *mutex,
-                  const CostsPlotter * plotter) {
-    // Create the initial tour in a thread-safe manner.
-    WITH_MUTEX(mutex,
-               nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
-    );
-    // Improve the tour.
-    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex, plotter);
+static void solve(const TspAlgorithm* tsp_algorithm,
+                  const TspInstance* instance,
+                  const TspSolution* solution,
+                  const CostsPlotter* plotter) {
+    if_verbose(VERBOSE_INFO, "Running Variable Neighborhood Search algorithm...\n");
+    const int number_of_nodes = instance->get_number_of_nodes(instance);
+    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+
+    int initial_tour[number_of_nodes + 1];
+    double initial_cost;
+    solution->get_tour_copy(solution, initial_tour);
+
+    if_verbose(VERBOSE_DEBUG, "  VNS: Generating initial solution via Nearest Neighbor...\n");
+    const int result = nearest_neighbor_tour(rand() % number_of_nodes, initial_tour, number_of_nodes, edge_cost_array,
+                                             &initial_cost);
+
+    if (result != 0) {
+        if_verbose(VERBOSE_INFO, "  VNS: Failed to generate initial solution.\n");
+        return; // Exit if NN tour failed
+    }
+
+    solution->update_if_better(solution, initial_tour, initial_cost);
+    if_verbose(VERBOSE_DEBUG, "  VNS: Initial solution cost: %lf\n", initial_cost);
+
+    improve(tsp_algorithm, instance, solution, plotter);
+    if_verbose(VERBOSE_INFO, "Variable Neighborhood Search algorithm finished.\n");
 }
 
 
-static void free_this(const TspAlgorithm *self) {
+static void free_this(const TspAlgorithm* self) {
     if (!self) return;
+    if_verbose(VERBOSE_DEBUG, "Freeing VNS algorithm struct...\n");
     if (self->extended) {
         if (self->extended->variable_neighborhood_search) free(self->extended->variable_neighborhood_search);
         free(self->extended);
     }
-    free((void *) self);
+    free((void*)self);
 }
 
-const TspAlgorithm *init_vns(const int kick_repetition, const int n_opt, const double time_limit) {
+const TspAlgorithm* init_vns(const int kick_repetition, const int n_opt, const double time_limit) {
+    if_verbose(VERBOSE_DEBUG, "Initializing VNS (k=%d, n_opt=%d, t=%.2f)\n", kick_repetition, n_opt, time_limit);
     const VariableNeighborhoodSearch vns = {
         .kick_repetition = kick_repetition,
         .time_limit = time_limit,

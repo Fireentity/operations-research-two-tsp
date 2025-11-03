@@ -22,7 +22,7 @@ typedef struct
     unsigned int number_of_nodes;
     int seed;
     GenerationArea generation_area;
-    unsigned int time_limit;
+    float time_limit;
 } TspInstanceOptions;
 
 /**

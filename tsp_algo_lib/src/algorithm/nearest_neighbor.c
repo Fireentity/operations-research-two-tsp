@@ -1,109 +1,118 @@
-#include "costs_plotter.h"
-#include <c_util.h>
-#include <nearest_neighbor.h>
-#include <float.h>
+#include "nearest_neighbor.h"
 #include <stdlib.h>
-
-#include "algorithm_constants.h"
+#include <string.h>
+#include <c_util.h>
 #include "algorithms.h"
+#include "constants.h"
+#include "costs_plotter.h"
 #include "time_limiter.h"
+#include "tsp_instance.h"
+#include "tsp_solution.h"
+#include "logger.h"
 
 union TspExtendedAlgorithms {
-    NearestNeighbor *nearest_neighbor;
+    NearestNeighbor* nearest_neighbor;
 };
 
-static void free_this(const TspAlgorithm *self) {
+static void free_this(const TspAlgorithm* self) {
     if (!self) return;
+    if_verbose(VERBOSE_DEBUG, "Freeing NN algorithm struct...\n");
     if (self->extended) {
         if (self->extended->nearest_neighbor) free(self->extended->nearest_neighbor);
         free(self->extended);
     }
-    free((void *) self);
+    free((void*)self);
 }
 
-
-// The improve function for NN performs the iterative improvement using NN + 2‑opt.
-static void improve(const TspAlgorithm *tsp_algorithm,
-                    int tour[],
-                    const int number_of_nodes,
-                    const double edge_cost_array[],
-                    double *cost,
-                    pthread_mutex_t *mutex,
+static void improve(const TspAlgorithm* tsp_algorithm,
+                    const TspInstance* instance,
+                    const TspSolution* solution,
                     const CostsPlotter* plotter) {
-    // Initialize the time limiter and the cost plotter.
+    if_verbose(VERBOSE_DEBUG, "  NN: Starting improvement loop (multi-start NN + 2-Opt)...\n");
+    const int number_of_nodes = instance->get_number_of_nodes(instance);
+    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+
     const double time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
-    const TimeLimiter *time_limiter = init_time_limiter(time_limit);
+    if_verbose(VERBOSE_DEBUG, "  NN: Time limit set to %.2fs.\n", time_limit);
+    const TimeLimiter* time_limiter = init_time_limiter(time_limit);
     time_limiter->start(time_limiter);
 
-    // Work on a local tour copy.
     int current_tour[number_of_nodes + 1];
     int best_tour[number_of_nodes + 1];
     double current_cost;
 
-    // Thread-safe copy of the input tour into current_tour.
-    WITH_MUTEX(mutex,
-               memcpy(current_tour, tour, (number_of_nodes + 1) * sizeof(int));
-    );
+    solution->get_tour_copy(solution, current_tour);
 
-    // Prepare an array of starting nodes from the initial tour and shuffle it.
     int starting_nodes[number_of_nodes];
-    memcpy(starting_nodes, tour, number_of_nodes * sizeof(int));
+    memcpy(starting_nodes, current_tour, number_of_nodes * sizeof(int));
     shuffle_int_array(starting_nodes, number_of_nodes);
 
-    // Initialize best_cost to a high value.
-    double best_cost = DBL_MAX;
+    double best_cost = solution->get_cost(solution);
+    memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
+    if_verbose(VERBOSE_DEBUG, "  NN: Initial best cost: %lf\n", best_cost);
+
     int iteration = 0;
-    // Main loop: build NN tour for each starting node until the time limit expires or all nodes are tried.
     while (!time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes) {
-        // Generate an NN solution starting from starting_nodes[iteration].
-        nearest_neighbor_tour(starting_nodes[iteration], current_tour, number_of_nodes, edge_cost_array, &current_cost);
-        // Improve the solution using 2‑opt.
+        if_verbose(VERBOSE_ALL, "    NN [Iteration %d]: Running from start node %d.\n", iteration,
+                   starting_nodes[iteration]);
+
+        const int result = nearest_neighbor_tour(starting_nodes[iteration], current_tour, number_of_nodes,
+                                                 edge_cost_array, &current_cost);
+        if (result != 0) {
+            if_verbose(VERBOSE_INFO, "    NN [Iteration %d]: Failed to generate NN tour.\n", iteration);
+            iteration++;
+            continue;
+        }
+
         current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
-        // Record the current cost for plotting.
         plotter->add_cost(plotter, current_cost);
-        // If the current solution is better, update best_tour and best_cost.
+
         if (current_cost < best_cost - EPSILON) {
             best_cost = current_cost;
             memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
+            if_verbose(VERBOSE_DEBUG, "    NN [Iteration %d]: Found new best cost: %lf\n", iteration, best_cost);
         }
         iteration++;
     }
 
-    // If a better solution was found, update the shared tour and cost in a thread-safe manner.
-    if (best_cost < *cost) {
-        WITH_MUTEX(mutex,
-                   memcpy(tour, best_tour, (number_of_nodes + 1) * sizeof(int));
-                   *cost = best_cost;
-        );
-    }
-    // Plot the cost progression.
+    if_verbose(VERBOSE_DEBUG, "  NN: Improvement loop finished after %d iterations.\n", iteration);
+    solution->update_if_better(solution, best_tour, best_cost);
+
     plotter->plot(plotter, "NN-costs.png");
-
-    // Cleanup resources.
     time_limiter->free(time_limiter);
-    plotter->free(plotter);
 }
 
-// The solve function for NN creates an initial solution with nearest neighbor,
-// then calls improve to further optimize the tour.
-static void solve(const TspAlgorithm *tsp_algorithm,
-                  int tour[],
-                  const int number_of_nodes,
-                  const double edge_cost_array[],
-                  double *cost,
-                  pthread_mutex_t *mutex,
+static void solve(const TspAlgorithm* tsp_algorithm,
+                  const TspInstance* instance,
+                  const TspSolution* solution,
                   const CostsPlotter* plotter) {
-    // Create the initial tour in a thread-safe manner.
-    WITH_MUTEX(mutex,
-               nearest_neighbor_tour(rand() % number_of_nodes, tour, number_of_nodes, edge_cost_array, cost);
-    );
-    // Improve the tour.
-    improve(tsp_algorithm, tour, number_of_nodes, edge_cost_array, cost, mutex, plotter);
+    if_verbose(VERBOSE_INFO, "Running Nearest Neighbor algorithm...\n");
+    const int number_of_nodes = instance->get_number_of_nodes(instance);
+    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+
+    int initial_tour[number_of_nodes + 1];
+    double initial_cost;
+    solution->get_tour_copy(solution, initial_tour);
+
+    if_verbose(VERBOSE_DEBUG, "  NN: Generating initial solution...\n");
+    const int result = nearest_neighbor_tour(rand() % number_of_nodes, initial_tour, number_of_nodes, edge_cost_array,
+                                             &initial_cost);
+
+    if (result != 0) {
+        if_verbose(VERBOSE_INFO, "  NN: Failed to generate initial solution.\n");
+        return;
+    }
+
+    solution->update_if_better(solution, initial_tour, initial_cost);
+    if_verbose(VERBOSE_DEBUG, "  NN: Initial solution cost: %lf\n", initial_cost);
+
+    improve(tsp_algorithm, instance, solution, plotter);
+    if_verbose(VERBOSE_INFO, "Nearest Neighbor algorithm finished.\n");
 }
 
 
-
-const TspAlgorithm *init_nearest_neighbor(const double time_limit) {
+const TspAlgorithm* init_nearest_neighbor(const double time_limit) {
+    if_verbose(VERBOSE_DEBUG, "Initializing NN (t=%.2f)\n", time_limit);
     const NearestNeighbor nearest_neighbor = {
         .time_limit = time_limit,
     };

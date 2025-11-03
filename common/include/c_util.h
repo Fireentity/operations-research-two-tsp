@@ -6,19 +6,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define VERBOSE_NONE  0
-#define VERBOSE_INFO  1
-#define VERBOSE_DEBUG 2
-
-#ifndef DISABLE_VERBOSE
-static inline void if_verbose(const unsigned int current_level, const unsigned int required_level, const char *text) {
-    if (current_level >= required_level)
-        printf("%s\n", text);
-}
-#else
-#define if_verbose(current_level, required_level, text) ((void)0)
-#endif
-
 /**
  * @brief Checks if the given pointer is not NULL.
  *

@@ -2,7 +2,7 @@
 #include "plot_util.h"
 #include <stdio.h>
 #include <c_util.h>
-#include "constants.h"
+#include "../../common/include/constants.h"
 
 /**
  * @brief Generic boundaries calculator for plots.
@@ -34,6 +34,7 @@ static Bounds calculate_bounds(const double *x, const double *y, const int lengt
     return b;
 }
 
+// TODO SIGSEGV
 void plot_tour(const int *tour, const int number_of_nodes, const Node *nodes, const char *output_name) {
     if (!output_name)
         output_name = "tsp_solution.png";

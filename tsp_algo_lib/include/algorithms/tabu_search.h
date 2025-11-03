@@ -1,7 +1,6 @@
 #ifndef TABU_SEARCH_H
 #define TABU_SEARCH_H
 #include <tsp_algorithm.h>
-#include "hashmap.h"
 typedef struct
 {
     const int tenure;

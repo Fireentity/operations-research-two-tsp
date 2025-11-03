@@ -4,12 +4,11 @@
 /**
  * @brief Enumeration of feasibility results.
  */
-typedef enum
-{
-    DUPLICATED_ENTRY,      /**< Entry is duplicated. */
-    UNINITIALIZED_ENTRY,   /**< Entry is uninitialized. */
-    NON_MATCHING_COST,     /**< Cost does not match expected value. */
-    FEASIBLE,              /**< Result is feasible. */
+typedef enum {
+    DUPLICATED_ENTRY, /**< Entry is duplicated. */
+    UNINITIALIZED_ENTRY, /**< Entry is uninitialized. */
+    NON_MATCHING_COST, /**< Cost does not match expected value. */
+    FEASIBLE, /**< Result is feasible. */
 } FeasibilityResult;
 
 /**

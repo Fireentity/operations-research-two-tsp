@@ -18,26 +18,26 @@
  * @returns The cost improvement of the 2-opt application
  */
 double two_opt(int* tour,
-                      int number_of_nodes,
-                      const double* edge_cost_array,
-                      const TimeLimiter* time_limiter,
-                      double epsilon);
+               int number_of_nodes,
+               const double* edge_cost_array,
+               const TimeLimiter* time_limiter,
+               double epsilon);
 
 
-void nearest_neighbor_tour(int starting_node,
-                           int *tour,
-                           int number_of_nodes,
-                           const double *edge_cost_array,
-                           double *cost);
+int nearest_neighbor_tour(int starting_node,
+                          int* tour,
+                          int number_of_nodes,
+                          const double* edge_cost_array,
+                          double* cost);
 
-void grasp_nearest_neighbor_tour(int starting_node,
-                           int *tour,
-                           int number_of_nodes,
-                           const double *edge_cost_array,
-                           double *cost,
-                           double p1,
-                           double p2,
-                           double p3);
+int grasp_nearest_neighbor_tour(int starting_node,
+                                int* tour,
+                                int number_of_nodes,
+                                const double* edge_cost_array,
+                                double* cost,
+                                double p1,
+                                double p2,
+                                double p3);
 
 #define MAX_NO_IMPROVEMENT_CYCLE 1000
 #endif //ALGORITHMS_H

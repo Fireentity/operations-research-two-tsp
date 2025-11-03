@@ -66,7 +66,7 @@ FlagParser* create_app_parser(CmdOptions* options) {
     flag_parser_add_uint(parser, "--square-side", NULL, "Generation area side length.",
                          &options->tsp.generation_area.square_side, FLAG_MANDATORY);
 
-    flag_parser_add_uint(parser, "--seconds", "-t", "Time limit in seconds.",
+    flag_parser_add_ufloat(parser, "--seconds", "-t", "Time limit in seconds.",
                          &options->tsp.time_limit, FLAG_OPTIONAL);
 
     // --- Algorithm Flags (Master switches) ---
@@ -126,7 +126,7 @@ static int handler(void* user, const char* section, const char* name,
 
     if (SECTION_MATCH("tsp")) {
         if (NAME_MATCH("nodes")) {
-            result = parse_unsigned_int(value, &cmd_options->tsp.number_of_nodes);
+            result = parse_uint(value, &cmd_options->tsp.number_of_nodes);
             flag_name_to_mark = "--nodes";
         }
         else if (NAME_MATCH("seed")) {
@@ -142,11 +142,11 @@ static int handler(void* user, const char* section, const char* name,
             flag_name_to_mark = "--y-square";
         }
         else if (NAME_MATCH("square-side")) {
-            result = parse_unsigned_int(value, &cmd_options->tsp.generation_area.square_side);
+            result = parse_uint(value, &cmd_options->tsp.generation_area.square_side);
             flag_name_to_mark = "--square-side";
         }
         else if (NAME_MATCH("seconds")) {
-            result = parse_unsigned_int(value, &cmd_options->tsp.time_limit);
+            result = parse_ufloat(value, &cmd_options->tsp.time_limit);
             flag_name_to_mark = "--seconds";
         }
         else if (NAME_MATCH("nearest-neighbor")) {
@@ -161,11 +161,11 @@ static int handler(void* user, const char* section, const char* name,
             flag_name_to_mark = "--vns";
         }
         else if (NAME_MATCH("kick-repetitions")) {
-            result = parse_unsigned_int(value, &cmd_options->vns_params.kick_repetitions);
+            result = parse_uint(value, &cmd_options->vns_params.kick_repetitions);
             flag_name_to_mark = "--kick-repetitions";
         }
         else if (NAME_MATCH("n-opt")) {
-            result = parse_unsigned_int(value, &cmd_options->vns_params.n_opt);
+            result = parse_uint(value, &cmd_options->vns_params.n_opt);
             flag_name_to_mark = "--n-opt";
         }
         else return 0;
@@ -176,11 +176,11 @@ static int handler(void* user, const char* section, const char* name,
             flag_name_to_mark = "--tabu-search";
         }
         else if (NAME_MATCH("tenure")) {
-            result = parse_unsigned_int(value, &cmd_options->tabu_params.tenure);
+            result = parse_uint(value, &cmd_options->tabu_params.tenure);
             flag_name_to_mark = "--tenure";
         }
         else if (NAME_MATCH("max-stagnation")) {
-            result = parse_unsigned_int(value, &cmd_options->tabu_params.max_stagnation);
+            result = parse_uint(value, &cmd_options->tabu_params.max_stagnation);
             flag_name_to_mark = "--max-stagnation";
         }
         else return 0;
@@ -255,3 +255,5 @@ const ParsingResult* parse_application_options(CmdOptions* options, const int ar
     flag_parser_free(parser);
     return result;
 }
+
+

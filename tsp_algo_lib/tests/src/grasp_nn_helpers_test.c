@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "algorithms.h"
@@ -23,7 +24,7 @@ void test_grasp_nearest_neighbor_tour_basic_case() {
     double edge_costs[num_nodes * num_nodes];
     create_simple_edge_costs(edge_costs, num_nodes);
 
-    grasp_nearest_neighbor_tour(0, tour, num_nodes, edge_costs, &cost, 0.5, 0.3, 0.2);
+    assert(0 == grasp_nearest_neighbor_tour(0, tour, num_nodes, edge_costs, &cost, 0.5, 0.3, 0.2));
 
     // Verify the tour is completed and cost is updated
     assert(tour[0] == tour[num_nodes]); // Ensure it's a closed tour
@@ -39,14 +40,14 @@ void test_grasp_nearest_neighbor_tour_invalid_starting_node() {
     create_simple_edge_costs(edge_costs, num_nodes);
 
     // Test for out-of-bounds starting node
-    grasp_nearest_neighbor_tour(4, tour, num_nodes, edge_costs, &cost, 0.5, 0.3, 0.2); // Should handle gracefully
+    assert(-1 == grasp_nearest_neighbor_tour(4, tour, num_nodes, edge_costs, &cost, 0.5, 0.3, 0.2));
 }
 
 // More tests can be added here...
 
-int main() {
+void run_grasp_nn_helpers_tests(void) {
+    printf("--- Running GRASP-NN Helper Tests ---\n");
     test_grasp_nearest_neighbor_tour_basic_case();
     test_grasp_nearest_neighbor_tour_invalid_starting_node();
-    // Add more tests
-    return 0;
+    printf("GRASP-NN Helper tests passed.\n");
 }

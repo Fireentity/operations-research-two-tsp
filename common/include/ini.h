@@ -1,5 +1,5 @@
-#ifndef OPERATIONS_RESEARCH_TWO_TSP_INI_H
-#define OPERATIONS_RESEARCH_TWO_TSP_INI_H
+#ifndef INI_H
+#define INI_H
 /* inih -- simple .INI file parser
 
 SPDX-License-Identifier: BSD-3-Clause
@@ -12,9 +12,6 @@ home page for more info:
 https://github.com/benhoyt/inih
 
 */
-
-#ifndef INI_H
-#define INI_H
 
 /* Make this header file easier to include in C++ code */
 #ifdef __cplusplus
@@ -188,5 +185,4 @@ INI_API int ini_parse_string_length(const char* string, size_t length, ini_handl
 }
 #endif
 
-#endif /* INI_H */
-#endif //OPERATIONS_RESEARCH_TWO_TSP_INI_H
+#endif //INI_H

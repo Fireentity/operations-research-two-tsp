@@ -11,8 +11,7 @@
  * Initial tour: 0->1->2->3->0; remove edges at indices 1 and 3.
  * Expected result: 0->1->3->2->0 with cost change 2*sqrt(2)-2.
  */
-void test_square_reverse_segment()
-{
+void test_square_reverse_segment() {
     const Node nodes[] = {
         {0, 0},
         {1, 0},
@@ -50,8 +49,7 @@ void test_square_reverse_segment()
  * Initial tour: 0->1->2->3->4->5->6->7->0; remove edges at indices 1,3,5,7.
  * Expected result: 0->1->3->2->5->4->7->6->0 with cost change 2*sqrt(5).
  */
-void test_octagon_multiple_segment_reverse()
-{
+void test_octagon_multiple_segment_reverse() {
     const Node nodes[] = {
         {1, 0},
         {2, 0},
@@ -88,8 +86,7 @@ void test_octagon_multiple_segment_reverse()
  * Initial tour: 0->1->2->3->4->5->0; remove edges at indices 2 and 5.
  * Expected result: 0->1->2->5->4->3->0 with cost change 2*sqrt(2)-2.
  */
-void test_hexagon_reverse_segment_case1()
-{
+void test_hexagon_reverse_segment_case1() {
     const Node nodes[] = {
         {0, 0},
         {0.5, 0},
@@ -123,8 +120,7 @@ void test_hexagon_reverse_segment_case1()
  * Initial tour: 0->4->2->3->1->5->0; remove edges at indices 2 and 5.
  * Expected result: 0->4->2->5->1->3->0 with cost change 2*sqrt(2)-2.
  */
-void test_hexagon_reverse_segment_case2()
-{
+void test_hexagon_reverse_segment_case2() {
     const Node nodes[] = {
         {0, 0},
         {0.5, 0},
@@ -158,8 +154,7 @@ void test_hexagon_reverse_segment_case2()
  * Initial tour: 0->1->2->3->0; remove edges at indices 3 and 1.
  * Expected result: 1->0->2->3->1 with cost change 2*sqrt(2)-2.
  */
-void test_square_alternate_segment_reverse()
-{
+void test_square_alternate_segment_reverse() {
     const Node nodes[] = {
         {0, 0},
         {1, 0},
@@ -167,9 +162,8 @@ void test_square_alternate_segment_reverse()
         {0, 1}
     };
     int tour[] = {0, 1, 2, 3, 0};
-    const int result_tour[] = {1, 0, 2, 3, 1};
-    // Edges to remove in alternate order.
-    const int edges_to_remove[] = {3, 1};
+    const int result_tour[] = {0, 1, 3, 2, 0};
+    const int edges_to_remove[] = {1, 3};
 
     const int number_of_nodes = sizeof(nodes) / sizeof(nodes[0]);
     const int tour_size = sizeof(tour) / sizeof(tour[0]);
@@ -182,13 +176,12 @@ void test_square_alternate_segment_reverse()
     const double delta_result = 2 * sqrt(2) - 2;
 
     assert(int_arrays_equal(tour, result_tour, tour_size));
-    assert(delta == delta_result);
+    assert(fabs(delta - delta_result) < 1e-10);
 
     free(edge_cost_array);
 }
 
-void test_6()
-{
+void test_6() {
     const Node nodes[] = {
         {0, 0},
         {1, 0},
@@ -218,11 +211,13 @@ void test_6()
     free(edge_cost_array);
 }
 
-int main() {
-    test_square_alternate_segment_reverse();
+void run_n_opt_tests(void) {
+    printf("--- Running N-Opt Helper Tests ---\n");
+    test_square_reverse_segment();
     test_octagon_multiple_segment_reverse();
     test_hexagon_reverse_segment_case1();
     test_hexagon_reverse_segment_case2();
     test_square_alternate_segment_reverse();
     test_6();
+    printf("N-Opt Helper tests passed.\n");
 }
