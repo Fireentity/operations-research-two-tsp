@@ -14,6 +14,12 @@ static const ParsingResult SUCCESS_RESULT = {
 };
 const ParsingResult *SUCCESS = &SUCCESS_RESULT;
 
+static const ParsingResult HELP_RESULT = {
+    .state = PARSE_HELP,
+    .error_message = NULL
+};
+const ParsingResult *HELP = &HELP_RESULT;
+
 static const ParsingResult UNKNOWN_ARG_RESULT = {
     .state = PARSE_UNKNOWN_ARG,
     .error_message = "Error: Unknown argument provided."
@@ -43,3 +49,9 @@ static const ParsingResult MISSING_MANDATORY_FLAG_RESULT = {
     .error_message = "Error: A required mandatory flag was not provided."
 };
 const ParsingResult *MISSING_MANDATORY_FLAG = &MISSING_MANDATORY_FLAG_RESULT;
+
+static const ParsingResult INTERNAL_ERROR_RESULT = {
+    .state = PARSE_INTERNAL_ERROR,
+    .error_message = "Error: An internal error has occurred."
+};
+const ParsingResult *INTERNAL_ERROR = &INTERNAL_ERROR_RESULT;

@@ -8,8 +8,6 @@ enable_testing()
 # Add subdirectories for each module
 add_subdirectory(cflaglib)
 add_subdirectory(cflaglib/tests)
-add_subdirectory(cli_lib)
-add_subdirectory(cli_lib/tests)
 add_subdirectory(tsp_algo_lib)
 add_subdirectory(tsp_algo_lib/tests)
 add_subdirectory(tsp_solver)

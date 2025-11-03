@@ -136,7 +136,7 @@ void flag_parser_add_string(FlagParser* parser,
  * @return A ParsingResult (e.g., SUCCESS, PARSE_UNKNOWN_ARG,
  * PARSE_WRONG_VALUE_TYPE, PARSE_USAGE_ERROR).
  */
-const ParsingResult* flag_parser_parse(FlagParser* parser,
+const ParsingResult* flag_parser_parse(const FlagParser* parser,
                                             int argc,
                                             const char** argv,
                                             bool skip_unknowns);

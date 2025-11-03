@@ -23,7 +23,7 @@ This project started as a homework assignment for *Operations Research 2* and tu
 
 ## Repository Architecture
 ```
-cli_lib/                 # Command‑line option parser           (C)
+cflaglib/                 # Command‑line option parser           (C)
 common/                  # Generic utilities, hashmap, timing  (C)
 tsp_algo_lib/            # Algorithmic core and TSP structures  (C)
 tsp_solver/              # Executable, algorithms, plotting    (C)

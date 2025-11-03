@@ -1,54 +1,106 @@
-#ifndef TSP_PARAMS_H
-#define TSP_PARAMS_H
-#include <flag.h>
+#ifndef CMD_OPTIONS_H
+#define CMD_OPTIONS_H
+
 #include <stdbool.h>
+#include "parsing_result.h"
 
 /**
- * @brief Represents a rectangular area for node generation.
+ * @brief Rectangular area for node generation.
  */
 typedef struct
 {
-    int x_square;         /**< X-coordinate of the generation area. */
-    int y_square;         /**< Y-coordinate of the generation area. */
-    unsigned int square_side; /**< Side length of the square. */
-} Rectangle;
-
-typedef CmdOptions CmdOptions;
+    int x_square;
+    int y_square;
+    unsigned int square_side;
+} GenerationArea;
 
 /**
- * @brief Structure holding command line options for TSP instance configuration.
+ * @brief Parameters defining the TSP problem instance.
  */
-struct CmdOptions
+typedef struct
 {
-    const char* config_file;
-    unsigned int number_of_nodes; /**< Number of nodes to generate. */
-    int seed;                     /**< Seed for random number generation. */
-    Rectangle generation_area;    /**< Area parameters for node generation. */
-    bool help;                    /**< Flag to display help message. */
-    bool variable_neighborhood_search;
-    bool nearest_neighbor;
-    bool tabu_search;
-    bool grasp;
+    unsigned int number_of_nodes;
+    int seed;
+    GenerationArea generation_area;
+    unsigned int time_limit;
+} TspInstanceOptions;
+
+/**
+ * @brief Options for the Variable Neighborhood Search (VNS) algorithm.
+ */
+typedef struct
+{
     unsigned int kick_repetitions;
     unsigned int n_opt;
-    unsigned int tenure;
-    unsigned int max_stagnation;
-    unsigned int timer_limit;
-    unsigned int time_limit;      /**< Time limit for algorithm execution. */
-    float p1;
-    float p2;
-    float p3;
-};
+} VnsOptions;
 
 /**
- * @brief Initializes command line options with default values.
- *
+ * @brief Options for the Tabu Search algorithm.
+ */
+typedef struct
+{
+    unsigned int tenure;
+    unsigned int max_stagnation;
+} TabuOptions;
+
+/**
+ * @brief Options for the GRASP algorithm.
+ */
+typedef struct
+{
+    float p1;
+    float p2;
+} GraspOptions;
+
+
+/**
+ * @brief Main structure holding all configuration options.
+ */
+typedef struct
+{
+    // --- Program Behavior ---
+    const char* config_file; /**< Path to the .ini configuration file. */
+    bool help;               /**< Flag to display the help message. */
+#ifndef DISABLE_VERBOSE
+    unsigned int verbosity;  /**< Flag to set verbosity level. */
+#endif
+
+    // --- TSP Instance Definition ---
+    TspInstanceOptions tsp;  /**< Parameters for the problem instance. */
+
+    // --- Algorithm Selection (Master Flags) ---
+    bool nearest_neighbor;
+    bool variable_neighborhood_search;
+    bool tabu_search;
+    bool grasp;
+
+    // --- Algorithm-Specific Parameters ---
+    VnsOptions vns_params;
+    TabuOptions tabu_params;
+    GraspOptions grasp_params;
+
+} CmdOptions;
+
+/**
+ * @brief Initializes options with default (zero-initialized) values.
  * @return Pointer to a new CmdOptions instance.
  */
 CmdOptions* init_cmd_options();
 
-struct FlagsArray* init_flags_array();
+/**
+ * @brief Frees the memory allocated for the CmdOptions instance.
+ */
+void free_cmd_option(CmdOptions* cmd_options);
 
-void load_config(CmdOptions *cmd_options, const char **arg);
-void free_cmd_option(CmdOptions *cmd_options);
-#endif //TSP_PARAMS_H
+/**
+ * @brief Parses all application options (from argv and config file).
+ *
+ * @param options A pointer to the CmdOptions struct to be populated.
+ * @param argc Argument count.
+ * @param argv Argument vector.
+ * @return A const ParsingResult* (e.g., SUCCESS, PARSE_UNKNOWN_ARG).
+ */
+const ParsingResult* parse_application_options(CmdOptions* options, int argc, const char** argv);
+
+
+#endif // CMD_OPTIONS_H

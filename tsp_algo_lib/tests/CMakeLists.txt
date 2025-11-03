@@ -8,10 +8,10 @@ add_executable(nearest_neighbor_test nearest_neighbor_test.c)
 add_executable(grasp_test grasp_test.c)
 
 # Link the test executables with required libraries
-target_link_libraries(grasp_nearest_neighbor_test PRIVATE tsp_algo_lib cli_lib common m)
-target_link_libraries(n_opt_test PRIVATE tsp_algo_lib cli_lib common m)
-target_link_libraries(nearest_neighbor_test PRIVATE tsp_algo_lib cli_lib common m)
-target_link_libraries(grasp_test PRIVATE tsp_algo_lib cli_lib common m)
+target_link_libraries(grasp_nearest_neighbor_test PRIVATE tsp_algo_lib cflaglib common m)
+target_link_libraries(n_opt_test PRIVATE tsp_algo_lib cflaglib common m)
+target_link_libraries(nearest_neighbor_test PRIVATE tsp_algo_lib cflaglib common m)
+target_link_libraries(grasp_test PRIVATE tsp_algo_lib cflaglib common m)
 
 # Add individual tests to CTest
 add_test(NAME grasp_nearest_neighbor_test COMMAND $<TARGET_FILE:grasp_nearest_neighbor_test>)

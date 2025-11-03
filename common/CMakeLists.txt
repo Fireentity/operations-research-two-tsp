@@ -20,5 +20,5 @@ add_library(common ${COMMON_SOURCES})
 # Include directories for common
 target_include_directories(common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Link common to cli_lib
+# Link common to cflaglib
 target_link_libraries(common PRIVATE m)

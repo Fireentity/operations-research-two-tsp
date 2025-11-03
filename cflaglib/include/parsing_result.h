@@ -6,11 +6,13 @@
  */
 typedef enum {
     PARSE_SUCCESS,
+    PARSE_HELP,
     PARSE_UNKNOWN_ARG,
     PARSE_MISSING_VALUE,
     PARSE_WRONG_VALUE_TYPE,
     PARSE_USAGE_ERROR, // e.g., repeating a mandatory flag
-    PARSE_MISSING_MANDATORY_FLAG
+    PARSE_MISSING_MANDATORY_FLAG,
+    PARSE_INTERNAL_ERROR,
 } ParsingResultState;
 
 /**
@@ -33,6 +35,11 @@ typedef struct {
  * @brief Returned on successful parsing.
  */
 extern const ParsingResult* SUCCESS;
+
+/**
+ * @brief Returned on help parsing found.
+ */
+extern const ParsingResult* HELP;
 
 /**
  * @brief Returned when an argument is not recognized (e.g., "--foo").
@@ -60,6 +67,11 @@ extern const ParsingResult* USAGE_ERROR;
  * @brief Returned by the final validation step if a mandatory flag was not found.
  */
 extern const ParsingResult* MISSING_MANDATORY_FLAG;
+
+/**
+ * @brief Returned by the final validation step if a mandatory flag was not found.
+ */
+extern const ParsingResult* INTERNAL_ERROR;
 
 
 #endif // PARSING_RESULT_H
