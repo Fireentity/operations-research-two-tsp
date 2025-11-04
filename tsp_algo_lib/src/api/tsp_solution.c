@@ -24,8 +24,6 @@ struct TspSolutionState {
 // --- Private Helper Functions ---
 
 static double compute_cost(const TspSolution* solution) {
-    // --- NO LOGGING HERE ---
-    // This is a helper, logging is done by the caller (e.g., init_solution)
     const TspInstance* instance = solution->state->instance;
     return calculate_tour_cost(
         solution->state->tour,
@@ -37,8 +35,6 @@ static double compute_cost(const TspSolution* solution) {
 // --- Public API Functions (Thread-Safe) ---
 
 static double get_cost_safe(const TspSolution* solution) {
-    // --- NO LOGGING HERE ---
-    // This function is performance-critical and called in tight loops.
     pthread_mutex_lock(&solution->state->mutex);
     const double cost = solution->state->cost;
     pthread_mutex_unlock(&solution->state->mutex);
@@ -46,8 +42,6 @@ static double get_cost_safe(const TspSolution* solution) {
 }
 
 static void get_tour_copy_safe(const TspSolution* self, int* tour_buffer) {
-    // --- NO LOGGING HERE ---
-    // This function is performance-critical.
     const int num_nodes = self->state->instance->get_number_of_nodes(self->state->instance);
 
     pthread_mutex_lock(&self->state->mutex);
@@ -78,13 +72,12 @@ static FeasibilityResult is_feasible_safe(const TspSolution* solution) {
     const int number_of_nodes = instance->get_number_of_nodes(instance);
 
     int tour_copy[number_of_nodes + 1];
-    double cost_copy;
 
     // Safely get a snapshot of the current state
     if_verbose(VERBOSE_DEBUG, "    Solution: Locking mutex to get snapshot.\n");
     pthread_mutex_lock(&solution->state->mutex);
     memcpy(tour_copy, solution->state->tour, (number_of_nodes + 1) * sizeof(int));
-    cost_copy = solution->state->cost;
+    const double cost_copy = solution->state->cost;
     pthread_mutex_unlock(&solution->state->mutex);
 
     int counter[number_of_nodes];
@@ -169,7 +162,7 @@ TspSolution* init_solution(const TspInstance* instance) {
     const int number_of_nodes = instance->get_number_of_nodes(instance);
 
     int* tour = init_tour(number_of_nodes);
-    double initial_cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance));
+    const double initial_cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance));
     if_verbose(VERBOSE_DEBUG, "  Solution: Default tour cost calculated: %lf\n", initial_cost);
 
     const TspSolutionState state = {
@@ -186,7 +179,6 @@ TspSolution* init_solution(const TspInstance* instance) {
         .get_cost = get_cost_safe,
         .get_tour_copy = get_tour_copy_safe,
         .update_if_better = update_if_better_safe,
-        // .get_tour is intentionally omitted as it's unsafe
         .state = memdup(&state, sizeof(state))
     };
 

@@ -26,8 +26,9 @@ int main(const int argc, const char* argv[]) {
         free_cmd_option(cmd_options);
         return 1;
     }
+#ifndef DISABLE_VERBOSE
     logger_set_verbosity(cmd_options->verbosity);
-
+#endif
     if_verbose(VERBOSE_INFO, "Parsing successful...\n");
     if_verbose(VERBOSE_DEBUG,
                "--- Parsed Options Dump ---\n"

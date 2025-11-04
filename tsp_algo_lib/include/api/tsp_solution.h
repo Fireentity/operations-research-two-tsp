@@ -45,11 +45,6 @@ struct TspSolution {
      * @return true if the solution was updated, false otherwise.
      */
     bool (*const update_if_better)(const TspSolution* self, const int* new_tour, double new_cost);
-
-    /**
-     * @brief (DEPRECATED) Unsafe, non-thread-safe tour getter.
-     */
-    const int* (* const get_tour)(const TspSolution* solution);
 };
 
 /**

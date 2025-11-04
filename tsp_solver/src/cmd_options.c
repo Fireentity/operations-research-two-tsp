@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stddef.h> // For offsetof
+#include <stdbool.h> // For bool in IniMapping
 #include "cmd_options.h"
 #include "flag_parser.h"
 #include "ini.h"
@@ -67,7 +69,7 @@ FlagParser* create_app_parser(CmdOptions* options) {
                          &options->tsp.generation_area.square_side, FLAG_MANDATORY);
 
     flag_parser_add_ufloat(parser, "--seconds", "-t", "Time limit in seconds.",
-                         &options->tsp.time_limit, FLAG_OPTIONAL);
+                           &options->tsp.time_limit, FLAG_OPTIONAL);
 
     // --- Algorithm Flags (Master switches) ---
     flag_parser_add_bool(parser, "--nearest-neighbor", NULL, "Use Nearest Neighbor heuristic.",
@@ -107,13 +109,57 @@ FlagParser* create_app_parser(CmdOptions* options) {
     return parser;
 }
 
+// INI Handler
 
 #define SECTION_MATCH(s) !strcmp(section, s)
 #define NAME_MATCH(n) !strcmp(name, n)
 
+typedef enum {
+    TYPE_UINT,
+    TYPE_INT,
+    TYPE_FLOAT,
+    TYPE_UFLOAT,
+    TYPE_BOOL
+} ValueType;
+
+typedef struct {
+    const char* section;
+    const char* name;
+    ValueType type;
+    size_t offset;
+    const char* flag_name;
+} IniMapping;
+
+static const IniMapping mappings[] = {
+    // [tsp]
+    {"tsp", "nodes", TYPE_UINT, offsetof(CmdOptions, tsp.number_of_nodes), "--nodes"},
+    {"tsp", "seed", TYPE_INT, offsetof(CmdOptions, tsp.seed), "--seed"},
+    {"tsp", "x-square", TYPE_INT, offsetof(CmdOptions, tsp.generation_area.x_square), "--x-square"},
+    {"tsp", "y-square", TYPE_INT, offsetof(CmdOptions, tsp.generation_area.y_square), "--y-square"},
+    {"tsp", "square-side", TYPE_UINT, offsetof(CmdOptions, tsp.generation_area.square_side), "--square-side"},
+    {"tsp", "seconds", TYPE_UFLOAT, offsetof(CmdOptions, tsp.time_limit), "--seconds"},
+
+    // [nn]
+    {"nn", "enabled", TYPE_BOOL, offsetof(CmdOptions, nearest_neighbor), "--nearest-neighbor"},
+
+    // [vns]
+    {"vns", "enabled", TYPE_BOOL, offsetof(CmdOptions, variable_neighborhood_search), "--vns"},
+    {"vns", "kick-repetitions", TYPE_UINT, offsetof(CmdOptions, vns_params.kick_repetitions), "--kick-repetitions"},
+    {"vns", "n-opt", TYPE_UINT, offsetof(CmdOptions, vns_params.n_opt), "--n-opt"},
+
+    // [tabu]
+    {"tabu", "enabled", TYPE_BOOL, offsetof(CmdOptions, tabu_search), "--tabu-search"},
+    {"tabu", "tenure", TYPE_UINT, offsetof(CmdOptions, tabu_params.tenure), "--tenure"},
+    {"tabu", "max-stagnation", TYPE_UINT, offsetof(CmdOptions, tabu_params.max_stagnation), "--max-stagnation"},
+
+    // [grasp]
+    {"grasp", "enabled", TYPE_BOOL, offsetof(CmdOptions, grasp), "--grasp"},
+    {"grasp", "p1", TYPE_FLOAT,offsetof(CmdOptions, grasp_params.p1), "--p1"},
+    {"grasp", "p2", TYPE_FLOAT,offsetof(CmdOptions, grasp_params.p2), "--p2"}
+};
+
 /**
  * @brief INI file parsing handler.
- * (Updated to use the nested structs)
  */
 static int handler(void* user, const char* section, const char* name,
                    const char* value) {
@@ -124,87 +170,44 @@ static int handler(void* user, const char* section, const char* name,
     const ParsingResult* result = SUCCESS;
     const char* flag_name_to_mark = NULL;
 
-    if (SECTION_MATCH("tsp")) {
-        if (NAME_MATCH("nodes")) {
-            result = parse_uint(value, &cmd_options->tsp.number_of_nodes);
-            flag_name_to_mark = "--nodes";
-        }
-        else if (NAME_MATCH("seed")) {
-            result = parse_int(value, &cmd_options->tsp.seed);
-            flag_name_to_mark = "--seed";
-        }
-        else if (NAME_MATCH("x-square")) {
-            result = parse_int(value, &cmd_options->tsp.generation_area.x_square);
-            flag_name_to_mark = "--x-square";
-        }
-        else if (NAME_MATCH("y-square")) {
-            result = parse_int(value, &cmd_options->tsp.generation_area.y_square);
-            flag_name_to_mark = "--y-square";
-        }
-        else if (NAME_MATCH("square-side")) {
-            result = parse_uint(value, &cmd_options->tsp.generation_area.square_side);
-            flag_name_to_mark = "--square-side";
-        }
-        else if (NAME_MATCH("seconds")) {
-            result = parse_ufloat(value, &cmd_options->tsp.time_limit);
-            flag_name_to_mark = "--seconds";
-        }
-        else if (NAME_MATCH("nearest-neighbor")) {
-            cmd_options->nearest_neighbor = (strcmp(value, "true") == 0);
-            flag_name_to_mark = "--nearest-neighbor";
-        }
-        else return 0;
-    }
-    else if (SECTION_MATCH("vns")) {
-        if (NAME_MATCH("enabled")) {
-            cmd_options->variable_neighborhood_search = (strcmp(value, "true") == 0);
-            flag_name_to_mark = "--vns";
-        }
-        else if (NAME_MATCH("kick-repetitions")) {
-            result = parse_uint(value, &cmd_options->vns_params.kick_repetitions);
-            flag_name_to_mark = "--kick-repetitions";
-        }
-        else if (NAME_MATCH("n-opt")) {
-            result = parse_uint(value, &cmd_options->vns_params.n_opt);
-            flag_name_to_mark = "--n-opt";
-        }
-        else return 0;
-    }
-    else if (SECTION_MATCH("tabu")) {
-        if (NAME_MATCH("enabled")) {
-            cmd_options->tabu_search = (strcmp(value, "true") == 0);
-            flag_name_to_mark = "--tabu-search";
-        }
-        else if (NAME_MATCH("tenure")) {
-            result = parse_uint(value, &cmd_options->tabu_params.tenure);
-            flag_name_to_mark = "--tenure";
-        }
-        else if (NAME_MATCH("max-stagnation")) {
-            result = parse_uint(value, &cmd_options->tabu_params.max_stagnation);
-            flag_name_to_mark = "--max-stagnation";
-        }
-        else return 0;
-    }
-    else if (SECTION_MATCH("grasp")) {
-        if (NAME_MATCH("enabled")) {
-            cmd_options->grasp = (strcmp(value, "true") == 0);
-            flag_name_to_mark = "--grasp";
-        }
-        else if (NAME_MATCH("p1")) {
-            result = parse_float(value, &cmd_options->grasp_params.p1);
-            flag_name_to_mark = "--p1";
-        }
-        else if (NAME_MATCH("p2")) {
-            result = parse_float(value, &cmd_options->grasp_params.p2);
-            flag_name_to_mark = "--p2";
-        }
-        else return 0;
-    }
-    else return 0; // Unknown section
+    const int num_mappings = sizeof(mappings) / sizeof(mappings[0]);
+    bool match_found = false;
 
-    // If parsing was successful, mark the flag as "visited"
-    if (result->state == PARSE_SUCCESS) {
-        // && flag_name_to_mark (implicit)
+    for (int i = 0; i < num_mappings; i++) {
+        const IniMapping* m = &mappings[i];
+
+        if (SECTION_MATCH(m->section) && NAME_MATCH(m->name)) {
+            match_found = true;
+            flag_name_to_mark = m->flag_name;
+
+            void* dest = (char*)cmd_options + m->offset;
+
+            switch (m->type) {
+            case TYPE_UINT:
+                result = parse_uint(value, dest);
+                break;
+            case TYPE_INT:
+                result = parse_int(value, dest);
+                break;
+            case TYPE_FLOAT:
+                result = parse_float(value, dest);
+                break;
+            case TYPE_UFLOAT:
+                result = parse_ufloat(value, dest);
+                break;
+            case TYPE_BOOL:
+                *(bool*)dest = strcmp(value, "true") == 0;
+                break;
+            }
+            break;
+        }
+    }
+
+    if (!match_found) {
+        return 0; // Unknown section/name combination
+    }
+
+    if (result->state == PARSE_SUCCESS && flag_name_to_mark != NULL) {
         flag_parser_mark_visited(parser, flag_name_to_mark);
     }
 
@@ -214,7 +217,6 @@ static int handler(void* user, const char* section, const char* name,
 
 /**
  * @brief Main function to parse all application options.
- * (This function remains logically unchanged)
  */
 const ParsingResult* parse_application_options(CmdOptions* options, const int argc, const char** argv) {
     FlagParser* parser = create_app_parser(options);
@@ -222,38 +224,28 @@ const ParsingResult* parse_application_options(CmdOptions* options, const int ar
         return INTERNAL_ERROR;
     }
 
-    // Parse command-line arguments (argv)
     const ParsingResult* result = flag_parser_parse(parser, argc, argv, false);
 
-    // Check for --help
     if (options->help) {
         flag_parser_print_help(parser);
         flag_parser_free(parser);
-        // Return a special result to tell main() to exit successfully
         return HELP;
     }
 
-    // Check for parsing errors (e.g., unknown arg)
     if (result->state != PARSE_SUCCESS) {
         flag_parser_free(parser);
         return result;
     }
 
-    // Load config file, if specified
     if (options->config_file) {
         IniUserData ini_data = {.options = options, .parser = parser};
         if (ini_parse(options->config_file, handler, &ini_data) < 0) {
-            // Non-fatal error: just warn the user.
             printf("Warning: Could not open or parse config file: '%s'\n", options->config_file);
         }
     }
 
-    // Final validation:
-    // Checks that all MANDATORY flags were visited (.ini and command line)
     result = flag_parser_validate(parser);
 
     flag_parser_free(parser);
     return result;
 }
-
-
