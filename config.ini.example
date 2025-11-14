@@ -1,5 +1,9 @@
 ; Example configuration file for the TSP solver
 
+[general]
+plot_path = ./plots/
+verbosity = 1
+
 [tsp]
 ; General settings for the Traveling Salesperson Problem
 nodes = 1000
@@ -12,21 +16,29 @@ seconds = 5
 [nn]
 ; Settings for Nearest Neighbor Search
 enabled = true
+plot_file = NN-plot.png
+cost_file = NN-costs.txt
 
 [vns]
 ; Settings for Variable Neighborhood Search
 enabled = true
 kick-repetitions = 100
 n-opt = 5
+plot_file = VNS-plot.png
+cost_file = VNS-costs.txt
 
 [tabu]
 ; Settings for Tabu Search
 enabled = true
 tenure = 100
 max-stagnation = 200
+plot_file = TS-plot.png
+cost_file = TS-costs.txt
 
 [grasp]
 ; Settings for Greedy Randomized Adaptive Search Procedure
 enabled = true
 p1 = 0.6
 p2 = 0.9
+plot_file = GR-plot.png
+cost_file = GR-costs.txt

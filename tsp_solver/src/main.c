@@ -27,32 +27,80 @@ int main(const int argc, const char* argv[]) {
     if_verbose(VERBOSE_DEBUG,
                "--- Parsed Options Dump ---\n"
                "  [General]\n"
-               "    Verbosity:   %d\n"
+               "    Config file: %s\n"
+               "    Plot path:   %s\n"
+               "    Help:        %s\n"
+               "    Verbosity:   %u\n"
+               "\n"
                "  [TSP Instance]\n"
                "    Nodes:       %u\n"
-               "    Seed:        %u\n"
+               "    Seed:        %d\n"
                "    Time Limit:  %.2f s\n"
-               "  [Algorithms Enabled]\n"
-               "    VNS:         %s (Kicks: %u, N-Opt: %u)\n"
-               "    NN:          %s\n"
-               "    Tabu Search: %s (Tenure: %u, Stagnation: %u)\n"
-               "    GRASP:       %s (P1: %.2f, P2: %.2f)\n"
+               "    Area X:      %d\n"
+               "    Area Y:      %d\n"
+               "    Side:        %u\n"
+               "\n"
+               "  [Nearest Neighbor]\n"
+               "    Enabled:     %s\n"
+               "    Plot file:   %s\n"
+               "    Cost file:   %s\n"
+               "\n"
+               "  [VNS]\n"
+               "    Enabled:     %s\n"
+               "    Plot file:   %s\n"
+               "    Cost file:   %s\n"
+               "    Kicks:       %u\n"
+               "    N-Opt:       %u\n"
+               "\n"
+               "  [Tabu Search]\n"
+               "    Enabled:     %s\n"
+               "    Plot file:   %s\n"
+               "    Cost file:   %s\n"
+               "    Tenure:      %u\n"
+               "    Stagnation:  %u\n"
+               "\n"
+               "  [GRASP]\n"
+               "    Enabled:     %s\n"
+               "    Plot file:   %s\n"
+               "    Cost file:   %s\n"
+               "    P1:          %.2f\n"
+               "    P2:          %.2f\n"
                "-----------------------------\n",
+               cmd_options->config_file ? cmd_options->config_file : "(null)",
+               cmd_options->plot_path ? cmd_options->plot_path : "(null)",
+               cmd_options->help ? "YES" : "NO",
                cmd_options->verbosity,
+
                cmd_options->tsp.number_of_nodes,
                cmd_options->tsp.seed,
                cmd_options->tsp.time_limit,
-               cmd_options->variable_neighborhood_search ? "YES" : "NO",
+               cmd_options->tsp.generation_area.x_square,
+               cmd_options->tsp.generation_area.y_square,
+               cmd_options->tsp.generation_area.square_side,
+
+               cmd_options->nn_params.enable ? "YES" : "NO",
+               cmd_options->nn_params.plot_file ? cmd_options->nn_params.plot_file : "(null)",
+               cmd_options->nn_params.cost_file ? cmd_options->nn_params.cost_file : "(null)",
+
+               cmd_options->vns_params.enable ? "YES" : "NO",
+               cmd_options->vns_params.plot_file ? cmd_options->vns_params.plot_file : "(null)",
+               cmd_options->vns_params.cost_file ? cmd_options->vns_params.cost_file : "(null)",
                cmd_options->vns_params.kick_repetitions,
                cmd_options->vns_params.n_opt,
-               cmd_options->nearest_neighbor ? "YES" : "NO",
-               cmd_options->tabu_search ? "YES" : "NO",
+
+               cmd_options->tabu_params.enable ? "YES" : "NO",
+               cmd_options->tabu_params.plot_file ? cmd_options->tabu_params.plot_file : "(null)",
+               cmd_options->tabu_params.cost_file ? cmd_options->tabu_params.cost_file : "(null)",
                cmd_options->tabu_params.tenure,
                cmd_options->tabu_params.max_stagnation,
-               cmd_options->grasp ? "YES" : "NO",
+
+               cmd_options->grasp_params.enable ? "YES" : "NO",
+               cmd_options->grasp_params.plot_file ? cmd_options->grasp_params.plot_file : "(null)",
+               cmd_options->grasp_params.cost_file ? cmd_options->grasp_params.cost_file : "(null)",
                cmd_options->grasp_params.p1,
                cmd_options->grasp_params.p2
     );
+
 
     const TspInstance* instance = init_random_tsp_instance(
         (int)cmd_options->tsp.number_of_nodes,

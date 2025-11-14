@@ -1,5 +1,7 @@
 #include "algorithm_runner.h"
 #include <stdio.h>
+#include <linux/limits.h>
+#include <string.h>
 #include "c_util.h"
 #include "logger.h"
 #include "variable_neighborhood_search.h"
@@ -54,13 +56,13 @@ static void execute_and_report(const TspAlgorithm* algorithm,
 
 // Implementation of the public function
 void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_options) {
-    // Array for tasks
+    // TODO hardcoded magic number
     AlgorithmTask tasks[4]; // Max number of algorithms
     int task_count = 0;
 
     if_verbose(VERBOSE_DEBUG, "Configuring algorithm run queue...\n");
 
-    if (cmd_options->variable_neighborhood_search) {
+    if (cmd_options->vns_params.enable) {
         if_verbose(VERBOSE_DEBUG, "  Queueing VNS (k=%d, n_opt=%d, t=%.2fs)\n",
                    (int)cmd_options->vns_params.kick_repetitions,
                    (int)cmd_options->vns_params.n_opt,
@@ -70,19 +72,18 @@ void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_
                                   (int)cmd_options->vns_params.n_opt,
                                   (int)cmd_options->tsp.time_limit),
             .name = "VNS",
-            .plot_file = "VNS-plot.png"
+            .plot_file = cmd_options->vns_params.plot_file
         };
     }
-    if (cmd_options->nearest_neighbor) {
-        printf("%.2fs", cmd_options->tsp.time_limit);
+    if (cmd_options->nn_params.enable) {
         if_verbose(VERBOSE_DEBUG, "  Queueing NN (t=%.2fs)\n", cmd_options->tsp.time_limit);
         tasks[task_count++] = (AlgorithmTask){
             .algorithm = init_nearest_neighbor(cmd_options->tsp.time_limit),
             .name = "NN",
-            .plot_file = "NN-plot.png"
+            .plot_file = cmd_options->nn_params.plot_file
         };
     }
-    if (cmd_options->tabu_search) {
+    if (cmd_options->tabu_params.enable) {
         if_verbose(VERBOSE_DEBUG, "  Queueing TS (tenure=%d, stagnation=%d, t=%.2fs)\n",
                    (int)cmd_options->tabu_params.tenure,
                    (int)cmd_options->tabu_params.max_stagnation,
@@ -92,10 +93,10 @@ void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_
                                    (int)cmd_options->tabu_params.max_stagnation,
                                    cmd_options->tsp.time_limit),
             .name = "TS",
-            .plot_file = "TS-plot.png"
+            .plot_file = cmd_options->tabu_params.plot_file
         };
     }
-    if (cmd_options->grasp) {
+    if (cmd_options->grasp_params.enable) {
         if_verbose(VERBOSE_DEBUG, "  Queueing GRASP (p1=%.2f, p2=%.2f, t=%.2fs)\n",
                    cmd_options->grasp_params.p1,
                    cmd_options->grasp_params.p2,
@@ -105,19 +106,28 @@ void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_
                                     cmd_options->grasp_params.p1,
                                     cmd_options->grasp_params.p2),
             .name = "GRASP",
-            .plot_file = "GR-plot.png"
+            .plot_file = cmd_options->grasp_params.plot_file
         };
     }
 
     if_verbose(VERBOSE_INFO, "Running %d algorithm(s)...\n", task_count);
 
+    char full_plot_path[PATH_MAX];
     for (int i = 0; i < task_count; i++) {
         if_verbose(VERBOSE_INFO, "--- Running %s ---\n", tasks[i].name);
+
+        if (cmd_options->plot_path && strlen(cmd_options->plot_path) > 0) {
+            snprintf(full_plot_path, PATH_MAX, "%s%s",
+                     cmd_options->plot_path,
+                     tasks[i].plot_file);
+        } else {
+            snprintf(full_plot_path, PATH_MAX, "%s", tasks[i].plot_file);
+        }
 
         execute_and_report(tasks[i].algorithm,
                            instance,
                            tasks[i].name,
-                           tasks[i].plot_file);
+                           full_plot_path);
 
         if_verbose(VERBOSE_DEBUG, "Freeing algorithm %s.\n", tasks[i].name);
         tasks[i].algorithm->free(tasks[i].algorithm);

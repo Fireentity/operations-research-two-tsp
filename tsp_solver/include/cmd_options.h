@@ -7,8 +7,7 @@
 /**
  * @brief Rectangular area for node generation.
  */
-typedef struct
-{
+typedef struct {
     int x_square;
     int y_square;
     unsigned int square_side;
@@ -17,8 +16,7 @@ typedef struct
 /**
  * @brief Parameters defining the TSP problem instance.
  */
-typedef struct
-{
+typedef struct {
     unsigned int number_of_nodes;
     int seed;
     GenerationArea generation_area;
@@ -26,10 +24,19 @@ typedef struct
 } TspInstanceOptions;
 
 /**
+ * @brief Options for the Nearest Neighbor (NN) algorithm.
+ */
+typedef struct {
+    bool enable;
+    char* plot_file;
+    char* cost_file;
+} NNOptions; /**
  * @brief Options for the Variable Neighborhood Search (VNS) algorithm.
  */
-typedef struct
-{
+typedef struct {
+    bool enable;
+    char* plot_file;
+    char* cost_file;
     unsigned int kick_repetitions;
     unsigned int n_opt;
 } VnsOptions;
@@ -37,8 +44,10 @@ typedef struct
 /**
  * @brief Options for the Tabu Search algorithm.
  */
-typedef struct
-{
+typedef struct {
+    bool enable;
+    char* plot_file;
+    char* cost_file;
     unsigned int tenure;
     unsigned int max_stagnation;
 } TabuOptions;
@@ -46,8 +55,10 @@ typedef struct
 /**
  * @brief Options for the GRASP algorithm.
  */
-typedef struct
-{
+typedef struct {
+    bool enable;
+    char* plot_file;
+    char* cost_file;
     float p1;
     float p2;
 } GraspOptions;
@@ -56,29 +67,23 @@ typedef struct
 /**
  * @brief Main structure holding all configuration options.
  */
-typedef struct
-{
+typedef struct {
     // --- Program Behavior ---
-    const char* config_file; /**< Path to the .ini configuration file. */
-    bool help;               /**< Flag to display the help message. */
+    char* config_file; /**< Path to the .ini configuration file. */
+    char* plot_path; /**< Path for the output plots. */
+    bool help; /**< Flag to display the help message. */
 #ifndef DISABLE_VERBOSE
-    unsigned int verbosity;  /**< Flag to set verbosity level. */
+    unsigned int verbosity; /**< Flag to set verbosity level. */
 #endif
 
     // --- TSP Instance Definition ---
-    TspInstanceOptions tsp;  /**< Parameters for the problem instance. */
-
-    // --- Algorithm Selection (Master Flags) ---
-    bool nearest_neighbor;
-    bool variable_neighborhood_search;
-    bool tabu_search;
-    bool grasp;
+    TspInstanceOptions tsp; /**< Parameters for the problem instance. */
 
     // --- Algorithm-Specific Parameters ---
+    NNOptions nn_params;
     VnsOptions vns_params;
     TabuOptions tabu_params;
     GraspOptions grasp_params;
-
 } CmdOptions;
 
 /**
