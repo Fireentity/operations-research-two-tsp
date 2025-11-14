@@ -34,4 +34,5 @@ build
 *.DS_Store
 Thumbs.db
 
-# Backup files
+# Config file
+config.ini

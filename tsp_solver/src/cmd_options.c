@@ -9,15 +9,17 @@
 #include <parsing_result.h>
 #include <parsing_util.h>
 
+#include "c_util.h"
+
 
 CmdOptions* init_cmd_options() {
-    // calloc zero-initializes everything, including sub-structs
-    return calloc(1, sizeof(CmdOptions));
+    CmdOptions* options = calloc(1, sizeof(CmdOptions));
+    check_alloc(options);
+    return options;
 }
 
 void free_cmd_option(CmdOptions* cmd_options) {
-    if (!cmd_options) return;
-    free(cmd_options);
+    if (cmd_options) free(cmd_options);
 }
 
 // --- Struct for INI handler ---

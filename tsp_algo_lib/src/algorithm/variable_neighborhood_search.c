@@ -22,14 +22,11 @@ static double kick(int tour[],
                    const int n_opt) {
     int edges_to_remove[n_opt];
 
-    const int number_of_edges_to_remove = (int)(sizeof(edges_to_remove) / sizeof(edges_to_remove[0]));
-
-    // Note: rand_k_non_contiguous must ensure the edges are sorted for compute_n_opt_move
-    rand_k_non_contiguous(0, number_of_nodes - 1, number_of_edges_to_remove, edges_to_remove);
+    rand_k_non_contiguous(0, number_of_nodes - 1, n_opt, edges_to_remove);
 
     const double delta = compute_n_opt_cost(n_opt, tour, edges_to_remove, edge_cost_array, number_of_nodes);
 
-    compute_n_opt_move(number_of_edges_to_remove, tour, edges_to_remove, number_of_nodes);
+    compute_n_opt_move(n_opt, tour, edges_to_remove, number_of_nodes);
 
     return delta;
 }
@@ -65,12 +62,12 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     if_verbose(VERBOSE_DEBUG, "  VNS: Initial cost after 2-Opt: %lf\n", best_cost);
 
     while (!time_limiter->is_time_over(time_limiter)) {
-        // --- Shaking (Kicking) ---
+        // Kicking
         for (int i = 0; i < kick_repetition; i++) {
             current_cost += kick(current_tour, number_of_nodes, edge_cost_array, n_opt);
         }
 
-        // --- Local Search (2-Opt) ---
+        // Local Search (2-Opt)
         current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
 
         if (current_cost < best_cost - EPSILON) {
