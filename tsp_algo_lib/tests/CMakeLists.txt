@@ -19,4 +19,4 @@ target_include_directories(tsp_alg_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/inc
 # Linka le librerie (questo era già corretto)
 target_link_libraries(tsp_alg_tests PRIVATE tsp_algo_lib cflaglib common m)
 
-add_test(NAME all_tests COMMAND $<TARGET_FILE:tsp_alg_tests>)
+add_test(NAME tsp_alg_lib_tests COMMAND $<TARGET_FILE:tsp_alg_tests>)
