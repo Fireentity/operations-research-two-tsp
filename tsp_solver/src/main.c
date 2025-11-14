@@ -1,15 +1,9 @@
 #include <stdio.h>
-#include "algorithm_plotter.h"
 #include "algorithm_runner.h"
 #include "cmd_options.h"
 #include "c_util.h"
-#include "grasp.h"
 #include "logger.h"
 #include "nearest_neighbor.h"
-#include "plot_util.h"
-#include "tabu_search.h"
-#include "tsp_solution.h"
-#include "variable_neighborhood_search.h"
 
 
 int main(const int argc, const char* argv[]) {

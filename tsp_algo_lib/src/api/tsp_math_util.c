@@ -25,6 +25,7 @@ double* init_edge_cost_array(const Node* nodes, const int number_of_nodes) {
                number_of_nodes, (unsigned long)(number_of_nodes * number_of_nodes * sizeof(double)));
 
     double* const edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));
+    check_alloc(edge_cost_array);
     const double edge_array_size = number_of_nodes * number_of_nodes;
 
     if_verbose(VERBOSE_DEBUG, "    Calculating Euclidean distances for %d nodes...\n", number_of_nodes);
