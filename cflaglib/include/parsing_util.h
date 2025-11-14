@@ -3,6 +3,19 @@
 #include "parsing_result.h"
 
 /**
+ * @brief Safely allocates a dynamic copy of an input string.
+ * This function uses strdup() to create a new, heap-allocated string
+ * and assigns it to *dest. It handles potential allocation failures.
+ * The caller is responsible for freeing the memory pointed to by *dest.
+ *
+ * @param s The input string to copy (e.g., "/path/to/file").
+ * @param dest A pointer to a char* which will receive the address
+ * of the newly allocated copy.
+ * @return SUCCESS on success, or INTERNAL_ERROR on allocation failure.
+ */
+const ParsingResult* parse_string(const char* s, char** dest);
+
+/**
  * @brief Safely parses a string into an integer.
  * This function handles overflow, underflow, and invalid characters.
  *

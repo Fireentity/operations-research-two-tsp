@@ -16,7 +16,8 @@ typedef enum {
     FLAG_TYPE_UINT,
     FLAG_TYPE_FLOAT,
     FLAG_TYPE_UFLOAT,
-    FLAG_TYPE_STRING
+    FLAG_TYPE_STRING,
+    FLAG_TYPE_STRING_OWNED
 } FlagType;
 
 /**
@@ -207,12 +208,13 @@ void flag_parser_add_float(FlagParser* parser,
                            const int properties) {
     add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_FLOAT);
 }
+
 void flag_parser_add_ufloat(FlagParser* parser,
-                           const char* name,
-                           const char* short_name,
-                           const char* description,
-                           float* destination,
-                           const int properties) {
+                            const char* name,
+                            const char* short_name,
+                            const char* description,
+                            float* destination,
+                            const int properties) {
     add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_UFLOAT);
 }
 
@@ -223,6 +225,15 @@ void flag_parser_add_string(FlagParser* parser,
                             const char** destination,
                             const int properties) {
     add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_STRING);
+}
+
+void flag_parser_add_string_owned(FlagParser* parser,
+                                  const char* name,
+                                  const char* short_name,
+                                  const char* description,
+                                  char** destination,
+                                  const int properties) {
+    add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_STRING_OWNED);
 }
 
 const ParsingResult* flag_parser_parse(const FlagParser* parser,
@@ -254,7 +265,7 @@ const ParsingResult* flag_parser_parse(const FlagParser* parser,
         const FlagDefinition* def = parser->definitions[def_index];
 
         // Check for duplicate mandatory flag
-        if ((def->properties & FLAG_MANDATORY) && parser->visited_flags[def_index]) {
+        if (parser->visited_flags[def_index]) {
             return USAGE_ERROR;
         }
 
@@ -305,11 +316,18 @@ const ParsingResult* flag_parser_parse(const FlagParser* parser,
             res = parse_ufloat(value_str, def->destination);
             break;
         case FLAG_TYPE_STRING:
-            // For strings, just assign the pointer. No parsing needed.
-            *(const char**)def->destination = value_str;
+            res = parse_string(value_str, def->destination);
             break;
         case FLAG_TYPE_BOOL:
             // Should not happen, was handled above
+            break;
+        case FLAG_TYPE_STRING_OWNED:
+            ;
+            char** dest_ptr = def->destination;
+            if (*dest_ptr != NULL) {
+                free(*dest_ptr);
+            }
+            res = parse_string(value_str, dest_ptr);
             break;
         }
 
@@ -327,6 +345,14 @@ bool flag_parser_mark_visited(const FlagParser* parser, const char* flag_name) {
     if (def_index != -1) {
         parser->visited_flags[def_index] = true;
         return true;
+    }
+    return false;
+}
+
+bool flag_parser_is_visited(const FlagParser* parser, const char* flag_name) {
+    const int def_index = find_flag_by_name(parser, flag_name);
+    if (def_index != -1) {
+        return parser->visited_flags[def_index];
     }
     return false;
 }
@@ -368,12 +394,11 @@ void flag_parser_print_help(const FlagParser* parser) {
         if (def->short_name) {
             // e.g., "-s, " (length of short_name + 2 chars ", ")
             current_width += strlen(def->short_name) + 2;
-        }
-        else {
+        } else {
             // No short name; add padding to align with flags that do
             current_width += 4; // "    "
         }
-        current_width += strlen(def->name); // e.g., "--verbose"
+        current_width += strlen(def->name); // e.g., "--verbosity"
 
         if (current_width > max_flag_width) {
             max_flag_width = current_width;
@@ -428,8 +453,7 @@ void flag_parser_print_help(const FlagParser* parser) {
                 printf("%*s", desc_start_col, "");
             }
             printf("%s\n", line_start);
-        }
-        else if (first_line) {
+        } else if (first_line) {
             // If the description was empty (""), just print a final newline
             printf("\n");
         }

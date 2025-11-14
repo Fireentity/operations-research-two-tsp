@@ -40,7 +40,7 @@ const ParsingResult *WRONG_VALUE_TYPE = &WRONG_VALUE_TYPE_RESULT;
 
 static const ParsingResult USAGE_ERROR_RESULT = {
     .state = PARSE_USAGE_ERROR,
-    .error_message = "Error: Invalid flag usage (e.g., repeating a mandatory flag)."
+    .error_message = "Error: Invalid flag usage (e.g., repeating a flag)."
 };
 const ParsingResult *USAGE_ERROR = &USAGE_ERROR_RESULT;
 

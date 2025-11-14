@@ -116,11 +116,11 @@ void flag_parser_add_float(FlagParser* parser,
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
 void flag_parser_add_ufloat(FlagParser* parser,
-                           const char* name,
-                           const char* short_name,
-                           const char* description,
-                           float* destination,
-                           int properties);
+                            const char* name,
+                            const char* short_name,
+                            const char* description,
+                            float* destination,
+                            int properties);
 
 /**
  * @brief Registers a STRING (const char*) flag.
@@ -139,6 +139,23 @@ void flag_parser_add_string(FlagParser* parser,
                             const char** destination,
                             int properties);
 
+/**
+ * @brief Registers an owned (i.e. can be freed) STRING (const char*) flag.
+ *
+ * @param parser The parser context.
+ * @param name The long name (e.g., "--help").
+ * @param short_name The short name (e.g., "-h", or NULL).
+ * @param description The description for --help text.
+ * @param destination A pointer to the string variable (const char**).
+ * @param properties A bitmask (e.g., FLAG_OPTIONAL).
+ */
+void flag_parser_add_string_owned(FlagParser* parser,
+                                  const char* name,
+                                  const char* short_name,
+                                  const char* description,
+                                  char** destination,
+                                  int properties);
+
 
 /**
  * @brief Parses an array of string arguments.
@@ -153,9 +170,9 @@ void flag_parser_add_string(FlagParser* parser,
  * PARSE_WRONG_VALUE_TYPE, PARSE_USAGE_ERROR).
  */
 const ParsingResult* flag_parser_parse(const FlagParser* parser,
-                                            int argc,
-                                            const char** argv,
-                                            bool skip_unknowns);
+                                       int argc,
+                                       const char** argv,
+                                       bool skip_unknowns);
 
 /**
  * @brief Manually marks a flag as "visited".
@@ -166,6 +183,16 @@ const ParsingResult* flag_parser_parse(const FlagParser* parser,
  * @return 'true' if the flag was found and marked, 'false' otherwise.
  */
 bool flag_parser_mark_visited(const FlagParser* parser, const char* flag_name);
+
+/**
+ * @brief Search if a flag is marked as "visited".
+ * Use this when loading from a config file or environment variables.
+ *
+ * @param parser The parser context.
+ * @param flag_name The name of the flag to search for (e.g., "--nodes").
+ * @return 'true' if the flag was found, and it's been visited, 'false' otherwise.
+ */
+bool flag_parser_is_visited(const FlagParser* parser, const char* flag_name);
 
 /**
  * @brief Checks the final validation state.

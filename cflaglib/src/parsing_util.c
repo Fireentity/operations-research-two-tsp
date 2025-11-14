@@ -2,6 +2,22 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <string.h>
+
+const ParsingResult* parse_string(const char* s, char** dest) {
+    if (s == NULL) {
+        *dest = NULL;
+        return SUCCESS;
+    }
+    char* tmp = strdup(s);
+    if (tmp == NULL) {
+        return INTERNAL_ERROR;
+    }
+
+    *dest = tmp;
+
+    return SUCCESS;
+}
 
 const ParsingResult* parse_int(const char* s, int* dest) {
     char* endptr;
