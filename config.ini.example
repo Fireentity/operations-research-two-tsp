@@ -1,7 +1,7 @@
 ; Example configuration file for the TSP solver
 
 [general]
-plot_path = ./plots/
+plots_path = ./plots
 verbosity = 1
 
 [tsp]
@@ -17,7 +17,7 @@ seconds = 5
 ; Settings for Nearest Neighbor Search
 enabled = true
 plot_file = NN-plot.png
-cost_file = NN-costs.png
+cost_file = NN-costs
 
 [vns]
 ; Settings for Variable Neighborhood Search

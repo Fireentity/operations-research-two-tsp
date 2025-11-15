@@ -126,21 +126,16 @@ void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_
     for (int i = 0; i < task_count; i++) {
         if_verbose(VERBOSE_INFO, "--- Running %s ---\n", tasks[i].name);
 
-        if (cmd_options->plot_path && strlen(cmd_options->plot_path) > 0) {
-            snprintf(full_plot_path, PATH_MAX, "%s%s",
-                     cmd_options->plot_path,
-                     tasks[i].plot_file);
-        } else {
+        if (cmd_options->plots_path && strlen(cmd_options->plots_path) > 0)
+            join_path(full_plot_path, cmd_options->plots_path, tasks[i].plot_file, PATH_MAX);
+        else
             snprintf(full_plot_path, PATH_MAX, "%s", tasks[i].plot_file);
-        }
 
-        if (cmd_options->plot_path && strlen(cmd_options->plot_path) > 0) {
-            snprintf(full_costs_path, PATH_MAX, "%s%s",
-                     cmd_options->plot_path,
-                     tasks[i].costs_file);
-        } else {
+        if (cmd_options->plots_path && strlen(cmd_options->plots_path) > 0)
+            join_path(full_costs_path, cmd_options->plots_path, tasks[i].costs_file, PATH_MAX);
+        else
             snprintf(full_costs_path, PATH_MAX, "%s", tasks[i].costs_file);
-        }
+
 
         execute_and_report(tasks[i].algorithm,
                            instance,

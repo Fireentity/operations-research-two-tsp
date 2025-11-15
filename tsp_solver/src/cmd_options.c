@@ -47,7 +47,7 @@ void free_cmd_option(CmdOptions* cmd_options) {
     if (!cmd_options) return;
 
     free(cmd_options->config_file);
-    free(cmd_options->plot_path);
+    free(cmd_options->plots_path);
 
     free(cmd_options->nn_params.plot_file);
     free(cmd_options->nn_params.cost_file);
@@ -98,7 +98,7 @@ FlagParser* create_app_parser(CmdOptions* options) {
 
     // --- [general] section flags ---
     flag_parser_add_string_owned(parser, "--plot-path", "-p", "Path to the plot folder for the output plots.",
-                                 &options->plot_path, FLAG_OPTIONAL);
+                                 &options->plots_path, FLAG_OPTIONAL);
 
     // --- [tsp] section flags ---
     flag_parser_add_uint(parser, "--nodes", "-n", "Number of nodes.",
@@ -185,7 +185,7 @@ typedef struct {
 
 static const IniMapping mappings[] = {
     // [general]
-    {"general", "plot_path", TYPE_STRING, offsetof(CmdOptions, plot_path), "--plot-path"},
+    {"general", "plots_path", TYPE_STRING, offsetof(CmdOptions, plots_path), "--plot-path"},
 #ifndef DISABLE_VERBOSE
     {"general", "verbosity", TYPE_UINT, offsetof(CmdOptions, verbosity), "--verbosity"},
 #endif

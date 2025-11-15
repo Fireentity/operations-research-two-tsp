@@ -65,6 +65,19 @@ static void* memdup(const void* obj, const size_t size) {
     return ptr;
 }
 
+static void join_path(char* out,
+                      const char* dir,
+                      const char* file,
+                      size_t maxlen) {
+    const size_t len = strlen(dir);
+
+    if (len > 0 && dir[len - 1] == '/')
+        snprintf(out, maxlen, "%s%s", dir, file);
+    else
+        snprintf(out, maxlen, "%s/%s", dir, file);
+}
+
+
 /**
  * @brief Macro to define an arrays equality function for arrays.
  *

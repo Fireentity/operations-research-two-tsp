@@ -70,7 +70,7 @@ typedef struct {
 typedef struct {
     // --- Program Behavior ---
     char* config_file; /**< Path to the .ini configuration file. */
-    char* plot_path; /**< Path for the output plots. */
+    char* plots_path; /**< Path for the output plots. */
     bool help; /**< Flag to display the help message. */
 #ifndef DISABLE_VERBOSE
     unsigned int verbosity; /**< Flag to set verbosity level. */

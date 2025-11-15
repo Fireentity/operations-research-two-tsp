@@ -67,7 +67,7 @@ int main(const int argc, const char* argv[]) {
                "    P2:          %.2f\n"
                "-----------------------------\n",
                cmd_options->config_file ? cmd_options->config_file : "(null)",
-               cmd_options->plot_path ? cmd_options->plot_path : "(null)",
+               cmd_options->plots_path ? cmd_options->plots_path : "(null)",
                cmd_options->help ? "YES" : "NO",
                cmd_options->verbosity,
 
