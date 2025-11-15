@@ -129,8 +129,6 @@ static void improve(const TspAlgorithm* tsp_algorithm,
 
     solution->update_if_better(solution, best_tour, best_cost);
 
-    plotter->plot(plotter, "TS-costs.png");
-
     if_verbose(VERBOSE_DEBUG, "  TS: Cleaning up tabu list and time limiter.\n");
     free(tabu);
     time_limiter->free(time_limiter);

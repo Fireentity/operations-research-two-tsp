@@ -84,8 +84,6 @@ static void improve(const TspAlgorithm* tsp_algorithm,
 
     solution->update_if_better(solution, best_tour, best_cost);
 
-    plotter->plot(plotter, "VNS-costs.png");
-
     if_verbose(VERBOSE_DEBUG, "  VNS: Cleaning up time limiter.\n");
     time_limiter->free(time_limiter);
 }

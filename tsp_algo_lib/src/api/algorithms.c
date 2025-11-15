@@ -227,8 +227,19 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
                                           const double* edge_cost_array,
                                           double* cost,
                                           const double alpha) {
-    if (starting_node < 0 || starting_node >= number_of_nodes)
+    if (starting_node < 0 || starting_node >= number_of_nodes) {
+        if_verbose(VERBOSE_INFO,
+                   "[ERROR] GRASP-Threshold: Starting node (%d) is out of bounds [0, %d).\n",
+                   starting_node, number_of_nodes);
+        fprintf(stderr,
+                "[ERROR] GRASP-Threshold: Starting node (%d) is out of bounds [0, %d).\n",
+                starting_node, number_of_nodes);
         return -1;
+    }
+
+    if_verbose(VERBOSE_DEBUG,
+               "    GRASP-Threshold: Building tour from node %d (alpha=%.2f)...\n",
+               starting_node, alpha);
 
     // initialize tour permutation
     for (int i = 0; i < number_of_nodes; i++)
@@ -237,9 +248,9 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
 
     int visited_count = 1;
     int current_node = tour[0];
-    tour[number_of_nodes] = tour[0]; // close the cycle
+    tour[number_of_nodes] = tour[0];
 
-    // one-time RCL allocation
+    // RCL allocation
     int* rcl = malloc(number_of_nodes * sizeof(int));
     check_alloc(rcl);
 
@@ -248,10 +259,10 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
 
     while (visited_count < number_of_nodes) {
 
-        // find min/max costs among candidates
         double min_cost = DBL_MAX;
         double max_cost = -DBL_MAX;
 
+        // compute min/max cost among remaining nodes
         for (int i = visited_count; i < number_of_nodes; i++) {
             const int candidate = tour[i];
             const double dist = edge_cost_array[current_node * number_of_nodes + candidate];
@@ -260,26 +271,33 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
         }
 
         if (min_cost == DBL_MAX) {
+            if_verbose(VERBOSE_INFO,
+                       "[ERROR] GRASP-Threshold: No candidates found.\n");
             free(rcl);
             return -1;
         }
 
-        // compute threshold for RCL
+        // threshold for RCL
         const double threshold = min_cost + effective_alpha * (max_cost - min_cost);
 
         // build RCL
         int rcl_size = 0;
         for (int i = visited_count; i < number_of_nodes; i++) {
             const int candidate = tour[i];
-            const double dist = edge_cost_array[current_node * number_of_nodes + candidate];
+            const double dist =
+                edge_cost_array[current_node * number_of_nodes + candidate];
             if (dist <= threshold + EPSILON)
                 rcl[rcl_size++] = i;
         }
 
-        // pick random candidate from RCL
+        // random pick
         const int chosen_index = rcl[(int)(normalized_rand() * rcl_size)];
 
-        // move chosen into the visited prefix
+        if_verbose(VERBOSE_DEBUG,
+                   "      GRASP-Threshold: Chose node %d (RCL size %d).\n",
+                   tour[chosen_index], rcl_size);
+
+        // commit choice
         swap_int(tour, visited_count, chosen_index);
         current_node = tour[visited_count];
         visited_count++;
@@ -287,5 +305,10 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
 
     free(rcl);
     *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
+
+    if_verbose(VERBOSE_DEBUG,
+               "    GRASP-Threshold: Built tour. Cost: %lf\n",
+               *cost);
+
     return 0;
 }

@@ -68,7 +68,6 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     if_verbose(VERBOSE_DEBUG, "  GRASP: Improvement loop finished after %d iterations.\n", iteration);
     solution->update_if_better(solution, best_tour, best_cost);
 
-    plotter->plot(plotter, "GRASP-costs.png");
     time_limiter->free(time_limiter);
 }
 
