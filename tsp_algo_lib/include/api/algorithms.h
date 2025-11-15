@@ -39,5 +39,12 @@ int grasp_nearest_neighbor_tour(int starting_node,
                                 double p2,
                                 double p3);
 
+int grasp_nearest_neighbor_tour_threshold(int starting_node,
+                                int* tour,
+                                int number_of_nodes,
+                                const double* edge_cost_array,
+                                double* cost,
+                                double alpha);
+
 #define MAX_NO_IMPROVEMENT_CYCLE 1000
 #endif //ALGORITHMS_H

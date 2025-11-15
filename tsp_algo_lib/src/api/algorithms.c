@@ -1,17 +1,14 @@
 #include <float.h>
-#include <stdio.h> // For fprintf
-#include <stdlib.h> // For exit
+#include <stdio.h>
 #include "c_util.h"
 #include "algorithms.h"
-
 #include "constants.h"
 #include "time_limiter.h"
 #include "tsp_math_util.h"
 #include "logger.h"
-
+#include <math.h>
 /**
- * @brief Performs a 2-opt optimization on a given tour.
- * ... (documentation) ...
+ * @brief Performs a 2-opt optimization on a given tour (First Improvement Type).
  */
 inline double two_opt(int* tour,
                       const int number_of_nodes,
@@ -23,13 +20,13 @@ inline double two_opt(int* tour,
 
     while (improved) {
         improved = false;
-        if (time_limiter->is_time_over(time_limiter)) {
-            if_verbose(VERBOSE_DEBUG, "  2-Opt: Time limit reached during optimization. Total improvement: %lf\n",
-                       cost_improvement);
-            return cost_improvement;
-        }
 
         for (int i = 1; i < number_of_nodes - 1; i++) {
+            if (time_limiter->is_time_over(time_limiter)) {
+                if_verbose(VERBOSE_DEBUG, "  2-Opt: Time limit reached during optimization. Total improvement: %lf\n",
+                           cost_improvement);
+                return cost_improvement;
+            }
             for (int j = i + 1; j < number_of_nodes; j++) {
                 if (i == 1 && j == number_of_nodes - 1)
                     continue;
@@ -63,7 +60,6 @@ inline double two_opt(int* tour,
 
 /**
  * @brief Generates a nearest neighbor tour starting from a given node.
- * ... (documentation) ...
  */
 int nearest_neighbor_tour(const int starting_node,
                           int* tour,
@@ -116,7 +112,6 @@ int nearest_neighbor_tour(const int starting_node,
 
 /**
  * @brief Generates a tour using a modified nearest neighbor approach with probabilistic selection.
- * ... (documentation) ...
  */
 int grasp_nearest_neighbor_tour(const int starting_node,
                                 int* tour,
@@ -173,8 +168,7 @@ int grasp_nearest_neighbor_tour(const int starting_node,
         for (int k = 0; k < 4; k++) {
             if (min_index[k] >= 0) {
                 candidates_found++;
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -190,31 +184,25 @@ int grasp_nearest_neighbor_tour(const int starting_node,
 
         if (r < p1) {
             chosen_index = min_index[0];
-        }
-        else {
+        } else {
             if (candidates_found >= 4) {
                 if (r < p2) {
                     chosen_index = min_index[1];
-                }
-                else if (r < p2 + p3) {
+                } else if (r < p2 + p3) {
                     chosen_index = min_index[2];
-                }
-                else {
+                } else {
                     chosen_index = min_index[3];
                 }
-            }
-            else {
+            } else {
                 if (candidates_found == 3) {
                     const double p_sum = p2 + p3;
                     // Add divide-by-zero protection
                     if (p_sum < EPSILON) chosen_index = min_index[1]; // Default to 2nd nearest
                     else if (r < p2 / p_sum) chosen_index = min_index[1];
                     else chosen_index = min_index[2];
-                }
-                else if (candidates_found == 2) {
+                } else if (candidates_found == 2) {
                     chosen_index = min_index[1];
-                }
-                else {
+                } else {
                     // candidates_found == 1
                     chosen_index = min_index[0];
                 }
@@ -230,5 +218,74 @@ int grasp_nearest_neighbor_tour(const int starting_node,
 
     *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
     if_verbose(VERBOSE_DEBUG, "    GRASP-NN: Built tour. Cost: %lf\n", *cost);
+    return 0;
+}
+
+int grasp_nearest_neighbor_tour_threshold(const int starting_node,
+                                          int* tour,
+                                          const int number_of_nodes,
+                                          const double* edge_cost_array,
+                                          double* cost,
+                                          const double alpha) {
+    if (starting_node < 0 || starting_node >= number_of_nodes)
+        return -1;
+
+    // initialize tour permutation
+    for (int i = 0; i < number_of_nodes; i++)
+        tour[i] = i;
+    swap_int(tour, 0, starting_node);
+
+    int visited_count = 1;
+    int current_node = tour[0];
+    tour[number_of_nodes] = tour[0]; // close the cycle
+
+    // one-time RCL allocation
+    int* rcl = malloc(number_of_nodes * sizeof(int));
+    check_alloc(rcl);
+
+    // clamp alpha
+    const double effective_alpha = fmax(0.0, fmin(1.0, alpha));
+
+    while (visited_count < number_of_nodes) {
+
+        // find min/max costs among candidates
+        double min_cost = DBL_MAX;
+        double max_cost = -DBL_MAX;
+
+        for (int i = visited_count; i < number_of_nodes; i++) {
+            const int candidate = tour[i];
+            const double dist = edge_cost_array[current_node * number_of_nodes + candidate];
+            if (dist < min_cost) min_cost = dist;
+            if (dist > max_cost) max_cost = dist;
+        }
+
+        if (min_cost == DBL_MAX) {
+            free(rcl);
+            return -1;
+        }
+
+        // compute threshold for RCL
+        const double threshold = min_cost + effective_alpha * (max_cost - min_cost);
+
+        // build RCL
+        int rcl_size = 0;
+        for (int i = visited_count; i < number_of_nodes; i++) {
+            const int candidate = tour[i];
+            const double dist = edge_cost_array[current_node * number_of_nodes + candidate];
+            if (dist <= threshold + EPSILON)
+                rcl[rcl_size++] = i;
+        }
+
+        // pick random candidate from RCL
+        const int chosen_index = rcl[(int)(normalized_rand() * rcl_size)];
+
+        // move chosen into the visited prefix
+        swap_int(tour, visited_count, chosen_index);
+        current_node = tour[visited_count];
+        visited_count++;
+    }
+
+    free(rcl);
+    *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
     return 0;
 }
