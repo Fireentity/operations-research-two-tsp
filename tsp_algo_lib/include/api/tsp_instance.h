@@ -1,6 +1,17 @@
 #ifndef TSP_INSTANCE_H
 #define TSP_INSTANCE_H
 
+/* Error codes for instance loading */
+typedef enum {
+    TSP_OK = 0,
+    TSP_ERR_FILE_OPEN,
+    TSP_ERR_PARSE_HEADER, // Dimension or format error
+    TSP_ERR_PARSE_NODES, // Error reading node coordinates
+    TSP_ERR_MEMORY,
+    TSP_ERR_INVALID_EXT,
+    TSP_ERR_UNKNOWN_FORMAT
+} TspError;
+
 /**
  * @brief Defines the area used for generating a random TSP instance.
  */
@@ -14,71 +25,62 @@ typedef struct {
  * @brief Represents a node with x and y coordinates.
  */
 typedef struct {
-    double x; /**< X-coordinate. */
-    double y; /**< Y-coordinate. */
+    double x;
+    double y;
 } Node;
 
-/** Forward declaration of TspInstanceState. */
-typedef struct TspInstanceState TspInstanceState;
-
-/** Forward declaration of TspInstance. */
+/**
+ * @brief Opaque TSP instance type.
+ * Definition is hidden in the .c file.
+ */
 typedef struct TspInstance TspInstance;
 
-/**
- * @brief Structure representing a TSP instance.
- */
-struct TspInstance {
-    TspInstanceState* state; /**< Internal state of the TSP instance. */
-    /**
-     * @brief Retrieves the array of edge costs.
-     *
-     * @param self Pointer to the TSP instance.
-     * @return Pointer to the edge cost array.
-     */
-    const double* (*const get_edge_cost_array)(const TspInstance* self);
-    /**
-     * @brief Returns the number of nodes in the instance.
-     *
-     * @param self Pointer to the TSP instance.
-     * @return Number of nodes.
-     */
-    int (*const get_number_of_nodes)(const TspInstance* self);
-    /**
-     * @brief Retrieves the array of nodes.
-     *
-     * @param self Pointer to the TSP instance.
-     * @return Pointer to the nodes array.
-     */
-    const Node* (*const get_nodes)(const TspInstance* self);
-    /**
-     * @brief Frees the memory allocated for the TSP instance.
-     *
-     * @param self Pointer to the TSP instance to be freed.
-     */
-    void (*const free)(const TspInstance* self);
-};
+/* --- Constructors --- */
 
 /**
- * @brief Initializes a random TSP instance.
- *
- * Generates a TSP instance with a given number of nodes and a random seed.
- *
- * @param number_of_nodes Number of nodes to generate.
- * @param seed Seed for random generation.
- * @param generation_area Area parameters for node generation.
+ * @brief Creates a random TSP instance.
  * @return Pointer to the generated TSP instance.
  */
-const TspInstance* init_random_tsp_instance(int number_of_nodes,
-                                            int seed,
-                                            TspGenerationArea generation_area);
+TspInstance *tsp_instance_create_random(int number_of_nodes,
+                                        int seed,
+                                        TspGenerationArea area);
 
 /**
- * @brief Initializes a TSP instance with provided nodes.
- *
- * @param nodes Pointer to an array of nodes.
- * @param number_of_nodes Number of nodes.
- * @return Pointer to the initialized TSP instance.
+ * @brief Creates a TSP instance from an existing array of nodes.
+ * Makes a deep copy of the nodes.
  */
-const TspInstance* init_tsp_instance(const Node* nodes, int number_of_nodes);
+TspInstance *tsp_instance_create(const Node *nodes, int number_of_nodes);
 
-#endif //TSP_INSTANCE_H
+/**
+ * @brief Loads a TSP instance from a file (TSPLIB format).
+ *
+ * @param path Path to the .tsp file.
+ * @param out_instance [Output] Pointer to the created instance variable.
+ * @return TSP_OK on success, or an error code.
+ */
+TspError tsp_instance_load_from_file(const char *path, TspInstance **out_instance);
+
+/* --- Destructor --- */
+
+/**
+ * @brief Frees all memory associated with the instance.
+ */
+void tsp_instance_free(TspInstance *instance);
+
+/* --- Accessors --- */
+
+int tsp_instance_get_num_nodes(const TspInstance *instance);
+
+const Node *tsp_instance_get_nodes(const TspInstance *instance);
+
+/**
+ * @brief Returns the flattened edge-cost matrix (size n*n).
+ */
+const double *tsp_instance_get_cost_matrix(const TspInstance *instance);
+
+/**
+ * @brief Helper to get a string representation of the error.
+ */
+const char *tsp_error_to_string(TspError err);
+
+#endif // TSP_INSTANCE_H

@@ -8,6 +8,7 @@ set(COMMON_SOURCES
         src/chrono.c
         src/ini.c
         src/logger.c
+        src/c_util.c
 )
 
 # Create a library for common

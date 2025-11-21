@@ -29,7 +29,7 @@ static void execute_and_report(const TspAlgorithm* algorithm,
                                const char* plot_file,
                                const char* costs_file) {
     if_verbose(VERBOSE_DEBUG, "  Initializing plotter for %s...\n", algorithm_name);
-    const CostsPlotter* plotter = init_plotter(instance->get_number_of_nodes(instance));
+    const CostsPlotter* plotter = init_plotter(tsp_instance_get_num_nodes(instance));
 
     if_verbose(VERBOSE_DEBUG, "  Initializing solution for %s...\n", algorithm_name);
     const TspSolution* solution = init_solution(instance);
@@ -38,12 +38,12 @@ static void execute_and_report(const TspAlgorithm* algorithm,
     solution->solve(solution, algorithm, plotter);
 
     if_verbose(VERBOSE_DEBUG, "  Plotting tour to %s.\n", plot_file);
-    const int nr_nodes = instance->get_number_of_nodes(instance);
+    const int nr_nodes = tsp_instance_get_num_nodes(instance);
     int tour_buffer[nr_nodes + 1];
     solution->get_tour_copy(solution, tour_buffer);
     plot_tour(tour_buffer,
-              instance->get_number_of_nodes(instance),
-              instance->get_nodes(instance),
+              tsp_instance_get_num_nodes(instance),
+              tsp_instance_get_nodes(instance),
               plot_file);
 
     if_verbose(VERBOSE_DEBUG, "  Plotting costs to %s.\n", costs_file);

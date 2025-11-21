@@ -29,8 +29,8 @@ static void improve(const TspAlgorithm* tsp_algorithm,
                     const TspSolution* solution,
                     const CostsPlotter* plotter) {
     if_verbose(VERBOSE_DEBUG, "  NN: Starting improvement loop (multi-start NN + 2-Opt)...\n");
-    const int number_of_nodes = instance->get_number_of_nodes(instance);
-    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
+    const double* edge_cost_array = tsp_instance_get_cost_matrix(instance);
 
     const double time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
     if_verbose(VERBOSE_DEBUG, "  NN: Time limit set to %.2fs.\n", time_limit);
@@ -86,8 +86,8 @@ static void solve(const TspAlgorithm* tsp_algorithm,
                   const TspSolution* solution,
                   const CostsPlotter* plotter) {
     if_verbose(VERBOSE_INFO, "Running Nearest Neighbor algorithm...\n");
-    const int number_of_nodes = instance->get_number_of_nodes(instance);
-    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
+    const double* edge_cost_array = tsp_instance_get_cost_matrix(instance);
 
     int initial_tour[number_of_nodes + 1];
     double initial_cost;

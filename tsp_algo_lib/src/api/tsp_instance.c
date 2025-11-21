@@ -1,93 +1,90 @@
-#include <c_util.h>
-#include <stdlib.h>
+#include "tsp_instance.h"
+#include "tsp_parser.h"
+#include "c_util.h"
 #include "tsp_math_util.h"
-#include "logger.h" // Include the logger
+#include "logger.h"
+#include <stdlib.h>
+#include <string.h>
 
-struct TspInstanceState {
-    double* const edge_cost_array; // Precomputed array of edge costs
-    const int number_of_nodes; // Total number of nodes
-    const Node* const nodes; // Array of node coordinates
+struct TspInstance {
+    int number_of_nodes;
+    Node *nodes;
+    double *edge_cost_array;
 };
 
-static int get_number_of_nodes(const TspInstance* self) {
-    return self->state->number_of_nodes;
+static TspInstance *instance_create_from_nodes(Node *nodes, const int n) {
+    double *costs = init_edge_cost_array(nodes, n);
+
+    TspInstance *inst = malloc(sizeof(TspInstance));
+    check_alloc(inst);
+
+    inst->number_of_nodes = n;
+    inst->nodes = nodes;
+    inst->edge_cost_array = costs;
+
+    return inst;
 }
 
-static const double* get_edge_cost_array(const TspInstance* self) {
-    return self->state->edge_cost_array;
-}
+TspInstance *tsp_instance_create_random(const int number_of_nodes, const int seed, const TspGenerationArea area) {
+    srand(seed);
 
-static const Node* get_nodes(const TspInstance* self) {
-    return self->state->nodes;
-}
+    Node *nodes = malloc(number_of_nodes * sizeof(Node));
+    check_alloc(nodes);
 
-static Node* init_nodes(const int number_of_nodes, const TspGenerationArea generation_area) {
-    if_verbose(VERBOSE_DEBUG, "    Instance: Allocating memory for %d nodes...\n", number_of_nodes);
-    Node* const nodes = malloc(number_of_nodes * sizeof(Node));
-    check_alloc(nodes); // Ensure nodes allocation succeeded
-
-    if_verbose(VERBOSE_DEBUG, "    Instance: Generating random node coordinates...\n");
     for (int i = 0; i < number_of_nodes; i++) {
-        // Randomly initialize node coordinates within the generation area
-        nodes[i].x = generation_area.x_square + normalized_rand() * generation_area.square_side;
-        nodes[i].y = generation_area.y_square + normalized_rand() * generation_area.square_side;
+        nodes[i].x = area.x_square + normalized_rand() * area.square_side;
+        nodes[i].y = area.y_square + normalized_rand() * area.square_side;
     }
-    return nodes;
+
+    return instance_create_from_nodes(nodes, number_of_nodes);
 }
 
-static void free_this(const TspInstance* self) {
-    if_verbose(VERBOSE_DEBUG, "Freeing TspInstance...\n");
-    // Return early if any required pointer is missing
-    if (!self) {
-        if_verbose(VERBOSE_DEBUG, "  TspInstance is NULL, skipping free.\n");
-        return;
-    }
-    if (!self->state) {
-        if_verbose(VERBOSE_DEBUG, "  TspInstance->state is NULL, skipping state free.\n");
-        free((void*)self); // Free the main struct at least
-        return;
-    }
-
-    if_verbose(VERBOSE_DEBUG, "  Freeing edge_cost_array.\n");
-    free(self->state->edge_cost_array);
-
-    if_verbose(VERBOSE_DEBUG, "  Freeing nodes array.\n");
-    free((void*)self->state->nodes);
-
-    if_verbose(VERBOSE_DEBUG, "  Freeing instance state.\n");
-    free(self->state);
-
-    if_verbose(VERBOSE_DEBUG, "  Freeing instance self.\n");
-    free((void*)self);
+TspInstance *tsp_instance_create(const Node *nodes, const int number_of_nodes) {
+    Node *copy = malloc(number_of_nodes * sizeof(Node));
+    check_alloc(copy);
+    memcpy(copy, nodes, number_of_nodes * sizeof(Node));
+    return instance_create_from_nodes(copy, number_of_nodes);
 }
 
-const TspInstance* init_random_tsp_instance(const int number_of_nodes,
-                                            const int seed,
-                                            const TspGenerationArea generation_area) {
-    if_verbose(VERBOSE_INFO, "Initializing random TSP instance (Nodes: %d, Seed: %d)...\n", number_of_nodes, seed);
+TspError tsp_instance_load_from_file(const char *path, TspInstance **out_instance) {
+    Node *nodes = NULL;
+    int n = 0;
 
-    if_verbose(VERBOSE_DEBUG, "  Instance: Seeding RNG with %d.\n", seed);
-    srand(seed); // Seed the random number generator
+    const TspError err = tsp_parse_by_extension(path, &nodes, &n);
+    if (err != TSP_OK) return err;
 
-    Node* nodes = init_nodes(number_of_nodes, generation_area);
+    *out_instance = instance_create_from_nodes(nodes, n);
+    return TSP_OK;
+}
 
-    if_verbose(VERBOSE_DEBUG, "  Instance: Initializing edge cost array...\n");
-    double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
+void tsp_instance_free(TspInstance *instance) {
+    if (!instance) return;
+    free(instance->nodes);
+    free(instance->edge_cost_array);
+    free(instance);
+}
 
-    const TspInstanceState state = {
-        .number_of_nodes = number_of_nodes,
-        .nodes = nodes,
-        .edge_cost_array = edge_cost_array,
-    };
+int tsp_instance_get_num_nodes(const TspInstance *instance) {
+    return instance ? instance->number_of_nodes : 0;
+}
 
-    const TspInstance instance = {
-        .state = memdup(&state, sizeof(state)), // Use custom allocation that copies the stack object
-        .get_edge_cost_array = get_edge_cost_array,
-        .get_number_of_nodes = get_number_of_nodes,
-        .get_nodes = get_nodes,
-        .free = free_this
-    };
+const Node *tsp_instance_get_nodes(const TspInstance *instance) {
+    return instance ? instance->nodes : NULL;
+}
 
-    if_verbose(VERBOSE_DEBUG, "  Instance: Finalizing instance object.\n");
-    return memdup(&instance, sizeof(instance));
+const double *tsp_instance_get_cost_matrix(const TspInstance *instance) {
+    return instance ? instance->edge_cost_array : NULL;
+}
+
+const char *tsp_error_to_string(const TspError err) {
+    switch (err) {
+        case TSP_OK: return "Success";
+        case TSP_ERR_FILE_OPEN: return "Unable to open file";
+        case TSP_ERR_PARSE_HEADER: return "Malformed TSPLIB header";
+        case TSP_ERR_PARSE_NODES: return "Invalid node coordinates";
+        case TSP_ERR_MEMORY: return "Memory allocation failed";
+        case TSP_ERR_INVALID_EXT: return "Unsupported file extension";
+        case TSP_ERR_UNKNOWN_FORMAT: return "Unknown format";
+        default: return "Unknown error";
+    }
 }

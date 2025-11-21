@@ -6,19 +6,19 @@
 #include "nearest_neighbor.h"
 
 
-int main(const int argc, const char* argv[]) {
-    CmdOptions* cmd_options = init_cmd_options();
-    const ParsingResult* parsing_result = parse_application_options(cmd_options, argc - 1, argv + 1);
+int main(const int argc, const char *argv[]) {
+    CmdOptions *cmd_options = init_cmd_options();
+    const ParsingResult *parsing_result = parse_application_options(cmd_options, argc - 1, argv + 1);
 
     switch (parsing_result->state) {
-    case PARSE_SUCCESS: break;
-    case PARSE_HELP:
-        free_cmd_option(cmd_options);
-        return 0;;
-    default:
-        printf("%s", parsing_result->error_message);
-        free_cmd_option(cmd_options);
-        return 1;
+        case PARSE_SUCCESS: break;
+        case PARSE_HELP:
+            free_cmd_option(cmd_options);
+            return 0;;
+        default:
+            printf("%s", parsing_result->error_message);
+            free_cmd_option(cmd_options);
+            return 1;
     }
 #ifndef DISABLE_VERBOSE
     logger_set_verbosity(cmd_options->verbosity);
@@ -102,8 +102,8 @@ int main(const int argc, const char* argv[]) {
     );
 
 
-    const TspInstance* instance = init_random_tsp_instance(
-        (int)cmd_options->tsp.number_of_nodes,
+    TspInstance *instance = tsp_instance_create_random(
+        (int) cmd_options->tsp.number_of_nodes,
         cmd_options->tsp.seed,
         (TspGenerationArea){
             .square_side = cmd_options->tsp.generation_area.square_side,
@@ -114,7 +114,7 @@ int main(const int argc, const char* argv[]) {
     run_selected_algorithms(instance, cmd_options);
     if_verbose(VERBOSE_INFO, "Algorithms executed, cleaning up...\n");
     // Cleanup
-    instance->free(instance);
+    tsp_instance_free(instance);
     free_cmd_option(cmd_options);
     return 0;
 }

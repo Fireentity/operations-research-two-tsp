@@ -27,8 +27,8 @@ static double compute_cost(const TspSolution* solution) {
     const TspInstance* instance = solution->state->instance;
     return calculate_tour_cost(
         solution->state->tour,
-        instance->get_number_of_nodes(instance),
-        instance->get_edge_cost_array(instance)
+        tsp_instance_get_num_nodes(instance),
+        tsp_instance_get_cost_matrix(instance)
     );
 }
 
@@ -42,7 +42,7 @@ static double get_cost_safe(const TspSolution* solution) {
 }
 
 static void get_tour_copy_safe(const TspSolution* self, int* tour_buffer) {
-    const int num_nodes = self->state->instance->get_number_of_nodes(self->state->instance);
+    const int num_nodes = tsp_instance_get_num_nodes(self->state->instance);
 
     pthread_mutex_lock(&self->state->mutex);
     memcpy(tour_buffer, self->state->tour, (num_nodes + 1) * sizeof(int));
@@ -51,7 +51,7 @@ static void get_tour_copy_safe(const TspSolution* self, int* tour_buffer) {
 
 static bool update_if_better_safe(const TspSolution* self, const int* new_tour, double new_cost) {
     bool updated = false;
-    const int num_nodes = self->state->instance->get_number_of_nodes(self->state->instance);
+    const int num_nodes = tsp_instance_get_num_nodes(self->state->instance);
 
     pthread_mutex_lock(&self->state->mutex);
     if (new_cost < self->state->cost - EPSILON) {
@@ -69,7 +69,7 @@ static bool update_if_better_safe(const TspSolution* self, const int* new_tour, 
 static FeasibilityResult is_feasible_safe(const TspSolution* solution) {
     if_verbose(VERBOSE_DEBUG, "  Solution: Checking feasibility...\n");
     const TspInstance* instance = solution->state->instance;
-    const int number_of_nodes = instance->get_number_of_nodes(instance);
+    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
 
     int tour_copy[number_of_nodes + 1];
 
@@ -99,7 +99,7 @@ static FeasibilityResult is_feasible_safe(const TspSolution* solution) {
     const double calculated_cost = calculate_tour_cost(
         tour_copy,
         number_of_nodes,
-        instance->get_edge_cost_array(instance)
+        tsp_instance_get_cost_matrix(instance)
     );
 
     if (fabs(cost_copy - calculated_cost) > EPSILON) {
@@ -159,10 +159,10 @@ static int* init_tour(const int number_of_nodes) {
 
 TspSolution* init_solution(const TspInstance* instance) {
     if_verbose(VERBOSE_INFO, "Initializing TSP solution...\n");
-    const int number_of_nodes = instance->get_number_of_nodes(instance);
+    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
 
     int* tour = init_tour(number_of_nodes);
-    const double initial_cost = calculate_tour_cost(tour, number_of_nodes, instance->get_edge_cost_array(instance));
+    const double initial_cost = calculate_tour_cost(tour, number_of_nodes, tsp_instance_get_cost_matrix(instance));
     if_verbose(VERBOSE_DEBUG, "  Solution: Default tour cost calculated: %lf\n", initial_cost);
 
     const TspSolutionState state = {

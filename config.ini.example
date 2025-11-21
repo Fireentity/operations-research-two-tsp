@@ -5,13 +5,20 @@ plots_path = ./plots
 verbosity = 1
 
 [tsp]
-; General settings for the Traveling Salesperson Problem
+; Input mode: "file" or "random"
+mode = file
+file = ./instances/att48.tsp
+
+; Random mode settings (ignored if mode = file)
 nodes = 1000
 seed = 42
 x-square = 0
 y-square = 0
 square-side = 10000
+
+; Time limit (in seconds)
 seconds = 5
+
 
 [nn]
 ; Settings for Nearest Neighbor Search

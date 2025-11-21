@@ -36,8 +36,8 @@ static void improve(const TspAlgorithm* tsp_algorithm,
                     const TspSolution* solution,
                     const CostsPlotter* plotter) {
     if_verbose(VERBOSE_DEBUG, "  VNS: Starting improvement loop...\n");
-    const int number_of_nodes = instance->get_number_of_nodes(instance);
-    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
+    const double* edge_cost_array = tsp_instance_get_cost_matrix(instance);
 
     const double time_limit = tsp_algorithm->extended->variable_neighborhood_search->time_limit;
     const int kick_repetition = tsp_algorithm->extended->variable_neighborhood_search->kick_repetition;
@@ -93,8 +93,8 @@ static void solve(const TspAlgorithm* tsp_algorithm,
                   const TspSolution* solution,
                   const CostsPlotter* plotter) {
     if_verbose(VERBOSE_INFO, "Running Variable Neighborhood Search algorithm...\n");
-    const int number_of_nodes = instance->get_number_of_nodes(instance);
-    const double* edge_cost_array = instance->get_edge_cost_array(instance);
+    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
+    const double* edge_cost_array = tsp_instance_get_cost_matrix(instance);
 
     int initial_tour[number_of_nodes + 1];
     double initial_cost;
