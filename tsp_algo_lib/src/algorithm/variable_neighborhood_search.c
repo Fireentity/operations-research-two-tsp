@@ -46,8 +46,8 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     if_verbose(VERBOSE_DEBUG, "  VNS: Time limit=%.2fs, Kicks=%d, N-Opt=%d\n",
                time_limit, kick_repetition, n_opt);
 
-    const TimeLimiter* time_limiter = init_time_limiter(time_limit);
-    time_limiter->start(time_limiter);
+    TimeLimiter* time_limiter = time_limiter_create(time_limit);
+    time_limiter_start(time_limiter);
 
     int current_tour[number_of_nodes + 1];
     tsp_solution_get_tour(solution, current_tour);
@@ -61,7 +61,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     double best_cost = current_cost;
     if_verbose(VERBOSE_DEBUG, "  VNS: Initial cost after 2-Opt: %lf\n", best_cost);
 
-    while (!time_limiter->is_time_over(time_limiter)) {
+    while (!time_limiter_is_over(time_limiter)) {
         // Kicking
         for (int i = 0; i < kick_repetition; i++) {
             current_cost += kick(current_tour, number_of_nodes, edge_cost_array, n_opt);
@@ -78,14 +78,14 @@ static void improve(const TspAlgorithm* tsp_algorithm,
         plotter->add_cost(plotter, current_cost);
     }
 
-    if (time_limiter->is_time_over(time_limiter)) {
+    if (time_limiter_is_over(time_limiter)) {
         if_verbose(VERBOSE_DEBUG, "  VNS: Improvement loop stopped due to time limit.\n");
     }
 
     tsp_solution_update_if_better(solution, best_tour, best_cost);
 
     if_verbose(VERBOSE_DEBUG, "  VNS: Cleaning up time limiter.\n");
-    time_limiter->free(time_limiter);
+    time_limiter_destroy(time_limiter);
 }
 
 static void solve(const TspAlgorithm* tsp_algorithm,

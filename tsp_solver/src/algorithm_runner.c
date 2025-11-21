@@ -10,7 +10,7 @@
 #include "grasp.h"
 #include "tsp_solution.h"
 #include "costs_plotter.h"
-#include "plot_util.h"
+#include "../include/plotting/plot_util.h"
 #include "algorithm_plotter.h"
 
 typedef struct {

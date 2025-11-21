@@ -23,7 +23,7 @@ set(TSP_ALGO_SOURCES
 add_library(tsp_algo_lib ${TSP_ALGO_SOURCES})
 
 # Include directories for tsp_algo_lib
-target_include_directories(tsp_algo_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/ ${CMAKE_CURRENT_SOURCE_DIR}/include/plotting ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms ${CMAKE_CURRENT_SOURCE_DIR}/include/api ${CMAKE_CURRENT_SOURCE_DIR}/include/parser)
+target_include_directories(tsp_algo_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/ ../tsp_solver/include/plotting ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms ${CMAKE_CURRENT_SOURCE_DIR}/include/api ${CMAKE_CURRENT_SOURCE_DIR}/include/parser)
 
 # Link tsp_algo_lib with common
 target_link_libraries(tsp_algo_lib PRIVATE common)

@@ -2,7 +2,7 @@
 #include "costs_plotter.h"
 #include <stdlib.h>
 #include "c_util.h"
-#include "plot_util.h"
+#include "../../include/plotting/plot_util.h"
 
 struct PlotterState {
     int index; // index of the lowermost free cell

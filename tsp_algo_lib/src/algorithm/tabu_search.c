@@ -43,8 +43,8 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     if_verbose(VERBOSE_DEBUG, "  TS: Time limit=%.2fs, Tenure=%d, Max Stagnation=%d\n",
                time_limit, tabu_tenure, max_stagnation);
 
-    const TimeLimiter* time_limiter = init_time_limiter(time_limit);
-    time_limiter->start(time_limiter);
+    TimeLimiter* time_limiter = time_limiter_create(time_limit);
+    time_limiter_start(time_limiter);
 
     int current_tour[number_of_nodes + 1];
     tsp_solution_get_tour(solution, current_tour);
@@ -64,7 +64,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     int no_improvements = 0;
     int iteration = 0;
 
-    while (!time_limiter->is_time_over(time_limiter) && no_improvements < max_stagnation) {
+    while (!time_limiter_is_over(time_limiter) && no_improvements < max_stagnation) {
         iteration++;
         int best_i = -1, best_j = -1;
         double best_delta = DBL_MAX;
@@ -123,7 +123,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     if (no_improvements >= max_stagnation) {
         if_verbose(VERBOSE_DEBUG, "  TS: Improvement loop stopped due to max stagnation (%d).\n", max_stagnation);
     }
-    else if (time_limiter->is_time_over(time_limiter)) {
+    else if (time_limiter_is_over(time_limiter)) {
         if_verbose(VERBOSE_DEBUG, "  TS: Improvement loop stopped due to time limit.\n");
     }
 
@@ -131,7 +131,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
 
     if_verbose(VERBOSE_DEBUG, "  TS: Cleaning up tabu list and time limiter.\n");
     free(tabu);
-    time_limiter->free(time_limiter);
+    time_limiter_destroy(time_limiter);
 }
 
 static void solve(const TspAlgorithm* tsp_algorithm,

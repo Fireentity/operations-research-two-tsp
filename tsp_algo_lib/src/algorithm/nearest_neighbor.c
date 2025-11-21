@@ -34,8 +34,8 @@ static void improve(const TspAlgorithm* tsp_algorithm,
 
     const double time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
     if_verbose(VERBOSE_DEBUG, "  NN: Time limit set to %.2fs.\n", time_limit);
-    const TimeLimiter* time_limiter = init_time_limiter(time_limit);
-    time_limiter->start(time_limiter);
+    TimeLimiter* time_limiter = time_limiter_create(time_limit);
+    time_limiter_start(time_limiter);
 
     int current_tour[number_of_nodes + 1];
     int best_tour[number_of_nodes + 1];
@@ -52,7 +52,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     if_verbose(VERBOSE_DEBUG, "  NN: Initial best cost: %lf\n", best_cost);
 
     int iteration = 0;
-    while (!time_limiter->is_time_over(time_limiter) && iteration < number_of_nodes) {
+    while (!time_limiter_is_over(time_limiter) && iteration < number_of_nodes) {
         if_verbose(VERBOSE_ALL, "    NN [Iteration %d]: Running from start node %d.\n", iteration,
                    starting_nodes[iteration]);
 
@@ -78,7 +78,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     if_verbose(VERBOSE_DEBUG, "  NN: Improvement loop finished after %d iterations.\n", iteration);
     tsp_solution_update_if_better(solution, best_tour, best_cost);
 
-    time_limiter->free(time_limiter);
+    time_limiter_destroy(time_limiter);
 }
 
 static void solve(const TspAlgorithm* tsp_algorithm,

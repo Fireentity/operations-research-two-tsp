@@ -22,7 +22,7 @@ inline double two_opt(int* tour,
         improved = false;
 
         for (int i = 1; i < number_of_nodes - 1; i++) {
-            if (time_limiter->is_time_over(time_limiter)) {
+            if (time_limiter_is_over(time_limiter)) {
                 if_verbose(VERBOSE_DEBUG, "  2-Opt: Time limit reached during optimization. Total improvement: %lf\n",
                            cost_improvement);
                 return cost_improvement;

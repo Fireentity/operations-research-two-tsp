@@ -14,4 +14,7 @@ struct CostsPlotter {
     void (*const plot)(const CostsPlotter *self, const char *file_name);
 };
 
+CostsPlotter *init_plotter(int capacity);
+
+
 #endif //COSTS_PLOTTER_H

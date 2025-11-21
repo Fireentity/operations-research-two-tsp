@@ -3,17 +3,32 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Opaque structure for tracking execution time limits.
+ */
 typedef struct TimeLimiter TimeLimiter;
 
-typedef struct TimeLimiterState TimeLimiterState;
+/**
+ * @brief Creates a new TimeLimiter with the specified duration.
+ * @param time_limit_seconds The maximum allowed duration in seconds.
+ * @return Pointer to the new TimeLimiter.
+ */
+TimeLimiter* time_limiter_create(double time_limit_seconds);
 
-struct TimeLimiter {
-    TimeLimiterState* const state;
-    bool (*const is_time_over)(const TimeLimiter*);
-    void (*const start)(const TimeLimiter*);
-    void (*const free)(const TimeLimiter*);
-};
+/**
+ * @brief Frees the memory associated with the TimeLimiter.
+ */
+void time_limiter_destroy(TimeLimiter* limiter);
 
-TimeLimiter* init_time_limiter(float time_limit_seconds);
+/**
+ * @brief Starts (or restarts) the timer from the current moment.
+ */
+void time_limiter_start(TimeLimiter* limiter);
+
+/**
+ * @brief Checks if the elapsed time has exceeded the limit.
+ * @return true if time is over, false otherwise.
+ */
+bool time_limiter_is_over(const TimeLimiter* limiter);
 
 #endif //TIME_LIMITER_H
