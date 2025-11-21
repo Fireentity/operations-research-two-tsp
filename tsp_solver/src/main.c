@@ -1,120 +1,79 @@
 #include <stdio.h>
 #include "algorithm_runner.h"
 #include "cmd_options.h"
-#include "c_util.h"
+#include "tsp_instance.h"
 #include "logger.h"
-#include "nearest_neighbor.h"
-
+#include "c_util.h"
 
 int main(const int argc, const char *argv[]) {
-    CmdOptions *cmd_options = init_cmd_options();
-    const ParsingResult *parsing_result = parse_application_options(cmd_options, argc - 1, argv + 1);
+    CmdOptions *options = cmd_options_create_defaults();
 
-    switch (parsing_result->state) {
-        case PARSE_SUCCESS: break;
-        case PARSE_HELP:
-            free_cmd_option(cmd_options);
-            return 0;;
-        default:
-            printf("%s", parsing_result->error_message);
-            free_cmd_option(cmd_options);
-            return 1;
+    const ParsingResult *res =
+            cmd_options_load(options, argc - 1, argv + 1);
+
+    if (res->state != PARSE_SUCCESS) {
+        if (res->state == PARSE_HELP) {
+            cmd_options_free(options);
+            return 0;
+        }
+        fprintf(stderr, "%s\n", res->error_message);
+        cmd_options_free(options);
+        return 1;
     }
+
 #ifndef DISABLE_VERBOSE
-    logger_set_verbosity(cmd_options->verbosity);
+    logger_set_verbosity(options->verbosity);
 #endif
-    if_verbose(VERBOSE_INFO, "Parsing successful...\n");
+
     if_verbose(VERBOSE_DEBUG,
-               "--- Parsed Options Dump ---\n"
-               "  [General]\n"
-               "    Config file: %s\n"
-               "    Plot path:   %s\n"
-               "    Help:        %s\n"
-               "    Verbosity:   %u\n"
-               "\n"
-               "  [TSP Instance]\n"
-               "    Nodes:       %u\n"
-               "    Seed:        %d\n"
-               "    Time Limit:  %.2f s\n"
-               "    Area X:      %d\n"
-               "    Area Y:      %d\n"
-               "    Side:        %u\n"
-               "\n"
-               "  [Nearest Neighbor]\n"
-               "    Enabled:     %s\n"
-               "    Plot file:   %s\n"
-               "    Cost file:   %s\n"
-               "\n"
-               "  [VNS]\n"
-               "    Enabled:     %s\n"
-               "    Plot file:   %s\n"
-               "    Cost file:   %s\n"
-               "    Kicks:       %u\n"
-               "    N-Opt:       %u\n"
-               "\n"
-               "  [Tabu Search]\n"
-               "    Enabled:     %s\n"
-               "    Plot file:   %s\n"
-               "    Cost file:   %s\n"
-               "    Tenure:      %u\n"
-               "    Stagnation:  %u\n"
-               "\n"
-               "  [GRASP]\n"
-               "    Enabled:     %s\n"
-               "    Plot file:   %s\n"
-               "    Cost file:   %s\n"
-               "    P1:          %.2f\n"
-               "    P2:          %.2f\n"
-               "-----------------------------\n",
-               cmd_options->config_file ? cmd_options->config_file : "(null)",
-               cmd_options->plots_path ? cmd_options->plots_path : "(null)",
-               cmd_options->help ? "YES" : "NO",
-               cmd_options->verbosity,
-
-               cmd_options->tsp.number_of_nodes,
-               cmd_options->tsp.seed,
-               cmd_options->tsp.time_limit,
-               cmd_options->tsp.generation_area.x_square,
-               cmd_options->tsp.generation_area.y_square,
-               cmd_options->tsp.generation_area.square_side,
-
-               cmd_options->nn_params.enable ? "YES" : "NO",
-               cmd_options->nn_params.plot_file ? cmd_options->nn_params.plot_file : "(null)",
-               cmd_options->nn_params.cost_file ? cmd_options->nn_params.cost_file : "(null)",
-
-               cmd_options->vns_params.enable ? "YES" : "NO",
-               cmd_options->vns_params.plot_file ? cmd_options->vns_params.plot_file : "(null)",
-               cmd_options->vns_params.cost_file ? cmd_options->vns_params.cost_file : "(null)",
-               cmd_options->vns_params.kick_repetitions,
-               cmd_options->vns_params.n_opt,
-
-               cmd_options->tabu_params.enable ? "YES" : "NO",
-               cmd_options->tabu_params.plot_file ? cmd_options->tabu_params.plot_file : "(null)",
-               cmd_options->tabu_params.cost_file ? cmd_options->tabu_params.cost_file : "(null)",
-               cmd_options->tabu_params.tenure,
-               cmd_options->tabu_params.max_stagnation,
-
-               cmd_options->grasp_params.enable ? "YES" : "NO",
-               cmd_options->grasp_params.plot_file ? cmd_options->grasp_params.plot_file : "(null)",
-               cmd_options->grasp_params.cost_file ? cmd_options->grasp_params.cost_file : "(null)",
-               cmd_options->grasp_params.p1,
-               cmd_options->grasp_params.p2
+               "--- Options ---\n"
+               "Mode:        %s\n"
+               "Input file:  %s\n"
+               "Config file: %s\n"
+               "Verbosity:   %u\n"
+               "Plot path:   %s\n"
+               "Nodes:       %u\n"
+               "Seed:        %d\n"
+               "Area:        %d,%d (side %u)\n"
+               "Time limit:  %.2f\n"
+               "--------------\n",
+               (options->tsp.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
+               options->tsp.input_file ? options->tsp.input_file : "(none)",
+               options->config_file ? options->config_file : "(none)",
+               options->verbosity,
+               options->plots_path ? options->plots_path : "./",
+               options->tsp.number_of_nodes,
+               options->tsp.seed,
+               options->tsp.generation_area.x_square,
+               options->tsp.generation_area.y_square,
+               options->tsp.generation_area.square_side,
+               options->tsp.time_limit
     );
 
+    TspInstance *instance = NULL;
 
-    TspInstance *instance = tsp_instance_create_random(
-        (int) cmd_options->tsp.number_of_nodes,
-        cmd_options->tsp.seed,
-        (TspGenerationArea){
-            .square_side = cmd_options->tsp.generation_area.square_side,
-            .x_square = cmd_options->tsp.generation_area.x_square,
-            .y_square = cmd_options->tsp.generation_area.y_square,
-        });
+    if (options->tsp.mode == TSP_INPUT_MODE_FILE) {
+        const TspError err = tsp_instance_load_from_file(options->tsp.input_file, &instance);
+        if (err != TSP_OK) {
+            fprintf(stderr, "Failed to load instance: %s\n", tsp_error_to_string(err));
+            cmd_options_free(options);
+            return 1;
+        }
+    } else {
+        instance = tsp_instance_create_random(
+            (int) options->tsp.number_of_nodes,
+            options->tsp.seed,
+            (TspGenerationArea){
+                .x_square = options->tsp.generation_area.x_square,
+                .y_square = options->tsp.generation_area.y_square,
+                .square_side = options->tsp.generation_area.square_side
+            }
+        );
+    }
 
-    run_selected_algorithms(instance, cmd_options);
-    if_verbose(VERBOSE_INFO, "Algorithms executed, cleaning up...\n");
-    // Cleanup
+    run_selected_algorithms(instance, options);
+
     tsp_instance_free(instance);
-    free_cmd_option(cmd_options);
+    cmd_options_free(options);
     return 0;
 }

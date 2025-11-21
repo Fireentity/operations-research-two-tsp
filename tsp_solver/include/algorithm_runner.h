@@ -1,7 +1,7 @@
 #ifndef ALGORITHM_RUNNER_H
 #define ALGORITHM_RUNNER_H
 
-#include "cmd_options.h"
+#include "cmd_option/cmd_options.h"
 #include "tsp_instance.h"
 
 /**
