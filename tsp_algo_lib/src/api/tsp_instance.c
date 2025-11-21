@@ -57,7 +57,7 @@ TspError tsp_instance_load_from_file(const char *path, TspInstance **out_instanc
     return TSP_OK;
 }
 
-void tsp_instance_free(TspInstance *instance) {
+void tsp_instance_destroy(TspInstance *instance) {
     if (!instance) return;
     free(instance->nodes);
     free(instance->edge_cost_array);

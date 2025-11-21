@@ -50,8 +50,8 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     time_limiter->start(time_limiter);
 
     int current_tour[number_of_nodes + 1];
-    solution->get_tour_copy(solution, current_tour);
-    double current_cost = solution->get_cost(solution);
+    tsp_solution_get_tour(solution, current_tour);
+    double current_cost = tsp_solution_get_cost(solution);
 
     if_verbose(VERBOSE_DEBUG, "  VNS: Running initial 2-Opt...\n");
     current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
@@ -82,7 +82,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
         if_verbose(VERBOSE_DEBUG, "  VNS: Improvement loop stopped due to time limit.\n");
     }
 
-    solution->update_if_better(solution, best_tour, best_cost);
+    tsp_solution_update_if_better(solution, best_tour, best_cost);
 
     if_verbose(VERBOSE_DEBUG, "  VNS: Cleaning up time limiter.\n");
     time_limiter->free(time_limiter);
@@ -98,7 +98,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 
     int initial_tour[number_of_nodes + 1];
     double initial_cost;
-    solution->get_tour_copy(solution, initial_tour);
+    tsp_solution_get_tour(solution, initial_tour);
 
     if_verbose(VERBOSE_DEBUG, "  VNS: Generating initial solution via Nearest Neighbor...\n");
     const int result = nearest_neighbor_tour(rand() % number_of_nodes, initial_tour, number_of_nodes, edge_cost_array,
@@ -109,7 +109,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
         return; // Exit if NN tour failed
     }
 
-    solution->update_if_better(solution, initial_tour, initial_cost);
+    tsp_solution_update_if_better(solution, initial_tour, initial_cost);
     if_verbose(VERBOSE_DEBUG, "  VNS: Initial solution cost: %lf\n", initial_cost);
 
     improve(tsp_algorithm, instance, solution, plotter);

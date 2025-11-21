@@ -32,15 +32,15 @@ static void execute_and_report(const TspAlgorithm* algorithm,
     const CostsPlotter* plotter = init_plotter(tsp_instance_get_num_nodes(instance));
 
     if_verbose(VERBOSE_DEBUG, "  Initializing solution for %s...\n", algorithm_name);
-    const TspSolution* solution = init_solution(instance);
+    TspSolution* solution = tsp_solution_create(instance);
 
     if_verbose(VERBOSE_DEBUG, "  Calling solve() for %s...\n", algorithm_name);
-    solution->solve(solution, algorithm, plotter);
+    tsp_solution_solve(solution, algorithm, plotter);
 
     if_verbose(VERBOSE_DEBUG, "  Plotting tour to %s.\n", plot_file);
     const int nr_nodes = tsp_instance_get_num_nodes(instance);
     int tour_buffer[nr_nodes + 1];
-    solution->get_tour_copy(solution, tour_buffer);
+    tsp_solution_get_tour(solution, tour_buffer);
     plot_tour(tour_buffer,
               tsp_instance_get_num_nodes(instance),
               tsp_instance_get_nodes(instance),
@@ -49,11 +49,11 @@ static void execute_and_report(const TspAlgorithm* algorithm,
     if_verbose(VERBOSE_DEBUG, "  Plotting costs to %s.\n", costs_file);
     plotter->plot(plotter, costs_file);
 
-    if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algorithm_name, solution->get_cost(solution));
+    if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algorithm_name, tsp_solution_get_cost(solution));
 
     // Resources created in this function are freed here
     if_verbose(VERBOSE_DEBUG, "  Freeing solution for %s.\n", algorithm_name);
-    solution->free(solution);
+    tsp_solution_destroy(solution);
 
     if_verbose(VERBOSE_DEBUG, "  Freeing plotter for %s.\n", algorithm_name);
     plotter->free(plotter);

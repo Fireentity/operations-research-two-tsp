@@ -69,7 +69,7 @@ typedef struct {
 
 CmdOptions *cmd_options_create_defaults(void);
 
-void cmd_options_free(CmdOptions *options);
+void cmd_options_destroy(CmdOptions *options);
 
 const ParsingResult *cmd_options_load(CmdOptions *options, int argc, const char **argv);
 

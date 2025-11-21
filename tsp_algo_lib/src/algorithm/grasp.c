@@ -32,13 +32,13 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     double current_cost;
 
     if_verbose(VERBOSE_DEBUG, "  GRASP: Getting initial tour for local improvement.\n");
-    solution->get_tour_copy(solution, current_tour);
+    tsp_solution_get_tour(solution, current_tour);
 
     int starting_nodes[number_of_nodes];
     memcpy(starting_nodes, current_tour, number_of_nodes * sizeof(int));
     shuffle_int_array(starting_nodes, number_of_nodes);
 
-    double best_cost = solution->get_cost(solution);
+    double best_cost = tsp_solution_get_cost(solution);
     memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
     if_verbose(VERBOSE_DEBUG, "  GRASP: Initial best cost: %lf\n", best_cost);
 
@@ -66,7 +66,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     }
 
     if_verbose(VERBOSE_DEBUG, "  GRASP: Improvement loop finished after %d iterations.\n", iteration);
-    solution->update_if_better(solution, best_tour, best_cost);
+    tsp_solution_update_if_better(solution, best_tour, best_cost);
 
     time_limiter->free(time_limiter);
 }
@@ -81,7 +81,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 
     int initial_tour[number_of_nodes + 1];
     double initial_cost;
-    solution->get_tour_copy(solution, initial_tour);
+    tsp_solution_get_tour(solution, initial_tour);
 
     if_verbose(VERBOSE_DEBUG, "  GRASP: Generating initial solution...\n");
     const int result = grasp_nearest_neighbor_tour(
@@ -99,7 +99,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
         return;
     }
 
-    solution->update_if_better(solution, initial_tour, initial_cost);
+    tsp_solution_update_if_better(solution, initial_tour, initial_cost);
     if_verbose(VERBOSE_DEBUG, "  GRASP: Initial solution cost: %lf\n", initial_cost);
 
     improve(tsp_algorithm, instance, solution, plotter);

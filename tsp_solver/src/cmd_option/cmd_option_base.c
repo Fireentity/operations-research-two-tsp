@@ -61,7 +61,7 @@ CmdOptions *cmd_options_create_defaults(void) {
     return opt;
 }
 
-void cmd_options_free(CmdOptions *opt) {
+void cmd_options_destroy(CmdOptions *opt) {
     if (!opt) return;
 
     free(opt->config_file);

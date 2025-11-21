@@ -13,11 +13,11 @@ int main(const int argc, const char *argv[]) {
 
     if (res->state != PARSE_SUCCESS) {
         if (res->state == PARSE_HELP) {
-            cmd_options_free(options);
+            cmd_options_destroy(options);
             return 0;
         }
         fprintf(stderr, "%s\n", res->error_message);
-        cmd_options_free(options);
+        cmd_options_destroy(options);
         return 1;
     }
 
@@ -56,7 +56,7 @@ int main(const int argc, const char *argv[]) {
         const TspError err = tsp_instance_load_from_file(options->tsp.input_file, &instance);
         if (err != TSP_OK) {
             fprintf(stderr, "Failed to load instance: %s\n", tsp_error_to_string(err));
-            cmd_options_free(options);
+            cmd_options_destroy(options);
             return 1;
         }
     } else {
@@ -73,7 +73,7 @@ int main(const int argc, const char *argv[]) {
 
     run_selected_algorithms(instance, options);
 
-    tsp_instance_free(instance);
-    cmd_options_free(options);
+    tsp_instance_destroy(instance);
+    cmd_options_destroy(options);
     return 0;
 }

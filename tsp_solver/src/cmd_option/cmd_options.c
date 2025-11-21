@@ -39,7 +39,7 @@ static void merge_value(OptType type, void *dst, const void *src) {
             break;
         case OPT_STRING:
             if (*(char **) dst) free(*(char **) dst);
-            *(char **) dst = (*(char * const*) src) ? strdup(*(char * const*) src) : NULL;
+            *(char **) dst = *(char * const*) src ? strdup(*(char * const*) src) : NULL;
             break;
     }
 }
@@ -131,7 +131,7 @@ const ParsingResult *cmd_options_load(CmdOptions *options, const int argc, const
         merge_ini_into_options(options, ini_opt, parser);
 
         // Cleanup temp
-        cmd_options_free(ini_opt);
+        cmd_options_destroy(ini_opt);
     }
 
     // 4. Validation

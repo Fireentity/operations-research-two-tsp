@@ -1,17 +1,16 @@
 #include "grasp_test.h"
 #include "grasp.h"
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "algorithms.h"
-#include "tsp_algorithm.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
 #include "costs_plotter.h"
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "algorithms.h"
 
 #define NUMBER_OF_NODES 3
 
-// --- Dummy Plotter for testing ---
 static void dummy_add_cost(const CostsPlotter* self, double cost)
 {
     (void)self; (void)cost;
@@ -32,67 +31,56 @@ static const CostsPlotter dummy_plotter = {
     .plot = dummy_plot,
     .free = dummy_plot_free,
 };
-// --- End Dummy Plotter ---
 
-static void create_simple_edge_costs(double* edge_costs, const int num_nodes)
+static void create_simple_edge_costs(double* edge_costs, int n)
 {
-    for (int i = 0; i < num_nodes; i++)
-    {
-        for (int j = 0; j < num_nodes; j++)
-        {
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
             if (i != j)
-            {
-                edge_costs[i * num_nodes + j] = (double)(rand() % 100 + 1);
-            }
-        }
-    }
+                edge_costs[i * n + j] = (double)(rand() % 100 + 1);
 }
 
 static void test_grasp_algorithm_basic_case()
 {
-    const TspInstance* instance = init_random_tsp_instance(
-        NUMBER_OF_NODES,
-        42,
-        (TspGenerationArea){
-            .square_side = 100,
-            .x_square = 0,
-            .y_square = 0,
-        });
+    TspInstance* instance =
+        tsp_instance_create_random(
+            NUMBER_OF_NODES,
+            42,
+            (TspGenerationArea){0,0,100}
+        );
 
-    const TspSolution* solution = init_solution(instance);
-    const double time_limit = 60.0;
-    const TspAlgorithm* grasp_algorithm = init_grasp(time_limit,0.30,0.30);
+    TspSolution* sol = tsp_solution_create(instance);
+    const TspAlgorithm* grasp = init_grasp(60.0, 0.30, 0.30);
 
-    grasp_algorithm->solve(grasp_algorithm, instance, solution, &dummy_plotter);
+    tsp_algorithm_solve(grasp, instance, sol, &dummy_plotter);
 
-    const double cost = solution->get_cost(solution);
+    double cost = tsp_solution_get_cost(sol);
     int tour[NUMBER_OF_NODES + 1];
-    solution->get_tour_copy(solution, tour);
+    tsp_solution_get_tour_copy(sol, tour);
 
     assert(tour[0] == tour[NUMBER_OF_NODES]);
     assert(cost > 0);
 
-    grasp_algorithm->free(grasp_algorithm);
-    solution->free(solution);
-    instance->free(instance);
+    grasp->free(grasp);
+    tsp_solution_free(sol);
+    tsp_instance_destroy(instance);
 }
 
-static void test_grasp_nn_helper_invalid_starting_node()
+static void test_grasp_nn_helper_basic_case()
 {
-    const int num_nodes = 5;
+    const int n = 5;
+    double edge_costs[n*n];
+    create_simple_edge_costs(edge_costs, n);
+
+    int tour[n+1];
+    for (int i=0;i<n;i++) tour[i]=i;
+    tour[n] = tour[0];
+
     double cost = 0.0;
-    double edge_costs[num_nodes * num_nodes];
-    create_simple_edge_costs(edge_costs, num_nodes);
 
-    int tour[num_nodes + 1];
-    for(int i = 0; i < num_nodes; i++) tour[i] = i;
-    tour[num_nodes] = tour[0];
+    grasp_nearest_neighbor_tour(0, tour, n, edge_costs, &cost, 0.5, 0.3, 0.2);
 
-    // This test should probably check for a valid case
-    // The original invalid case (10) would exit()
-    grasp_nearest_neighbor_tour(0, tour, num_nodes, edge_costs, &cost, 0.5, 0.3, 0.2);
-
-    assert(tour[0] == tour[num_nodes]);
+    assert(tour[0] == tour[n]);
     assert(cost > 0);
 }
 
@@ -100,6 +88,6 @@ void run_grasp_tests(void)
 {
     printf("--- Running GRASP Algorithm Tests ---\n");
     test_grasp_algorithm_basic_case();
-    test_grasp_nn_helper_invalid_starting_node();
+    test_grasp_nn_helper_basic_case();
     printf("GRASP tests passed.\n");
 }

@@ -65,7 +65,7 @@ TspError tsp_instance_load_from_file(const char *path, TspInstance **out_instanc
 /**
  * @brief Frees all memory associated with the instance.
  */
-void tsp_instance_free(TspInstance *instance);
+void tsp_instance_destroy(TspInstance *instance);
 
 /* --- Accessors --- */
 
