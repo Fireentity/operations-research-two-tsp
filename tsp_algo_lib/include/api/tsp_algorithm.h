@@ -19,13 +19,13 @@ typedef union TspExtendedAlgorithms TspExtendedAlgorithms;
  * @brief Structure representing a TSP algorithm.
  */
 struct TspAlgorithm {
-    TspExtendedAlgorithms* const extended; /**< Pointer to extended algorithms. */
-    void (*const solve)(const TspAlgorithm* tsp_algorithm,
-                        const TspInstance* instance,
-                        const TspSolution* solution,
-                        const CostsPlotter* plotter);
+    TspExtendedAlgorithms *const extended; /**< Pointer to extended algorithms. */
+    void (*const solve)(const TspAlgorithm *tsp_algorithm,
+                        const TspInstance *instance,
+                        const TspSolution *solution,
+                        const CostsPlotter *plotter);
 
-    void (*const free)(const TspAlgorithm* self);
+    void (*const free)(const TspAlgorithm *self);
 };
 
 #endif //TSP_ALGORITHM_H

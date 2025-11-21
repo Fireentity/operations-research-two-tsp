@@ -45,14 +45,14 @@ void str_trim(char *s) {
     if (!s || !*s) return;
 
     const char *start = s;
-    while (*start && isspace((unsigned char)*start))
+    while (*start && isspace((unsigned char) *start))
         start++;
 
     if (start != s)
         memmove(s, start, strlen(start) + 1);
 
     size_t len = strlen(s);
-    while (len > 0 && isspace((unsigned char)s[len - 1])) {
+    while (len > 0 && isspace((unsigned char) s[len - 1])) {
         s[len - 1] = 0;
         len--;
     }

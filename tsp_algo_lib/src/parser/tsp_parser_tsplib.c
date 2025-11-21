@@ -10,7 +10,7 @@ static int parse_strict_int(const char *s, int *out) {
     char *end;
     const long v = strtol(s, &end, 10);
     if (end == s) return 0;
-    while (isspace((unsigned char)*end)) end++;
+    while (isspace((unsigned char) *end)) end++;
     if (*end != '\0') return 0;
     if (v < 1 || v > INT_MAX) return 0;
     *out = (int) v;
@@ -29,7 +29,7 @@ TspError tsp_parse_tsplib(const char *path, Node **out_nodes, int *out_n) {
 
     while (fgets(line, sizeof(line), f)) {
         char *p = line;
-        while (isspace((unsigned char)*p)) p++;
+        while (isspace((unsigned char) *p)) p++;
         if (!*p) continue;
 
         if (!reading) {

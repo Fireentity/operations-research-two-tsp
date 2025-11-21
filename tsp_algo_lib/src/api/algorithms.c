@@ -10,10 +10,10 @@
 /**
  * @brief Performs a 2-opt optimization on a given tour (First Improvement Type).
  */
-inline double two_opt(int* tour,
+inline double two_opt(int *tour,
                       const int number_of_nodes,
-                      const double* edge_cost_array,
-                      const TimeLimiter* time_limiter,
+                      const double *edge_cost_array,
+                      const TimeLimiter *time_limiter,
                       const double epsilon) {
     double cost_improvement = 0;
     bool improved = true;
@@ -37,9 +37,9 @@ inline double two_opt(int* tour,
                 const int d = tour[j + 1];
 
                 const double delta = edge_cost_array[a * number_of_nodes + c] +
-                    edge_cost_array[b * number_of_nodes + d] -
-                    (edge_cost_array[a * number_of_nodes + b] +
-                        edge_cost_array[c * number_of_nodes + d]);
+                                     edge_cost_array[b * number_of_nodes + d] -
+                                     (edge_cost_array[a * number_of_nodes + b] +
+                                      edge_cost_array[c * number_of_nodes + d]);
 
                 if (delta < -epsilon) {
                     cost_improvement += delta;
@@ -62,10 +62,10 @@ inline double two_opt(int* tour,
  * @brief Generates a nearest neighbor tour starting from a given node.
  */
 int nearest_neighbor_tour(const int starting_node,
-                          int* tour,
+                          int *tour,
                           const int number_of_nodes,
-                          const double* edge_cost_array,
-                          double* cost) {
+                          const double *edge_cost_array,
+                          double *cost) {
     // Corrected bounds check
     if (starting_node < 0 || starting_node >= number_of_nodes) {
         if_verbose(VERBOSE_INFO, "[ERROR] NN: Starting node (%d) is out of bounds [0, %d).\n",
@@ -114,10 +114,10 @@ int nearest_neighbor_tour(const int starting_node,
  * @brief Generates a tour using a modified nearest neighbor approach with probabilistic selection.
  */
 int grasp_nearest_neighbor_tour(const int starting_node,
-                                int* tour,
+                                int *tour,
                                 const int number_of_nodes,
-                                const double* edge_cost_array,
-                                double* cost,
+                                const double *edge_cost_array,
+                                double *cost,
                                 const double p1,
                                 const double p2,
                                 const double p3) {
@@ -222,10 +222,10 @@ int grasp_nearest_neighbor_tour(const int starting_node,
 }
 
 int grasp_nearest_neighbor_tour_threshold(const int starting_node,
-                                          int* tour,
+                                          int *tour,
                                           const int number_of_nodes,
-                                          const double* edge_cost_array,
-                                          double* cost,
+                                          const double *edge_cost_array,
+                                          double *cost,
                                           const double alpha) {
     if (starting_node < 0 || starting_node >= number_of_nodes) {
         if_verbose(VERBOSE_INFO,
@@ -251,14 +251,13 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
     tour[number_of_nodes] = tour[0];
 
     // RCL allocation
-    int* rcl = malloc(number_of_nodes * sizeof(int));
+    int *rcl = malloc(number_of_nodes * sizeof(int));
     check_alloc(rcl);
 
     // clamp alpha
     const double effective_alpha = fmax(0.0, fmin(1.0, alpha));
 
     while (visited_count < number_of_nodes) {
-
         double min_cost = DBL_MAX;
         double max_cost = -DBL_MAX;
 
@@ -285,13 +284,13 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
         for (int i = visited_count; i < number_of_nodes; i++) {
             const int candidate = tour[i];
             const double dist =
-                edge_cost_array[current_node * number_of_nodes + candidate];
+                    edge_cost_array[current_node * number_of_nodes + candidate];
             if (dist <= threshold + EPSILON)
                 rcl[rcl_size++] = i;
         }
 
         // random pick
-        const int chosen_index = rcl[(int)(normalized_rand() * rcl_size)];
+        const int chosen_index = rcl[(int) (normalized_rand() * rcl_size)];
 
         if_verbose(VERBOSE_DEBUG,
                    "      GRASP-Threshold: Chose node %d (RCL size %d).\n",

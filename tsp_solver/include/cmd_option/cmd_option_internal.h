@@ -6,8 +6,8 @@
 
 /* Internal functions used by cmd_options.c */
 
-FlagParser* cmd_options_build_cli_parser(CmdOptions* opt);
+FlagParser *cmd_options_build_cli_parser(CmdOptions * opt);
 
-void cmd_options_parse_ini_file(CmdOptions* dest, const char* filename);
+void cmd_options_parse_ini_file(CmdOptions *dest, const char *filename);
 
 #endif // CMD_OPTIONS_INTERNAL_H

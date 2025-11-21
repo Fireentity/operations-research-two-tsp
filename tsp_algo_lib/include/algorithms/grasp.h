@@ -2,8 +2,7 @@
 #define GRASP_H
 #include "tsp_algorithm.h"
 
-typedef struct
-{
+typedef struct {
     const double time_limit;
     const double p1;
     const double p2;
@@ -18,5 +17,5 @@ typedef struct
  * @param p2
  * @return A pointer to an initialized TspAlgorithm structure.
  */
-const TspAlgorithm* init_grasp(double time_limit, double p1, double p2);
+const TspAlgorithm *init_grasp(double time_limit, double p1, double p2);
 #endif //GRASP_H

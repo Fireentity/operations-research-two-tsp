@@ -21,7 +21,7 @@ typedef enum {
  */
 typedef struct {
     const ParsingResultState state;
-    const char* error_message;
+    const char *error_message;
 } ParsingResult;
 
 /*
@@ -34,44 +34,44 @@ typedef struct {
 /**
  * @brief Returned on successful parsing.
  */
-extern const ParsingResult* SUCCESS;
+extern const ParsingResult *SUCCESS;
 
 /**
  * @brief Returned on help parsing found.
  */
-extern const ParsingResult* HELP;
+extern const ParsingResult *HELP;
 
 /**
  * @brief Returned when an argument is not recognized (e.g., "--foo").
  */
-extern const ParsingResult* UNKNOWN_ARG;
+extern const ParsingResult *UNKNOWN_ARG;
 
 /**
  * @brief Returned when a flag expects a value but none is given
  * (e.g., "--nodes" followed by nothing).
  */
-extern const ParsingResult* MISSING_VALUE;
+extern const ParsingResult *MISSING_VALUE;
 
 /**
  * @brief Returned when a flag gets a value of the wrong type
  * (e.g., "--nodes abc").
  */
-extern const ParsingResult* WRONG_VALUE_TYPE;
+extern const ParsingResult *WRONG_VALUE_TYPE;
 
 /**
  * @brief Returned for invalid usage (e.g., repeating a mandatory flag).
  */
-extern const ParsingResult* USAGE_ERROR;
+extern const ParsingResult *USAGE_ERROR;
 
 /**
  * @brief Returned by the final validation step if a mandatory flag was not found.
  */
-extern const ParsingResult* MISSING_MANDATORY_FLAG;
+extern const ParsingResult *MISSING_MANDATORY_FLAG;
 
 /**
  * @brief Returned by the final validation step if a mandatory flag was not found.
  */
-extern const ParsingResult* INTERNAL_ERROR;
+extern const ParsingResult *INTERNAL_ERROR;
 
 
 #endif // PARSING_RESULT_H

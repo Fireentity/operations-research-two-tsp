@@ -11,30 +11,30 @@
 #include "logger.h"
 
 union TspExtendedAlgorithms {
-    NearestNeighbor* nearest_neighbor;
+    NearestNeighbor *nearest_neighbor;
 };
 
-static void free_this(const TspAlgorithm* self) {
+static void free_this(const TspAlgorithm *self) {
     if (!self) return;
     if_verbose(VERBOSE_DEBUG, "Freeing NN algorithm struct...\n");
     if (self->extended) {
         if (self->extended->nearest_neighbor) free(self->extended->nearest_neighbor);
         free(self->extended);
     }
-    free((void*)self);
+    free((void *) self);
 }
 
-static void improve(const TspAlgorithm* tsp_algorithm,
-                    const TspInstance* instance,
-                    const TspSolution* solution,
-                    const CostsPlotter* plotter) {
+static void improve(const TspAlgorithm *tsp_algorithm,
+                    const TspInstance *instance,
+                    const TspSolution *solution,
+                    const CostsPlotter *plotter) {
     if_verbose(VERBOSE_DEBUG, "  NN: Starting improvement loop (multi-start NN + 2-Opt)...\n");
     const int number_of_nodes = tsp_instance_get_num_nodes(instance);
-    const double* edge_cost_array = tsp_instance_get_cost_matrix(instance);
+    const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
 
     const double time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
     if_verbose(VERBOSE_DEBUG, "  NN: Time limit set to %.2fs.\n", time_limit);
-    TimeLimiter* time_limiter = time_limiter_create(time_limit);
+    TimeLimiter *time_limiter = time_limiter_create(time_limit);
     time_limiter_start(time_limiter);
 
     int current_tour[number_of_nodes + 1];
@@ -65,7 +65,7 @@ static void improve(const TspAlgorithm* tsp_algorithm,
         }
 
         current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
-        plotter->add_cost(plotter, current_cost);
+        costs_plotter_add(plotter, current_cost);
 
         if (current_cost < best_cost - EPSILON) {
             best_cost = current_cost;
@@ -81,13 +81,13 @@ static void improve(const TspAlgorithm* tsp_algorithm,
     time_limiter_destroy(time_limiter);
 }
 
-static void solve(const TspAlgorithm* tsp_algorithm,
-                  const TspInstance* instance,
-                  const TspSolution* solution,
-                  const CostsPlotter* plotter) {
+static void solve(const TspAlgorithm *tsp_algorithm,
+                  const TspInstance *instance,
+                  const TspSolution *solution,
+                  const CostsPlotter *plotter) {
     if_verbose(VERBOSE_INFO, "Running Nearest Neighbor algorithm...\n");
     const int number_of_nodes = tsp_instance_get_num_nodes(instance);
-    const double* edge_cost_array = tsp_instance_get_cost_matrix(instance);
+    const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
 
     int initial_tour[number_of_nodes + 1];
     double initial_cost;
@@ -109,7 +109,7 @@ static void solve(const TspAlgorithm* tsp_algorithm,
 }
 
 
-const TspAlgorithm* init_nearest_neighbor(const double time_limit) {
+const TspAlgorithm *init_nearest_neighbor(const double time_limit) {
     if_verbose(VERBOSE_DEBUG, "Initializing NN (t=%.2f)\n", time_limit);
     const NearestNeighbor nearest_neighbor = {
         .time_limit = time_limit,

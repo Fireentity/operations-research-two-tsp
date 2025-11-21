@@ -4,12 +4,12 @@
 #include <limits.h>
 #include <string.h>
 
-const ParsingResult* parse_string(const char* s, char** dest) {
+const ParsingResult *parse_string(const char *s, char **dest) {
     if (s == NULL) {
         *dest = NULL;
         return SUCCESS;
     }
-    char* tmp = strdup(s);
+    char *tmp = strdup(s);
     if (tmp == NULL) {
         return INTERNAL_ERROR;
     }
@@ -19,8 +19,8 @@ const ParsingResult* parse_string(const char* s, char** dest) {
     return SUCCESS;
 }
 
-const ParsingResult* parse_int(const char* s, int* dest) {
-    char* endptr;
+const ParsingResult *parse_int(const char *s, int *dest) {
+    char *endptr;
     errno = 0;
 
     const long val = strtol(s, &endptr, 10);
@@ -45,12 +45,12 @@ const ParsingResult* parse_int(const char* s, int* dest) {
         return WRONG_VALUE_TYPE;
     }
 
-    *dest = (int)val;
+    *dest = (int) val;
     return SUCCESS;
 }
 
-const ParsingResult* parse_uint(const char* s, unsigned int* dest) {
-    char* endptr;
+const ParsingResult *parse_uint(const char *s, unsigned int *dest) {
+    char *endptr;
 
     // strtoul allows a negative sign, so we must check for it manually
     if (s[0] == '-') {
@@ -76,12 +76,12 @@ const ParsingResult* parse_uint(const char* s, unsigned int* dest) {
         return WRONG_VALUE_TYPE;
     }
 
-    *dest = (unsigned int)val;
+    *dest = (unsigned int) val;
     return SUCCESS;
 }
 
-const ParsingResult* parse_float(const char* s, float* dest) {
-    char* endptr;
+const ParsingResult *parse_float(const char *s, float *dest) {
+    char *endptr;
     errno = 0;
 
     const double val = strtod(s, &endptr);
@@ -98,13 +98,13 @@ const ParsingResult* parse_float(const char* s, float* dest) {
         return WRONG_VALUE_TYPE;
     }
 
-    *dest = (float)val;
+    *dest = (float) val;
     return SUCCESS;
 }
 
-const ParsingResult* parse_ufloat(const char* s, float* dest) {
+const ParsingResult *parse_ufloat(const char *s, float *dest) {
     // Reuse the float parser
-    const ParsingResult* tmp = parse_float(s, dest);
+    const ParsingResult *tmp = parse_float(s, dest);
     if (tmp != SUCCESS) {
         return tmp;
     }

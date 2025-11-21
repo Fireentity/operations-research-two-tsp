@@ -17,6 +17,6 @@ typedef enum {
  * @param result The feasibility result.
  * @return A string corresponding to the feasibility result.
  */
-const char* feasibility_result_to_string(FeasibilityResult result);
+const char *feasibility_result_to_string(FeasibilityResult result);
 
 #endif //FEASIBILITY_RESULT_H

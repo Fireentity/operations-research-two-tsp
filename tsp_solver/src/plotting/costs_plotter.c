@@ -1,61 +1,65 @@
-#include "algorithm_plotter.h"
 #include "costs_plotter.h"
+#include "plot_util.h"
+#include "c_util.h"    // check_alloc
+#include "logger.h"    // if_verbose
 #include <stdlib.h>
-#include "c_util.h"
-#include "../../include/plotting/plot_util.h"
 
-struct PlotterState {
-    int index; // index of the lowermost free cell
-    int capacity;
+// Flattened struct: no "State" indirection needed
+struct CostsPlotter {
     double *costs;
-
-    void (*const free)(PlotterState *self);
+    int count;
+    int capacity;
 };
 
+CostsPlotter *costs_plotter_create(int initial_capacity) {
+    if (initial_capacity <= 0) initial_capacity = 100; // Safe default
 
-static void free_costs_plotter(const CostsPlotter *self) {
-    if (!self) return;
-    if (self->state) {
-        self->state->free(self->state);
+    CostsPlotter *plotter = malloc(sizeof(CostsPlotter));
+    check_alloc(plotter);
+
+    plotter->costs = malloc(initial_capacity * sizeof(double));
+    check_alloc(plotter->costs);
+
+    plotter->capacity = initial_capacity;
+    plotter->count = 0;
+
+    return plotter;
+}
+
+void costs_plotter_destroy(CostsPlotter *plotter) {
+    if (!plotter) return;
+
+    if (plotter->costs) {
+        free(plotter->costs);
     }
-    free((void*)self);
+    free(plotter);
 }
 
-static void free_plotter_state(PlotterState *self) {
-    if (!self) return;
-    if (self->costs) {
-        free(self->costs);
+void costs_plotter_add(CostsPlotter *plotter, double cost) {
+    if (!plotter) return;
+
+    // Resize strategy: Double capacity when full
+    if (plotter->count >= plotter->capacity) {
+        int new_capacity = plotter->capacity * 2;
+        double *new_costs = realloc(plotter->costs, new_capacity * sizeof(double));
+        check_alloc(new_costs);
+
+        plotter->costs = new_costs;
+        plotter->capacity = new_capacity;
     }
-    free(self);
+
+    plotter->costs[plotter->count++] = cost;
 }
 
-static void add_cost(const CostsPlotter *self, const double cost) {
-    if (self->state->index >= self->state->capacity) {
-        self->state->capacity *= 2;
-        self->state->costs = realloc(self->state->costs, sizeof(double) * self->state->capacity);
-        check_alloc(self->state->costs);
+void costs_plotter_plot(const CostsPlotter *plotter, const char *filename) {
+    if (!plotter || plotter->count == 0) {
+        if_verbose(VERBOSE_DEBUG, "Skipping plot '%s': no data.\n", filename ? filename : "(null)");
+        return;
     }
-    self->state->costs[self->state->index++] = cost;
-}
 
-static void plot_costs(const CostsPlotter *self, const char *file_name) {
-    plot_costs_evolution(self->state->costs, self->state->index, file_name);
-}
+    if_verbose(VERBOSE_DEBUG, "Plotting cost evolution (%d points) to '%s'...\n",
+               plotter->count, filename);
 
-CostsPlotter *init_plotter(const int capacity) {
-    double *costs = malloc(sizeof(double) * capacity);
-    check_alloc(costs);
-    const PlotterState state = {
-        .capacity = capacity,
-        .costs = costs,
-        .index = 0,
-        .free = free_plotter_state
-    };
-    const CostsPlotter stack = {
-        .state = memdup(&state, sizeof(state)),
-        .free = free_costs_plotter,
-        .add_cost = add_cost,
-        .plot = plot_costs
-    };
-    return memdup(&stack, sizeof(stack));
+    // Delegate to the low-level utility
+    plot_costs_evolution(plotter->costs, plotter->count, filename);
 }

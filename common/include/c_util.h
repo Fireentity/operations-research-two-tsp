@@ -9,7 +9,7 @@
 /* public utility functions implemented in c_util.c */
 void check_alloc(const void *ptr);
 
-void check_popen(FILE *gp);
+void check_popen(FILE * gp);
 
 void check_pclose(int status);
 

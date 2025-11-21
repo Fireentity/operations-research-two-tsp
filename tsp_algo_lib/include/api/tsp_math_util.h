@@ -12,7 +12,7 @@
  * @param edge_cost_array Array containing the cost for each edge.
  * @return Total cost of the tour.
  */
-double calculate_tour_cost(const int* tour, int number_of_nodes, const double* edge_cost_array);
+double calculate_tour_cost(const int *tour, int number_of_nodes, const double *edge_cost_array);
 
 /**
  * @brief Generates a normalized random number.
@@ -32,7 +32,7 @@ double normalized_rand();
  * @param number_of_nodes Number of nodes.
  * @return Pointer to the newly allocated edge cost array.
  */
-double* init_edge_cost_array(const Node* nodes, int number_of_nodes);
+double *init_edge_cost_array(const Node *nodes, int number_of_nodes);
 
 /**
  * @brief Computes the cost change (delta) for a special n-opt move configuration
@@ -58,7 +58,7 @@ double* init_edge_cost_array(const Node* nodes, int number_of_nodes);
  */
 double compute_n_opt_cost(int number_of_segments,
                           int tour[],
-                          const int* edges_to_remove,
+                          const int *edges_to_remove,
                           const double edge_cost_array[],
                           int number_of_nodes);
 
@@ -84,7 +84,7 @@ double compute_n_opt_cost(int number_of_segments,
  */
 void compute_n_opt_move(int number_of_edges_to_remove,
                         int tour[],
-                        const int* edges_to_remove,
+                        const int *edges_to_remove,
                         int number_of_nodes);
 
 #endif //MATH_UTIL_H

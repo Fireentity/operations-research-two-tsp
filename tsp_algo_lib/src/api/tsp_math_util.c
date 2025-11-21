@@ -4,9 +4,9 @@
 #include "tsp_instance.h"
 #include "logger.h" // Include the logger
 
-double calculate_tour_cost(const int* const tour,
+double calculate_tour_cost(const int *const tour,
                            const int number_of_nodes,
-                           const double* const edge_cost_array) {
+                           const double *const edge_cost_array) {
     double cost = 0;
     // --- NO LOGGING HERE ---
     // This function is performance-critical and called in tight loops.
@@ -17,14 +17,14 @@ double calculate_tour_cost(const int* const tour,
 }
 
 double normalized_rand() {
-    return (double)rand() / RAND_MAX;
+    return (double) rand() / RAND_MAX;
 }
 
-double* init_edge_cost_array(const Node* nodes, const int number_of_nodes) {
+double *init_edge_cost_array(const Node *nodes, const int number_of_nodes) {
     if_verbose(VERBOSE_DEBUG, "    Allocating edge cost array for %d nodes (%lu bytes).\n",
-               number_of_nodes, (unsigned long)(number_of_nodes * number_of_nodes * sizeof(double)));
+               number_of_nodes, (unsigned long) (number_of_nodes * number_of_nodes * sizeof(double)));
 
-    double* const edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));
+    double *const edge_cost_array = calloc(number_of_nodes * number_of_nodes, sizeof(double));
     check_alloc(edge_cost_array);
     const double edge_array_size = number_of_nodes * number_of_nodes;
 
@@ -44,10 +44,9 @@ double* init_edge_cost_array(const Node* nodes, const int number_of_nodes) {
 
 double compute_n_opt_cost(const int number_of_segments,
                           const int tour[],
-                          const int* edges_to_remove,
+                          const int *edges_to_remove,
                           const double edge_cost_array[],
                           const int number_of_nodes) {
-
     if_verbose(VERBOSE_ALL, "      Calculating %d-Opt cost delta...\n", number_of_segments);
     double delta = 0.0;
     int u, v; // To store node IDs
@@ -94,9 +93,8 @@ double compute_n_opt_cost(const int number_of_segments,
 
 void compute_n_opt_move(const int number_of_edges_to_remove,
                         int tour[],
-                        const int* edges_to_remove,
+                        const int *edges_to_remove,
                         const int number_of_nodes) {
-
     if_verbose(VERBOSE_ALL, "      Performing %d-Opt move...\n", number_of_edges_to_remove);
     // This logic assumes edges_to_remove is sorted ascendingly
     for (int i = 0; i < number_of_edges_to_remove - 1; i++) {

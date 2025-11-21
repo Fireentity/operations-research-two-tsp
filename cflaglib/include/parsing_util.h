@@ -13,7 +13,7 @@
  * of the newly allocated copy.
  * @return SUCCESS on success, or INTERNAL_ERROR on allocation failure.
  */
-const ParsingResult* parse_string(const char* s, char** dest);
+const ParsingResult *parse_string(const char *s, char **dest);
 
 /**
  * @brief Safely parses a string into an integer.
@@ -23,7 +23,7 @@ const ParsingResult* parse_string(const char* s, char** dest);
  * @param dest A pointer to the integer to write the result to.
  * @return SUCCESS on success, or WRONG_VALUE_TYPE on failure.
  */
-const ParsingResult* parse_int(const char* s, int* dest);
+const ParsingResult *parse_int(const char *s, int *dest);
 
 /**
  * @brief Safely parses a string into an unsigned integer.
@@ -33,7 +33,7 @@ const ParsingResult* parse_int(const char* s, int* dest);
  * @param dest A pointer to the unsigned int to write the result to.
  * @return SUCCESS on success, or WRONG_VALUE_TYPE on failure.
  */
-const ParsingResult* parse_uint(const char* s, unsigned int* dest);
+const ParsingResult *parse_uint(const char *s, unsigned int *dest);
 
 /**
  * @brief Safely parses a string into a float.
@@ -43,7 +43,7 @@ const ParsingResult* parse_uint(const char* s, unsigned int* dest);
  * @param dest A pointer to the float to write the result to.
  * @return SUCCESS on success, or WRONG_VALUE_TYPE on failure.
  */
-const ParsingResult* parse_float(const char* s, float* dest);
+const ParsingResult *parse_float(const char *s, float *dest);
 
 /**
  * @brief Safely parses a string into an unsigned (non-negative) float.
@@ -53,7 +53,7 @@ const ParsingResult* parse_float(const char* s, float* dest);
  * @param dest A pointer to the float to write the result to.
  * @return SUCCESS on success, or WRONG_VALUE_TYPE on failure.
  */
-const ParsingResult* parse_ufloat(const char* s, float* dest);
+const ParsingResult *parse_ufloat(const char *s, float *dest);
 
 
 #endif // PARSING_UTIL_H

@@ -1,12 +1,12 @@
 #ifndef TABU_SEARCH_H
 #define TABU_SEARCH_H
 #include <tsp_algorithm.h>
-typedef struct
-{
+
+typedef struct {
     const int tenure;
     const int max_stagnation;
     const double time_limit;
-    struct hashmap* tabu_map;
+    struct hashmap *tabu_map;
 } TabuSearch;
 
 /**
@@ -17,5 +17,5 @@ typedef struct
  * @param time_limit The maximum time allowed for the search.
  * @return A pointer to an initialized TspAlgorithm structure.
  */
-const TspAlgorithm* init_tabu(int tenure, int max_stagnation, double time_limit);
+const TspAlgorithm *init_tabu(int tenure, int max_stagnation, double time_limit);
 #endif //TABU_SEARCH_H

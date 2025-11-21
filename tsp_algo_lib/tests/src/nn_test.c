@@ -8,9 +8,17 @@
 
 #define NUMBER_OF_NODES 10
 
-static void dummy_add_cost(const CostsPlotter* self, double cost) { (void)self; (void)cost; }
-static void dummy_plot(const CostsPlotter* self, const char* file_name) { (void)self; (void)file_name; }
-static void dummy_plot_free(const CostsPlotter* self) { (void)self; }
+static void dummy_add_cost(const CostsPlotter *self, double cost) {
+    (void) self;
+    (void) cost;
+}
+
+static void dummy_plot(const CostsPlotter *self, const char *file_name) {
+    (void) self;
+    (void) file_name;
+}
+
+static void dummy_plot_free(const CostsPlotter *self) { (void) self; }
 
 static const CostsPlotter dummy_plotter = {
     .add_cost = dummy_add_cost,
@@ -18,22 +26,27 @@ static const CostsPlotter dummy_plotter = {
     .free = dummy_plot_free,
 };
 
-void run_nn_tests(void)
-{
+void run_nn_tests(void) {
     printf("--- Running NN Algorithm Tests ---\n");
-    const TspInstance* instance = init_random_tsp_instance(
+    const TspInstance *instance = init_random_tsp_instance(
         NUMBER_OF_NODES,
         42,
-        (TspGenerationArea){
-            .square_side = 100,
-            .x_square = 0,
-            .y_square = 0,
-        });
+        (TspGenerationArea)
+    {
+        .
+        square_side = 100,
+        .
+        x_square = 0,
+        .
+        y_square = 0,
+    }
+    )
+    ;
 
-    const TspSolution* solution = init_solution(instance);
+    const TspSolution *solution = init_solution(instance);
     const double time_limit = 1.0;
 
-    const TspAlgorithm* nn_algorithm = init_nearest_neighbor(time_limit);
+    const TspAlgorithm *nn_algorithm = init_nearest_neighbor(time_limit);
 
     nn_algorithm->solve(nn_algorithm, instance, solution, &dummy_plotter);
 

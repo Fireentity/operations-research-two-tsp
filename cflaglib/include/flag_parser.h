@@ -28,12 +28,12 @@ typedef struct FlagParser FlagParser;
  * that will be populated.
  * @return A pointer to the new FlagParser, or NULL on error.
  */
-FlagParser* flag_parser_new(void* options_struct);
+FlagParser *flag_parser_new(void *options_struct);
 
 /**
  * @brief Frees all memory associated with the FlagParser.
  */
-void flag_parser_free(FlagParser* parser);
+void flag_parser_free(FlagParser *parser);
 
 /**
  * @brief Registers a BOOLEAN (switch) flag.
@@ -46,11 +46,11 @@ void flag_parser_free(FlagParser* parser);
  * @param destination A pointer to the bool variable (bool*).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_bool(FlagParser* parser,
-                          const char* name,
-                          const char* short_name,
-                          const char* description,
-                          bool* destination,
+void flag_parser_add_bool(FlagParser *parser,
+                          const char *name,
+                          const char *short_name,
+                          const char *description,
+                          bool *destination,
                           int properties);
 
 /**
@@ -64,11 +64,11 @@ void flag_parser_add_bool(FlagParser* parser,
  * @param destination A pointer to the int variable (int*).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_int(FlagParser* parser,
-                         const char* name,
-                         const char* short_name,
-                         const char* description,
-                         int* destination,
+void flag_parser_add_int(FlagParser *parser,
+                         const char *name,
+                         const char *short_name,
+                         const char *description,
+                         int *destination,
                          int properties);
 
 /**
@@ -82,11 +82,11 @@ void flag_parser_add_int(FlagParser* parser,
  * @param destination A pointer to the unsigned int variable (unsigned int*).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_uint(FlagParser* parser,
-                          const char* name,
-                          const char* short_name,
-                          const char* description,
-                          unsigned int* destination,
+void flag_parser_add_uint(FlagParser *parser,
+                          const char *name,
+                          const char *short_name,
+                          const char *description,
+                          unsigned int *destination,
                           int properties);
 
 /**
@@ -99,12 +99,13 @@ void flag_parser_add_uint(FlagParser* parser,
  * @param destination A pointer to the float variable (float*).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_float(FlagParser* parser,
-                           const char* name,
-                           const char* short_name,
-                           const char* description,
-                           float* destination,
+void flag_parser_add_float(FlagParser *parser,
+                           const char *name,
+                           const char *short_name,
+                           const char *description,
+                           float *destination,
                            int properties);
+
 /**
  * @brief Registers a FLOAT flag (that must be >= 0).
  *
@@ -115,11 +116,11 @@ void flag_parser_add_float(FlagParser* parser,
  * @param destination A pointer to the float variable (float*).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_ufloat(FlagParser* parser,
-                            const char* name,
-                            const char* short_name,
-                            const char* description,
-                            float* destination,
+void flag_parser_add_ufloat(FlagParser *parser,
+                            const char *name,
+                            const char *short_name,
+                            const char *description,
+                            float *destination,
                             int properties);
 
 /**
@@ -132,11 +133,11 @@ void flag_parser_add_ufloat(FlagParser* parser,
  * @param destination A pointer to the string variable (const char**).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_string(FlagParser* parser,
-                            const char* name,
-                            const char* short_name,
-                            const char* description,
-                            const char** destination,
+void flag_parser_add_string(FlagParser *parser,
+                            const char *name,
+                            const char *short_name,
+                            const char *description,
+                            const char **destination,
                             int properties);
 
 /**
@@ -149,11 +150,11 @@ void flag_parser_add_string(FlagParser* parser,
  * @param destination A pointer to the string variable (const char**).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_string_owned(FlagParser* parser,
-                                  const char* name,
-                                  const char* short_name,
-                                  const char* description,
-                                  char** destination,
+void flag_parser_add_string_owned(FlagParser *parser,
+                                  const char *name,
+                                  const char *short_name,
+                                  const char *description,
+                                  char **destination,
                                   int properties);
 
 
@@ -169,9 +170,9 @@ void flag_parser_add_string_owned(FlagParser* parser,
  * @return A ParsingResult (e.g., SUCCESS, PARSE_UNKNOWN_ARG,
  * PARSE_WRONG_VALUE_TYPE, PARSE_USAGE_ERROR).
  */
-const ParsingResult* flag_parser_parse(const FlagParser* parser,
+const ParsingResult *flag_parser_parse(const FlagParser *parser,
                                        int argc,
-                                       const char** argv,
+                                       const char **argv,
                                        bool skip_unknowns);
 
 /**
@@ -182,7 +183,7 @@ const ParsingResult* flag_parser_parse(const FlagParser* parser,
  * @param flag_name The name of the flag to mark (e.g., "--nodes").
  * @return 'true' if the flag was found and marked, 'false' otherwise.
  */
-bool flag_parser_mark_visited(const FlagParser* parser, const char* flag_name);
+bool flag_parser_mark_visited(const FlagParser *parser, const char *flag_name);
 
 /**
  * @brief Search if a flag is marked as "visited".
@@ -192,7 +193,7 @@ bool flag_parser_mark_visited(const FlagParser* parser, const char* flag_name);
  * @param flag_name The name of the flag to search for (e.g., "--nodes").
  * @return 'true' if the flag was found, and it's been visited, 'false' otherwise.
  */
-bool flag_parser_is_visited(const FlagParser* parser, const char* flag_name);
+bool flag_parser_is_visited(const FlagParser *parser, const char *flag_name);
 
 /**
  * @brief Checks the final validation state.
@@ -201,13 +202,13 @@ bool flag_parser_is_visited(const FlagParser* parser, const char* flag_name);
  *
  * @return SUCCESS or PARSE_MISSING_MANDATORY_FLAG.
  */
-const ParsingResult* flag_parser_validate(const FlagParser* parser);
+const ParsingResult *flag_parser_validate(const FlagParser *parser);
 
 /**
  * @brief Prints a well-formatted help message.
  * Prints to stdout, using the registered 'description' fields.
  */
-void flag_parser_print_help(const FlagParser* parser);
+void flag_parser_print_help(const FlagParser *parser);
 
 
 #endif // FLAG_PARSER_H

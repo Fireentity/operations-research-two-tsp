@@ -29,7 +29,7 @@ void test_square_reverse_segment() {
     const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
 
     // Precompute distances between nodes.
-    double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
+    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
     // Compute cost difference for the 2-opt move.
     const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
                                             number_of_nodes);
@@ -69,7 +69,7 @@ void test_octagon_multiple_segment_reverse() {
     const int tour_size = sizeof(tour) / sizeof(tour[0]);
     const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
 
-    double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
+    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
     const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
                                             number_of_nodes);
     compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
@@ -104,7 +104,7 @@ void test_hexagon_reverse_segment_case1() {
     const int tour_size = sizeof(tour) / sizeof(tour[0]);
     const int number_of_segments = sizeof(segments) / sizeof(segments[0]);
 
-    double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
+    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
     const double delta = compute_n_opt_cost(number_of_segments, tour, segments, edge_cost_array, number_of_nodes);
     compute_n_opt_move(number_of_segments, tour, segments, number_of_nodes);
     const double delta_result = 2 * sqrt(2) - 2;
@@ -138,7 +138,7 @@ void test_hexagon_reverse_segment_case2() {
     const int tour_size = sizeof(tour) / sizeof(tour[0]);
     const int number_of_segments = sizeof(segments) / sizeof(segments[0]);
 
-    double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
+    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
     const double delta = compute_n_opt_cost(number_of_segments, tour, segments, edge_cost_array, number_of_nodes);
     compute_n_opt_move(number_of_segments, tour, segments, number_of_nodes);
     const double delta_result = 2 * sqrt(2) - 2;
@@ -169,7 +169,7 @@ void test_square_alternate_segment_reverse() {
     const int tour_size = sizeof(tour) / sizeof(tour[0]);
     const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
 
-    double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
+    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
     const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
                                             number_of_nodes);
     compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
@@ -199,7 +199,7 @@ void test_6() {
     const int tour_size = sizeof(tour) / sizeof(tour[0]);
     const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
 
-    double* edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
+    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
     const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
                                             number_of_nodes);
     compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);

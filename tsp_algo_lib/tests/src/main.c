@@ -6,8 +6,7 @@
 #include "ts_test.h"
 #include "nn_test.h"
 
-int main(void)
-{
+int main(void) {
     printf("=== Running All TSP Algorithm Tests ===\n\n");
 
     // Test degli algoritmi principali

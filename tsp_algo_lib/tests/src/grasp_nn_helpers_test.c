@@ -5,12 +5,12 @@
 #include "algorithms.h"
 
 // Helper function to create a simple edge cost matrix for testing
-void create_simple_edge_costs(double* edge_costs, const int num_nodes) {
+void create_simple_edge_costs(double *edge_costs, const int num_nodes) {
     // Creating a simple fully connected matrix with random costs for simplicity
     for (int i = 0; i < num_nodes; i++) {
         for (int j = 0; j < num_nodes; j++) {
             if (i != j) {
-                edge_costs[i * num_nodes + j] = (double)(rand() % 100 + 1); // Random costs between 1 and 100
+                edge_costs[i * num_nodes + j] = (double) (rand() % 100 + 1); // Random costs between 1 and 100
             }
         }
     }

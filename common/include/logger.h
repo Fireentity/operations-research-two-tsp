@@ -29,7 +29,7 @@ unsigned int logger_get_verbosity(void);
  * @brief Internal helper function for printing.
  * Do NOT call directly; use the if_verbose macro.
  */
-static inline void logger_print(const char* fmt, ...) {
+static inline void logger_print(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     vprintf(fmt, args);

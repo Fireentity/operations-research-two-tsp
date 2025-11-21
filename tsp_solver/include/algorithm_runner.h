@@ -11,6 +11,6 @@
  * @param cmd_options The command-line options specifying which
  * algorithms to run and their parameters.
  */
-void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_options);
+void run_selected_algorithms(const TspInstance *instance, const CmdOptions *cmd_options);
 
 #endif // ALGORITHM_RUNNER_H

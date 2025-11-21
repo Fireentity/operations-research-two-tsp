@@ -24,7 +24,7 @@ typedef struct TspSolution TspSolution;
  * @param instance Pointer to the TSP instance.
  * @return Pointer to the new solution.
  */
-TspSolution* tsp_solution_create(const TspInstance* instance);
+TspSolution *tsp_solution_create(const TspInstance *instance);
 
 /**
  * @brief Initializes a TSP solution with a specific tour.
@@ -33,7 +33,7 @@ TspSolution* tsp_solution_create(const TspInstance* instance);
  * @param tour Pointer to the tour array to copy.
  * @return Pointer to the new solution.
  */
-TspSolution* tsp_solution_create_with_tour(const TspInstance* instance, const int* tour);
+TspSolution *tsp_solution_create_with_tour(const TspInstance *instance, const int *tour);
 
 // --- Destructor ---
 
@@ -41,7 +41,7 @@ TspSolution* tsp_solution_create_with_tour(const TspInstance* instance, const in
  * @brief Frees all memory associated with the solution.
  * @param self Pointer to the solution.
  */
-void tsp_solution_destroy(TspSolution* self);
+void tsp_solution_destroy(TspSolution *self);
 
 // --- Core Operations ---
 
@@ -54,9 +54,9 @@ void tsp_solution_destroy(TspSolution* self);
  * @param plotter The plotter for visualization.
  * @return FeasibilityResult indicating if the final solution is valid.
  */
-FeasibilityResult tsp_solution_solve(TspSolution* self,
-                                     const TspAlgorithm* tsp_algorithm,
-                                     const CostsPlotter* plotter);
+FeasibilityResult tsp_solution_solve(TspSolution *self,
+                                     const TspAlgorithm *tsp_algorithm,
+                                     const CostsPlotter *plotter);
 
 /**
  * @brief Checks if the current solution is feasible.
@@ -65,7 +65,7 @@ FeasibilityResult tsp_solution_solve(TspSolution* self,
  * @param self The solution to check.
  * @return FEASIBLE if valid, specific error code otherwise.
  */
-FeasibilityResult tsp_solution_check_feasibility(TspSolution* self);
+FeasibilityResult tsp_solution_check_feasibility(TspSolution *self);
 
 // --- Accessors (Thread-Safe) ---
 
@@ -79,7 +79,7 @@ double tsp_solution_get_cost(TspSolution *self);
  * @param self Pointer to the solution.
  * @param tour_buffer A pre-allocated buffer of size (number_of_nodes + 1).
  */
-void tsp_solution_get_tour(TspSolution *self, int* tour_buffer);
+void tsp_solution_get_tour(TspSolution *self, int *tour_buffer);
 
 /**
  * @brief Atomically updates the solution's tour and cost if the new cost is better.
@@ -89,6 +89,6 @@ void tsp_solution_get_tour(TspSolution *self, int* tour_buffer);
  * @param new_cost The cost of the challenging tour.
  * @return true if the solution was updated, false otherwise.
  */
-bool tsp_solution_update_if_better(TspSolution* self, const int* new_tour, double new_cost);
+bool tsp_solution_update_if_better(TspSolution *self, const int *new_tour, double new_cost);
 
 #endif // TSP_SOLUTION_H

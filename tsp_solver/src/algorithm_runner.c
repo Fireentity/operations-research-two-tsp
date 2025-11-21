@@ -11,28 +11,27 @@
 #include "tsp_solution.h"
 #include "costs_plotter.h"
 #include "../include/plotting/plot_util.h"
-#include "algorithm_plotter.h"
 
 typedef struct {
-    const TspAlgorithm* algorithm;
-    const char* name;
-    const char* plot_file;
-    const char* costs_file;
+    const TspAlgorithm *algorithm;
+    const char *name;
+    const char *plot_file;
+    const char *costs_file;
 } AlgorithmTask;
 
 /**
  * @brief Static helper function to run and report on a single algorithm.
  */
-static void execute_and_report(const TspAlgorithm* algorithm,
-                               const TspInstance* instance,
-                               const char* algorithm_name,
-                               const char* plot_file,
-                               const char* costs_file) {
+static void execute_and_report(const TspAlgorithm *algorithm,
+                               const TspInstance *instance,
+                               const char *algorithm_name,
+                               const char *plot_file,
+                               const char *costs_file) {
     if_verbose(VERBOSE_DEBUG, "  Initializing plotter for %s...\n", algorithm_name);
-    const CostsPlotter* plotter = init_plotter(tsp_instance_get_num_nodes(instance));
+    const CostsPlotter *plotter = costs_plotter_create(tsp_instance_get_num_nodes(instance));
 
     if_verbose(VERBOSE_DEBUG, "  Initializing solution for %s...\n", algorithm_name);
-    TspSolution* solution = tsp_solution_create(instance);
+    TspSolution *solution = tsp_solution_create(instance);
 
     if_verbose(VERBOSE_DEBUG, "  Calling solve() for %s...\n", algorithm_name);
     tsp_solution_solve(solution, algorithm, plotter);
@@ -47,7 +46,7 @@ static void execute_and_report(const TspAlgorithm* algorithm,
               plot_file);
 
     if_verbose(VERBOSE_DEBUG, "  Plotting costs to %s.\n", costs_file);
-    plotter->plot(plotter, costs_file);
+    costs_plotter_plot(plotter, costs_file);
 
     if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algorithm_name, tsp_solution_get_cost(solution));
 
@@ -56,11 +55,11 @@ static void execute_and_report(const TspAlgorithm* algorithm,
     tsp_solution_destroy(solution);
 
     if_verbose(VERBOSE_DEBUG, "  Freeing plotter for %s.\n", algorithm_name);
-    plotter->free(plotter);
+    costs_plotter_destroy(plotter);
 }
 
 // Implementation of the public function
-void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_options) {
+void run_selected_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) {
     // TODO hardcoded magic number
     AlgorithmTask tasks[4]; // Max number of algorithms
     int task_count = 0;
@@ -82,9 +81,9 @@ void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_
                    (int)cmd_options->vns_params.n_opt,
                    cmd_options->tsp.time_limit);
         tasks[task_count++] = (AlgorithmTask){
-            .algorithm = init_vns((int)cmd_options->vns_params.kick_repetitions,
-                                  (int)cmd_options->vns_params.n_opt,
-                                  (int)cmd_options->tsp.time_limit),
+            .algorithm = init_vns((int) cmd_options->vns_params.kick_repetitions,
+                                  (int) cmd_options->vns_params.n_opt,
+                                  (int) cmd_options->tsp.time_limit),
             .name = "VNS",
             .plot_file = cmd_options->vns_params.plot_file,
             .costs_file = cmd_options->vns_params.cost_file
@@ -96,8 +95,8 @@ void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_
                    (int)cmd_options->tabu_params.max_stagnation,
                    cmd_options->tsp.time_limit);
         tasks[task_count++] = (AlgorithmTask){
-            .algorithm = init_tabu((int)cmd_options->tabu_params.tenure,
-                                   (int)cmd_options->tabu_params.max_stagnation,
+            .algorithm = init_tabu((int) cmd_options->tabu_params.tenure,
+                                   (int) cmd_options->tabu_params.max_stagnation,
                                    cmd_options->tsp.time_limit),
             .name = "TS",
             .plot_file = cmd_options->tabu_params.plot_file,
@@ -148,5 +147,4 @@ void run_selected_algorithms(const TspInstance* instance, const CmdOptions* cmd_
     }
 
     if_verbose(VERBOSE_INFO, "All algorithms finished.\n");
-
 }

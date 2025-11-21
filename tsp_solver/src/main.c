@@ -63,10 +63,14 @@ int main(const int argc, const char *argv[]) {
         instance = tsp_instance_create_random(
             (int) options->tsp.number_of_nodes,
             options->tsp.seed,
-            (TspGenerationArea){
-                .x_square = options->tsp.generation_area.x_square,
-                .y_square = options->tsp.generation_area.y_square,
-                .square_side = options->tsp.generation_area.square_side
+            (TspGenerationArea)
+            {
+                .
+                x_square = options->tsp.generation_area.x_square,
+                .
+                y_square = options->tsp.generation_area.y_square,
+                .
+                square_side = options->tsp.generation_area.square_side
             }
         );
     }
