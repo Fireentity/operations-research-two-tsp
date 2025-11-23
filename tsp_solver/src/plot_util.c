@@ -1,4 +1,4 @@
-#include "plot_util.h"
+#include "../include/plot_util.h"
 #include <stdio.h>
 #include <c_util.h>
 #include "constants.h"
@@ -11,7 +11,7 @@
  * @param length Number of points.
  * @return Bounds with computed limits.
  */
-static Bounds calculate_bounds(const double *x, const double *y, const int length) {
+static Bounds calculate_bounds(const double *x, const double *y, const size_t length) {
     Bounds b;
     if (length <= 0) {
         b.min_x = b.max_x = 0;
@@ -68,7 +68,7 @@ void plot_tour(const int *tour, const int number_of_nodes, const Node *nodes, co
     check_pclose(pclose(gp));
 }
 
-void plot_costs_evolution(const double *costs, const int length, const char *output_name) {
+void plot_costs_evolution(const double *costs, const size_t length, const char *output_name) {
     if (length <= 0) return;
     if (!output_name)
         output_name = "costs_evolution.png";

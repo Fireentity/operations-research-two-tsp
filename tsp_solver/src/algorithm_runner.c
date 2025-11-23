@@ -3,7 +3,7 @@
 #include "variable_neighborhood_search.h"
 #include "tabu_search.h"
 #include "grasp.h"
-#include "plot_util.h"
+#include "../include/plot_util.h"
 #include "c_util.h"
 #include "logger.h"
 #include "constants.h"
@@ -38,6 +38,7 @@ static void execute_and_report(const TspAlgorithm *algo,
 
     // --- TODO: integrate with new CostPlotter architecture ---
     // cost_reporter_export(&reporter, costs_file);
+    plot_costs_evolution(cost_recorder_get_costs(recorder), cost_recorder_get_count(recorder), costs_file);
 
     if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algo->name, cost);
 

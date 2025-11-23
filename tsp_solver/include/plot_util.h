@@ -1,5 +1,7 @@
 #ifndef PLOT_UTIL_H
 #define PLOT_UTIL_H
+#include <stddef.h>
+
 #include "tsp_instance.h"
 
 
@@ -32,5 +34,5 @@ void plot_tour(const int *tour, int number_of_nodes, const Node *nodes, const ch
  * @param length Number of points.
  * @param output_name Output image file name.
  */
-void plot_costs_evolution(const double *costs, int length, const char *output_name);
+void plot_costs_evolution(const double *costs, size_t length, const char *output_name);
 #endif //PLOT_UTIL_H
