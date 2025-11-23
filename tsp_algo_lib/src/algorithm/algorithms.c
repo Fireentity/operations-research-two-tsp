@@ -13,8 +13,7 @@
 inline double two_opt(int *tour,
                       const int number_of_nodes,
                       const double *edge_cost_array,
-                      const TimeLimiter *time_limiter,
-                      const double epsilon) {
+                      const TimeLimiter timer) {
     double cost_improvement = 0;
     bool improved = true;
 
@@ -22,7 +21,7 @@ inline double two_opt(int *tour,
         improved = false;
 
         for (int i = 1; i < number_of_nodes - 1; i++) {
-            if (time_limiter_is_over(time_limiter)) {
+            if (time_limiter_is_over(&timer)) {
                 if_verbose(VERBOSE_DEBUG, "  2-Opt: Time limit reached during optimization. Total improvement: %lf\n",
                            cost_improvement);
                 return cost_improvement;
@@ -41,7 +40,7 @@ inline double two_opt(int *tour,
                                      (edge_cost_array[a * number_of_nodes + b] +
                                       edge_cost_array[c * number_of_nodes + d]);
 
-                if (delta < -epsilon) {
+                if (delta < -EPSILON) {
                     cost_improvement += delta;
                     reverse_array_int(tour, i, j);
                     improved = true;
