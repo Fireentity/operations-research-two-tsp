@@ -25,7 +25,7 @@ void check_pclose(const int status) {
     }
 }
 
-void *memdup(const void *obj, size_t size) {
+void *memdup(const void *obj, const size_t size) {
     void *ptr = malloc(size);
     check_alloc(ptr);
     memcpy(ptr, obj, size);
