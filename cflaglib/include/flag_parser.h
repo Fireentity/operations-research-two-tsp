@@ -99,12 +99,12 @@ void flag_parser_add_uint(FlagParser *parser,
  * @param destination A pointer to the float variable (float*).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_float(FlagParser *parser,
-                           const char *name,
-                           const char *short_name,
-                           const char *description,
-                           float *destination,
-                           int properties);
+void flag_parser_add_double(FlagParser *parser,
+                            const char *name,
+                            const char *short_name,
+                            const char *description,
+                            double *destination,
+                            int properties);
 
 /**
  * @brief Registers a FLOAT flag (that must be >= 0).
@@ -116,12 +116,12 @@ void flag_parser_add_float(FlagParser *parser,
  * @param destination A pointer to the float variable (float*).
  * @param properties A bitmask (e.g., FLAG_OPTIONAL).
  */
-void flag_parser_add_ufloat(FlagParser *parser,
-                            const char *name,
-                            const char *short_name,
-                            const char *description,
-                            float *destination,
-                            int properties);
+void flag_parser_add_udouble(FlagParser *parser,
+                             const char *name,
+                             const char *short_name,
+                             const char *description,
+                             double *destination,
+                             int properties);
 
 /**
  * @brief Registers a STRING (const char*) flag.

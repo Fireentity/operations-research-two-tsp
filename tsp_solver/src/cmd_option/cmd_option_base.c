@@ -7,7 +7,6 @@ static void set_tsp_defaults(TspInstanceOptions *opt) {
     opt->mode = TSP_INPUT_MODE_RANDOM;
     opt->number_of_nodes = 100;
     opt->seed = 0;
-    opt->time_limit = 10.0f;
     opt->input_file = NULL;
     opt->generation_area.x_square = 0;
     opt->generation_area.y_square = 0;
@@ -38,8 +37,8 @@ static void set_tabu_defaults(TabuOptions *opt) {
 
 static void set_grasp_defaults(GraspOptions *opt) {
     opt->enable = false;
-    opt->p1 = 0.6f;
-    opt->p2 = 0.2f;
+    opt->p1 = 0.6;
+    opt->p2 = 0.2;
     opt->plot_file = strdup("GR-plot.png");
     opt->cost_file = strdup("GR-costs.txt");
 }

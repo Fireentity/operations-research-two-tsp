@@ -21,13 +21,13 @@ typedef struct {
     int seed;
     char *input_file;
     GenerationArea generation_area;
-    float time_limit;
 } TspInstanceOptions;
 
 typedef struct {
     bool enable;
     char *plot_file;
     char *cost_file;
+    double time_limit;
 } NNOptions;
 
 typedef struct {
@@ -36,6 +36,7 @@ typedef struct {
     char *cost_file;
     unsigned int kick_repetitions;
     unsigned int n_opt;
+    double time_limit;
 } VnsOptions;
 
 typedef struct {
@@ -44,14 +45,16 @@ typedef struct {
     char *cost_file;
     unsigned int tenure;
     unsigned int max_stagnation;
+    double time_limit;
 } TabuOptions;
 
 typedef struct {
     bool enable;
     char *plot_file;
     char *cost_file;
-    float p1;
-    float p2;
+    double p1;
+    double p2;
+    double time_limit;
 } GraspOptions;
 
 typedef struct {
@@ -72,5 +75,10 @@ CmdOptions *cmd_options_create_defaults(void);
 void cmd_options_destroy(CmdOptions *options);
 
 const ParsingResult *cmd_options_load(CmdOptions *options, int argc, const char **argv);
+
+/**
+ * @brief Prints the current configuration to the log if verbosity allows.
+ */
+void print_configuration(const CmdOptions *options);
 
 #endif // CMD_OPTIONS_H

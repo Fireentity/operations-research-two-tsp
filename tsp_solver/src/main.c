@@ -15,36 +15,6 @@ static void setup_logging(const CmdOptions *options) {
 }
 
 /**
- * @brief Prints the current configuration to the log if verbosity allows.
- */
-static void print_configuration(const CmdOptions *options) {
-    if_verbose(VERBOSE_DEBUG,
-               "--- Options ---\n"
-               "Mode:        %s\n"
-               "Input file:  %s\n"
-               "Config file: %s\n"
-               "Verbosity:   %u\n"
-               "Plot path:   %s\n"
-               "Nodes:       %u\n"
-               "Seed:        %d\n"
-               "Area:        %d,%d (side %u)\n"
-               "Time limit:  %.2f\n"
-               "--------------\n",
-               (options->tsp.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
-               options->tsp.input_file ? options->tsp.input_file : "(none)",
-               options->config_file ? options->config_file : "(none)",
-               options->verbosity,
-               options->plots_path ? options->plots_path : "./",
-               options->tsp.number_of_nodes,
-               options->tsp.seed,
-               options->tsp.generation_area.x_square,
-               options->tsp.generation_area.y_square,
-               options->tsp.generation_area.square_side,
-               options->tsp.time_limit
-    );
-}
-
-/**
  * @brief Loads a TSP instance from a file or generates a random one based on options.
  * * @return TspInstance* Pointer to the created instance, or NULL on error.
  */

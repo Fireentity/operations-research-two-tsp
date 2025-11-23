@@ -64,7 +64,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
     // --- NN ---
     if (options->nn_params.enable) {
-        NNConfig cfg = {.time_limit = options->tsp.time_limit};
+        NNConfig cfg = {.time_limit = options->nn_params.time_limit};
         TspAlgorithm algo = nn_create(cfg);
         BUILD_PATHS(options->nn_params.plot_file, options->nn_params.cost_file);
         execute_and_report(&algo, instance, full_plot_path, full_costs_path);
@@ -75,7 +75,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         VNSConfig cfg = {
             .kick_repetition = (int) options->vns_params.kick_repetitions,
             .n_opt = (int) options->vns_params.n_opt,
-            .time_limit = options->tsp.time_limit
+            .time_limit = options->vns_params.time_limit
         };
         TspAlgorithm algo = vns_create(cfg);
         BUILD_PATHS(options->vns_params.plot_file, options->vns_params.cost_file);
@@ -87,7 +87,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         TabuConfig cfg = {
             .tenure = (int) options->tabu_params.tenure,
             .max_stagnation = (int) options->tabu_params.max_stagnation,
-            .time_limit = options->tsp.time_limit
+            .time_limit = options->tabu_params.time_limit
         };
         TspAlgorithm algo = tabu_create(cfg);
         BUILD_PATHS(options->tabu_params.plot_file, options->tabu_params.cost_file);
@@ -99,7 +99,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         GraspConfig cfg = {
             .p1 = options->grasp_params.p1,
             .p2 = options->grasp_params.p2,
-            .time_limit = options->tsp.time_limit
+            .time_limit = options->grasp_params.time_limit
         };
         TspAlgorithm algo = grasp_create(cfg);
         BUILD_PATHS(options->grasp_params.plot_file, options->grasp_params.cost_file);

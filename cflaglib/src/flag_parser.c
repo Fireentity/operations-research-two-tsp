@@ -14,8 +14,8 @@ typedef enum {
     FLAG_TYPE_BOOL,
     FLAG_TYPE_INT,
     FLAG_TYPE_UINT,
-    FLAG_TYPE_FLOAT,
-    FLAG_TYPE_UFLOAT,
+    FLAG_TYPE_DOUBLE,
+    FLAG_TYPE_UDOUBLE,
     FLAG_TYPE_STRING,
     FLAG_TYPE_STRING_OWNED
 } FlagType;
@@ -200,22 +200,22 @@ void flag_parser_add_uint(FlagParser *parser,
     add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_UINT);
 }
 
-void flag_parser_add_float(FlagParser *parser,
-                           const char *name,
-                           const char *short_name,
-                           const char *description,
-                           float *destination,
-                           const int properties) {
-    add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_FLOAT);
-}
-
-void flag_parser_add_ufloat(FlagParser *parser,
+void flag_parser_add_double(FlagParser *parser,
                             const char *name,
                             const char *short_name,
                             const char *description,
-                            float *destination,
+                            double *destination,
                             const int properties) {
-    add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_UFLOAT);
+    add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_DOUBLE);
+}
+
+void flag_parser_add_udouble(FlagParser *parser,
+                             const char *name,
+                             const char *short_name,
+                             const char *description,
+                             double *destination,
+                             const int properties) {
+    add_flag_internal(parser, name, short_name, description, destination, properties, FLAG_TYPE_UDOUBLE);
 }
 
 void flag_parser_add_string(FlagParser *parser,
@@ -309,11 +309,11 @@ const ParsingResult *flag_parser_parse(const FlagParser *parser,
             case FLAG_TYPE_UINT:
                 res = parse_uint(value_str, def->destination);
                 break;
-            case FLAG_TYPE_FLOAT:
-                res = parse_float(value_str, def->destination);
+            case FLAG_TYPE_DOUBLE:
+                res = parse_double(value_str, def->destination);
                 break;
-            case FLAG_TYPE_UFLOAT:
-                res = parse_ufloat(value_str, def->destination);
+            case FLAG_TYPE_UDOUBLE:
+                res = parse_udouble(value_str, def->destination);
                 break;
             case FLAG_TYPE_STRING:
                 res = parse_string(value_str, def->destination);

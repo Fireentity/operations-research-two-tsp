@@ -11,9 +11,10 @@ typedef struct {
 } IniContext;
 
 typedef enum {
-    TYPE_UINT,
     TYPE_INT,
-    TYPE_FLOAT,
+    TYPE_UINT,
+    TYPE_DOUBLE,
+    TYPE_UDOUBLE,
     TYPE_BOOL,
     TYPE_STRING
 } IniType;
@@ -32,7 +33,6 @@ static const IniMapping mappings[] = {
     {"tsp", "file", TYPE_STRING, offsetof(CmdOptions, tsp.input_file)},
     {"tsp", "nodes", TYPE_UINT, offsetof(CmdOptions, tsp.number_of_nodes)},
     {"tsp", "seed", TYPE_INT, offsetof(CmdOptions, tsp.seed)},
-    {"tsp", "seconds", TYPE_FLOAT, offsetof(CmdOptions, tsp.time_limit)},
     {"tsp", "x-square", TYPE_INT, offsetof(CmdOptions, tsp.generation_area.x_square)},
     {"tsp", "y-square", TYPE_INT, offsetof(CmdOptions, tsp.generation_area.y_square)},
     {"tsp", "square-side", TYPE_UINT, offsetof(CmdOptions, tsp.generation_area.square_side)},
@@ -40,24 +40,28 @@ static const IniMapping mappings[] = {
     {"nn", "enabled", TYPE_BOOL, offsetof(CmdOptions, nn_params.enable)},
     {"nn", "plot_file", TYPE_STRING, offsetof(CmdOptions, nn_params.plot_file)},
     {"nn", "cost_file", TYPE_STRING, offsetof(CmdOptions, nn_params.cost_file)},
+    {"nn", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, nn_params.time_limit)},
 
     {"vns", "enabled", TYPE_BOOL, offsetof(CmdOptions, vns_params.enable)},
     {"vns", "kick-repetitions", TYPE_UINT, offsetof(CmdOptions, vns_params.kick_repetitions)},
     {"vns", "n-opt", TYPE_UINT, offsetof(CmdOptions, vns_params.n_opt)},
     {"vns", "plot_file", TYPE_STRING, offsetof(CmdOptions, vns_params.plot_file)},
     {"vns", "cost_file", TYPE_STRING, offsetof(CmdOptions, vns_params.cost_file)},
+    {"vns", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, vns_params.time_limit)},
 
     {"tabu", "enabled", TYPE_BOOL, offsetof(CmdOptions, tabu_params.enable)},
     {"tabu", "tenure", TYPE_UINT, offsetof(CmdOptions, tabu_params.tenure)},
     {"tabu", "max-stagnation", TYPE_UINT, offsetof(CmdOptions, tabu_params.max_stagnation)},
     {"tabu", "plot_file", TYPE_STRING, offsetof(CmdOptions, tabu_params.plot_file)},
     {"tabu", "cost_file", TYPE_STRING, offsetof(CmdOptions, tabu_params.cost_file)},
+    {"tabu", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, tabu_params.time_limit)},
 
     {"grasp", "enabled", TYPE_BOOL, offsetof(CmdOptions, grasp_params.enable)},
-    {"grasp", "p1", TYPE_FLOAT, offsetof(CmdOptions, grasp_params.p1)},
-    {"grasp", "p2", TYPE_FLOAT, offsetof(CmdOptions, grasp_params.p2)},
+    {"grasp", "p1", TYPE_UDOUBLE, offsetof(CmdOptions, grasp_params.p1)},
+    {"grasp", "p2", TYPE_UDOUBLE, offsetof(CmdOptions, grasp_params.p2)},
     {"grasp", "plot_file", TYPE_STRING, offsetof(CmdOptions, grasp_params.plot_file)},
     {"grasp", "cost_file", TYPE_STRING, offsetof(CmdOptions, grasp_params.cost_file)},
+    {"grasp", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, grasp_params.time_limit)},
 };
 
 static void handle_string(const char *value, char **dest) {
@@ -86,14 +90,17 @@ static int config_ini_handler(void *user, const char *section, const char *name,
             void *field = (char *) opt + m->offset;
 
             switch (m->type) {
-                case TYPE_UINT:
-                    parse_uint(value, field);
-                    break;
                 case TYPE_INT:
                     parse_int(value, field);
                     break;
-                case TYPE_FLOAT:
-                    parse_float(value, field);
+                case TYPE_UINT:
+                    parse_uint(value, field);
+                    break;
+                case TYPE_DOUBLE:
+                    parse_double(value, field);
+                    break;
+                case TYPE_UDOUBLE:
+                    parse_udouble(value, field);
                     break;
                 case TYPE_BOOL:
                     *(bool *) field = strcmp(value, "true") == 0;

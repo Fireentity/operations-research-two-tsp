@@ -20,7 +20,7 @@ const ParsingResult *parse_string(const char *s, char **dest) {
 }
 
 const ParsingResult *parse_int(const char *s, int *dest) {
-    char *endptr;
+    char *endptr=NULL;
     errno = 0;
 
     const long val = strtol(s, &endptr, 10);
@@ -50,7 +50,7 @@ const ParsingResult *parse_int(const char *s, int *dest) {
 }
 
 const ParsingResult *parse_uint(const char *s, unsigned int *dest) {
-    char *endptr;
+    char *endptr = NULL;
 
     // strtoul allows a negative sign, so we must check for it manually
     if (s[0] == '-') {
@@ -80,8 +80,8 @@ const ParsingResult *parse_uint(const char *s, unsigned int *dest) {
     return SUCCESS;
 }
 
-const ParsingResult *parse_float(const char *s, float *dest) {
-    char *endptr;
+const ParsingResult *parse_double(const char *s, double *dest) {
+    char *endptr = NULL;
     errno = 0;
 
     const double val = strtod(s, &endptr);
@@ -102,9 +102,9 @@ const ParsingResult *parse_float(const char *s, float *dest) {
     return SUCCESS;
 }
 
-const ParsingResult *parse_ufloat(const char *s, float *dest) {
+const ParsingResult *parse_udouble(const char *s, double *dest) {
     // Reuse the float parser
-    const ParsingResult *tmp = parse_float(s, dest);
+    const ParsingResult *tmp = parse_double(s, dest);
     if (tmp != SUCCESS) {
         return tmp;
     }

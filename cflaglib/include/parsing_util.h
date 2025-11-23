@@ -43,7 +43,7 @@ const ParsingResult *parse_uint(const char *s, unsigned int *dest);
  * @param dest A pointer to the float to write the result to.
  * @return SUCCESS on success, or WRONG_VALUE_TYPE on failure.
  */
-const ParsingResult *parse_float(const char *s, float *dest);
+const ParsingResult *parse_double(const char *s, double *dest);
 
 /**
  * @brief Safely parses a string into an unsigned (non-negative) float.
@@ -53,7 +53,7 @@ const ParsingResult *parse_float(const char *s, float *dest);
  * @param dest A pointer to the float to write the result to.
  * @return SUCCESS on success, or WRONG_VALUE_TYPE on failure.
  */
-const ParsingResult *parse_ufloat(const char *s, float *dest);
+const ParsingResult *parse_udouble(const char *s, double *dest);
 
 
 #endif // PARSING_UTIL_H

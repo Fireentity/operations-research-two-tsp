@@ -11,14 +11,14 @@
 // --- Test Subject: A struct to hold our options ---
 
 // A marker for testing "unset" logic (for the logical grouping test)
-#define UNSET_INT -9999
+#define UNSET_INT (-9999)
 
 typedef struct {
     // All our types
     bool show_help;
     int items;
     unsigned int threads;
-    float probability;
+    double probability;
     const char *output_file;
 
     // For logical group tests
@@ -51,7 +51,7 @@ void test_basic_parsing() {
     flag_parser_add_bool(parser, "--help", "-h", "", &opts.show_help, FLAG_OPTIONAL);
     flag_parser_add_int(parser, "--items", "-i", "", &opts.items, FLAG_OPTIONAL);
     flag_parser_add_uint(parser, "--threads", "-t", "", &opts.threads, FLAG_OPTIONAL);
-    flag_parser_add_float(parser, "--prob", "-p", "", &opts.probability, FLAG_OPTIONAL);
+    flag_parser_add_double(parser, "--prob", "-p", "", &opts.probability, FLAG_OPTIONAL);
     flag_parser_add_string(parser, "--out", "-o", "", &opts.output_file, FLAG_OPTIONAL);
 
     // 2. Define arguments
@@ -138,7 +138,7 @@ void test_error_wrong_value_type() {
 
     flag_parser_add_int(parser, "--int", NULL, "", &opts.items, FLAG_OPTIONAL);
     flag_parser_add_uint(parser, "--uint", NULL, "", &opts.threads, FLAG_OPTIONAL);
-    flag_parser_add_float(parser, "--float", NULL, "", &opts.probability, FLAG_OPTIONAL);
+    flag_parser_add_double(parser, "--float", NULL, "", &opts.probability, FLAG_OPTIONAL);
 
     // Test int
     const char *args_int[] = {"--int", "abc"};
