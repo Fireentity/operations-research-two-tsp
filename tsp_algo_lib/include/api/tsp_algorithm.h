@@ -1,30 +1,39 @@
 #ifndef TSP_ALGORITHM_H
 #define TSP_ALGORITHM_H
 
-#include "costs_plotter.h"
+#include "cost_recorder.h"
+#include "tsp_instance.h"
 #include "tsp_solution.h"
 
-/**
- * @brief TSP algorithm interface.
- */
-typedef TspAlgorithm TspAlgorithm;
 
 /**
- * @brief Union for extended TSP algorithm implementations.
+ * @brief Generic function pointer for running a TSP algorithm.
+ * @param instance The problem instance (read-only).
+ * @param solution The solution object to update (in-place).
+ * @param config Algorithm-specific configuration struct.
+ * @param recorder Optional plotter for visualization.
  */
-typedef union TspExtendedAlgorithms TspExtendedAlgorithms;
+typedef void (*TspSolverFn)(const TspInstance *instance,
+                            TspSolution *solution,
+                            const void *config,
+                            CostRecorder *recorder);
+
+typedef struct {
+    const char *name;
+    void *config;
+    TspSolverFn run;
+
+    void (*free_config)(void *);
+} TspAlgorithm;
 
 /**
- * @brief Structure representing a TSP algorithm.
+ * @brief Executes the algorithm on the provided solution.
  */
-struct TspAlgorithm {
-    TspExtendedAlgorithms *const extended; /**< Pointer to extended algorithms. */
-    void (*const solve)(const TspAlgorithm *tsp_algorithm,
-                        const TspInstance *instance,
-                        TspSolution *solution,
-                        CostsPlotter *plotter);
+void tsp_algorithm_solve(const TspAlgorithm *algo,
+                         const TspInstance *instance,
+                         TspSolution *solution,
+                         CostRecorder *recorder);
 
-    void (*const free)(const TspAlgorithm *self);
-};
+void tsp_algorithm_destroy(TspAlgorithm *algo);
 
-#endif //TSP_ALGORITHM_H
+#endif // TSP_ALGORITHM_H
