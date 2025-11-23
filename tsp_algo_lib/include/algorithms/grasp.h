@@ -1,21 +1,23 @@
 #ifndef GRASP_H
 #define GRASP_H
+
 #include "tsp_algorithm.h"
 
+/**
+ * @brief Configuration structure for GRASP algorithm.
+ */
 typedef struct {
-    const double time_limit;
-    const double p1;
-    const double p2;
-    const double p3;
-} Grasp;
+    double time_limit;
+    double p1;
+    double p2;
+} GraspConfig;
 
 /**
- * Initialize a grasp algorithm for the Traveling Salesman Problem (TSP).
+ * @brief Creates a GRASP algorithm strategy.
  *
- * @param time_limit The maximum time allowed for the search.
- * @param p1
- * @param p2
- * @return A pointer to an initialized TspAlgorithm structure.
+ * @param config The configuration for GRASP.
+ * @return A TspAlgorithm structure ready to run.
  */
-const TspAlgorithm *init_grasp(double time_limit, double p1, double p2);
-#endif //GRASP_H
+TspAlgorithm grasp_create(GraspConfig config);
+
+#endif // GRASP_H
