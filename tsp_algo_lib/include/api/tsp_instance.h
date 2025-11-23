@@ -1,5 +1,6 @@
 #ifndef TSP_INSTANCE_H
 #define TSP_INSTANCE_H
+#include <stddef.h>
 
 /* Error codes for instance loading */
 typedef enum {
@@ -41,7 +42,7 @@ typedef struct TspInstance TspInstance;
  * @brief Creates a random TSP instance.
  * @return Pointer to the generated TSP instance.
  */
-TspInstance *tsp_instance_create_random(int number_of_nodes,
+TspInstance *tsp_instance_create_random(size_t number_of_nodes,
                                         int seed,
                                         TspGenerationArea area);
 
@@ -54,11 +55,11 @@ TspInstance *tsp_instance_create(const Node *nodes, int number_of_nodes);
 /**
  * @brief Loads a TSP instance from a file (TSPLIB format).
  *
- * @param path Path to the .tsp file.
  * @param out_instance [Output] Pointer to the created instance variable.
+ * @param path Path to the .tsp file.
  * @return TSP_OK on success, or an error code.
  */
-TspError tsp_instance_load_from_file(const char *path, TspInstance **out_instance);
+TspError tsp_instance_load_from_file(TspInstance **out_instance, const char *path);
 
 /* --- Destructor --- */
 

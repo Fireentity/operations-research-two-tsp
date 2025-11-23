@@ -49,30 +49,28 @@ static void print_configuration(const CmdOptions *options) {
  * * @return TspInstance* Pointer to the created instance, or NULL on error.
  */
 static TspInstance *create_tsp_instance(const CmdOptions *options) {
+    TspInstance *instance = NULL;
     if (options->tsp.mode == TSP_INPUT_MODE_FILE) {
-        TspInstance *instance = NULL;
-        const TspError err = tsp_instance_load_from_file(options->tsp.input_file, &instance);
+        const TspError err = tsp_instance_load_from_file(&instance, options->tsp.input_file);
 
         if (err != TSP_OK) {
             fprintf(stderr, "Failed to load instance: %s\n", tsp_error_to_string(err));
             return NULL;
         }
-        return instance;
+    }
+    if (options->tsp.mode == TSP_INPUT_MODE_RANDOM) {
+        //Random Generation Mode
+        // Construct the area struct cleaner for readability
+        const TspGenerationArea area = {
+            .x_square = options->tsp.generation_area.x_square,
+            .y_square = options->tsp.generation_area.y_square,
+            .square_side = options->tsp.generation_area.square_side
+        };
+        instance = tsp_instance_create_random(options->tsp.number_of_nodes, options->tsp.seed, area);
     }
 
-    // Random Generation Mode
-    // Construct the area struct cleaner for readability
-    TspGenerationArea area = {
-        .x_square = options->tsp.generation_area.x_square,
-        .y_square = options->tsp.generation_area.y_square,
-        .square_side = options->tsp.generation_area.square_side
-    };
 
-    return tsp_instance_create_random(
-        (int) options->tsp.number_of_nodes,
-        options->tsp.seed,
-        area
-    );
+    return instance;
 }
 
 int main(const int argc, const char *argv[]) {

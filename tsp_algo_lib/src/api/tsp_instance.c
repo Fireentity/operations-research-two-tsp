@@ -12,7 +12,7 @@ struct TspInstance {
     double *edge_cost_array;
 };
 
-static TspInstance *instance_create_from_nodes(Node *nodes, const int n) {
+static TspInstance *instance_create_from_nodes(Node *nodes, const size_t n) {
     double *costs = init_edge_cost_array(nodes, n);
 
     TspInstance *inst = malloc(sizeof(TspInstance));
@@ -25,7 +25,7 @@ static TspInstance *instance_create_from_nodes(Node *nodes, const int n) {
     return inst;
 }
 
-TspInstance *tsp_instance_create_random(const int number_of_nodes, const int seed, const TspGenerationArea area) {
+TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const int seed, const TspGenerationArea area) {
     srand(seed);
 
     Node *nodes = malloc(number_of_nodes * sizeof(Node));
@@ -46,7 +46,7 @@ TspInstance *tsp_instance_create(const Node *nodes, const int number_of_nodes) {
     return instance_create_from_nodes(copy, number_of_nodes);
 }
 
-TspError tsp_instance_load_from_file(const char *path, TspInstance **out_instance) {
+TspError tsp_instance_load_from_file(TspInstance **out_instance, const char *path) {
     Node *nodes = NULL;
     int n = 0;
 
