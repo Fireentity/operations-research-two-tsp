@@ -1,10 +1,10 @@
 #include "tsp_algorithm.h"
 #include "logger.h"
 
-void tsp_algorithm_solve(const TspAlgorithm *algo,
-                         const TspInstance *instance,
-                         TspSolution *solution,
-                         CostRecorder *recorder) {
+void tsp_algorithm_run(const TspAlgorithm *algo,
+                       const TspInstance *instance,
+                       TspSolution *solution,
+                       CostRecorder *recorder) {
     if (!algo || !algo->run) return;
 
     if_verbose(VERBOSE_INFO, "Running Algorithm: %s\n", algo->name);
@@ -12,8 +12,6 @@ void tsp_algorithm_solve(const TspAlgorithm *algo,
 }
 
 void tsp_algorithm_destroy(TspAlgorithm *algo) {
-    if (!algo) return;
-    if (algo->config && algo->free_config) {
-        algo->free_config(algo->config);
-    }
+    if (!algo || !algo->config || !algo->free_config) return;
+    algo->free_config(algo->config);
 }

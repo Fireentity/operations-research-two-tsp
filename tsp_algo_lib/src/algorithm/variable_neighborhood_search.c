@@ -42,7 +42,7 @@ static void run_vns(const TspInstance *instance,
     tsp_solution_get_tour(solution, current_tour);
     double current_cost = tsp_solution_get_cost(solution);
 
-    current_cost += two_opt(current_tour, n, costs, timer, );
+    current_cost += two_opt(current_tour, n, costs, timer);
 
     int *best_tour = malloc((n + 1) * sizeof(int));
     check_alloc(best_tour);
@@ -54,7 +54,7 @@ static void run_vns(const TspInstance *instance,
             current_cost += vns_kick(current_tour, n, costs, cfg->n_opt);
         }
 
-        current_cost += two_opt(current_tour, n, costs, timer, );
+        current_cost += two_opt(current_tour, n, costs, timer);
 
         if (current_cost < best_cost - EPSILON) {
             if_verbose(VERBOSE_DEBUG, "    VNS: New best cost: %lf\n", current_cost);
@@ -83,10 +83,15 @@ TspAlgorithm vns_create(const VNSConfig config) {
     check_alloc(cfg_copy);
     *cfg_copy = config;
 
-    return (TspAlgorithm){
-        .name = "VNS",
-        .config = cfg_copy,
-        .run = run_vns,
-        .free_config = free_vns_config
+    return (TspAlgorithm)
+    {
+        .
+        name = "VNS",
+        .
+        config = cfg_copy,
+        .
+        run = run_vns,
+        .
+        free_config = free_vns_config
     };
 }

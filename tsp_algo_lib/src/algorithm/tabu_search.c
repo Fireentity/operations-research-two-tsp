@@ -29,7 +29,7 @@ static void run_tabu(const TspInstance *instance,
     tsp_solution_get_tour(solution, current_tour);
     double current_cost = tsp_solution_get_cost(solution);
 
-    current_cost += two_opt(current_tour, n, costs, timer, );
+    current_cost += two_opt(current_tour, n, costs, timer);
 
     int *best_tour = malloc((n + 1) * sizeof(int));
     check_alloc(best_tour);
@@ -111,10 +111,15 @@ TspAlgorithm tabu_create(const TabuConfig config) {
     check_alloc(cfg_copy);
     *cfg_copy = config;
 
-    return (TspAlgorithm){
-        .name = "Tabu Search",
-        .config = cfg_copy,
-        .run = run_tabu,
-        .free_config = free_tabu_config
+    return (TspAlgorithm)
+    {
+        .
+        name = "Tabu Search",
+        .
+        config = cfg_copy,
+        .
+        run = run_tabu,
+        .
+        free_config = free_tabu_config
     };
 }

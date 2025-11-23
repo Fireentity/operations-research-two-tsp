@@ -29,10 +29,10 @@ typedef struct {
 /**
  * @brief Executes the algorithm on the provided solution.
  */
-void tsp_algorithm_solve(const TspAlgorithm *algo,
-                         const TspInstance *instance,
-                         TspSolution *solution,
-                         CostRecorder *recorder);
+void tsp_algorithm_run(const TspAlgorithm *algo,
+                       const TspInstance *instance,
+                       TspSolution *solution,
+                       CostRecorder *recorder);
 
 void tsp_algorithm_destroy(TspAlgorithm *algo);
 

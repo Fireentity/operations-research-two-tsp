@@ -64,15 +64,16 @@ int main(const int argc, const char *argv[]) {
             (int) options->tsp.number_of_nodes,
             options->tsp.seed,
             (TspGenerationArea)
-            {
-                .
-                x_square = options->tsp.generation_area.x_square,
-                .
-                y_square = options->tsp.generation_area.y_square,
-                .
-                square_side = options->tsp.generation_area.square_side
-            }
-        );
+        {
+            .
+            x_square = options->tsp.generation_area.x_square,
+            .
+            y_square = options->tsp.generation_area.y_square,
+            .
+            square_side = options->tsp.generation_area.square_side
+        }
+        )
+        ;
     }
 
     run_selected_algorithms(instance, options);

@@ -1,4 +1,3 @@
-
 #include "plot_util.h"
 #include <stdio.h>
 #include <c_util.h>

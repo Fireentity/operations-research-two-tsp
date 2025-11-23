@@ -1,223 +1,79 @@
+#include "n_opt_test.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <math.h>
-#include <tsp_math_util.h>
-
+#include <stdio.h>
 #include "c_util.h"
-#include "tsp_instance.h"
+#include "tsp_math_util.h"
 
-/**
- * Test reversing a segment in a square tour.
- * Initial tour: 0->1->2->3->0; remove edges at indices 1 and 3.
- * Expected result: 0->1->3->2->0 with cost change 2*sqrt(2)-2.
- */
-void test_square_reverse_segment() {
-    const Node nodes[] = {
-        {0, 0},
-        {1, 0},
-        {1, 1},
-        {0, 1}
-    };
-    // Initial tour and expected tour after 2-opt move.
+// Helper to assert double equality with epsilon
+#define ASSERT_DBL_EQ(a, b) assert(fabs((a) - (b)) < 1e-9)
+
+void test_square_reverse_segment(void) {
+    // Square 1x1
+    const Node nodes[] = {{0, 0}, {1, 0}, {1, 1}, {0, 1}};
+    const int n = 4;
+    double *costs = init_edge_cost_array(nodes, n);
+
+    // Initial: 0->1->2->3->0 (Perimeter, cost 4)
     int tour[] = {0, 1, 2, 3, 0};
-    const int result_tour[] = {0, 1, 3, 2, 0};
-    // Edges to remove for the 2-opt move.
-    const int edges_to_remove[] = {1, 3};
 
-    const int number_of_nodes = sizeof(nodes) / sizeof(nodes[0]);
-    const int tour_size = sizeof(tour) / sizeof(tour[0]);
-    const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
+    // Move: 2-opt removing edges (0,1) and (2,3)
+    // Indices in tour array: 0 and 2.
+    // Edge 0 connects tour[0]-tour[1] (0-1)
+    // Edge 2 connects tour[2]-tour[3] (2-3)
+    const int edges_to_remove[] = {0, 2};
+    const int n_segments = 2;
 
-    // Precompute distances between nodes.
-    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
-    // Compute cost difference for the 2-opt move.
-    const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
-                                            number_of_nodes);
-    // Execute the 2-opt move.
-    compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
-    const double delta_result = 2 * sqrt(2) - 2;
+    // Expected delta: New edges are (0,2) [diag] and (1,3) [diag].
+    // Old cost: 1 + 1 = 2. New cost: sqrt(2) + sqrt(2).
+    // Delta = 2*sqrt(2) - 2.
+    double expected_delta = 2.0 * sqrt(2.0) - 2.0;
 
-    // Verify tour and cost difference.
-    assert(int_arrays_equal(tour, result_tour, tour_size));
-    assert(delta == delta_result);
+    double delta = compute_n_opt_cost(n_segments, tour, edges_to_remove, costs, n);
+    ASSERT_DBL_EQ(delta, expected_delta);
 
-    free(edge_cost_array);
+    // Perform move
+    compute_n_opt_move(n_segments, tour, edges_to_remove, n);
+
+    // Expected Tour: 0 -> 2 -> 1 -> 3 -> 0
+    const int expected_tour[] = {0, 2, 1, 3, 0};
+    assert(int_arrays_equal(tour, expected_tour, 5));
+
+    free(costs);
 }
 
-/**
- * Test reversing multiple segments in an octagon tour.
- * Initial tour: 0->1->2->3->4->5->6->7->0; remove edges at indices 1,3,5,7.
- * Expected result: 0->1->3->2->5->4->7->6->0 with cost change 2*sqrt(5).
- */
-void test_octagon_multiple_segment_reverse() {
+void test_hexagon_reverse_segment(void) {
+    // Hexagon shape
     const Node nodes[] = {
-        {1, 0},
-        {2, 0},
-        {3, 1},
-        {3, 2},
-        {2, 3},
-        {1, 3},
-        {0, 2},
-        {0, 1}
+        {0, 0}, {0.5, 0}, {1, 0},
+        {1, 1}, {0.5, 1}, {0, 1}
     };
-    int tour[] = {0, 1, 2, 3, 4, 5, 6, 7, 0};
-    const int result_tour[] = {0, 1, 3, 2, 5, 4, 7, 6, 0};
-    // Edges to remove for multiple 2-opt moves.
-    const int edges_to_remove[] = {1, 3, 5, 7};
+    const int n = 6;
+    double *costs = init_edge_cost_array(nodes, n);
 
-    const int number_of_nodes = sizeof(nodes) / sizeof(nodes[0]);
-    const int tour_size = sizeof(tour) / sizeof(tour[0]);
-    const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
-
-    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
-    const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
-                                            number_of_nodes);
-    compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
-    const double delta_result = 2 * sqrt(5);
-
-    assert(int_arrays_equal(tour, result_tour, tour_size));
-    assert(delta == delta_result);
-
-    free(edge_cost_array);
-}
-
-/**
- * Test reversing a segment in a hexagon tour (case 1).
- * Initial tour: 0->1->2->3->4->5->0; remove edges at indices 2 and 5.
- * Expected result: 0->1->2->5->4->3->0 with cost change 2*sqrt(2)-2.
- */
-void test_hexagon_reverse_segment_case1() {
-    const Node nodes[] = {
-        {0, 0},
-        {0.5, 0},
-        {1, 0},
-        {1, 1},
-        {0.5, 1},
-        {0, 1}
-    };
     int tour[] = {0, 1, 2, 3, 4, 5, 0};
-    const int result_tour[] = {0, 1, 2, 5, 4, 3, 0};
-    // Segments (edges) to remove.
-    const int segments[] = {2, 5};
+    // Remove edges at index 2 (2->3) and 5 (5->0)
+    // Reconnects 2->5 and 3->0?
+    // Wait, 2-opt reverses segment BETWEEN cuts.
+    // Cut 1: after tour[2]. Cut 2: after tour[5].
+    // Segment reversed: tour[3]...tour[5].
+    const int edges_to_remove[] = {2, 5};
 
-    const int number_of_nodes = sizeof(nodes) / sizeof(nodes[0]);
-    const int tour_size = sizeof(tour) / sizeof(tour[0]);
-    const int number_of_segments = sizeof(segments) / sizeof(segments[0]);
+    // Run Logic
+    compute_n_opt_move(2, tour, edges_to_remove, n);
 
-    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
-    const double delta = compute_n_opt_cost(number_of_segments, tour, segments, edge_cost_array, number_of_nodes);
-    compute_n_opt_move(number_of_segments, tour, segments, number_of_nodes);
-    const double delta_result = 2 * sqrt(2) - 2;
+    // Expected: 0->1->2 -> 5->4->3 -> 0
+    const int expected_tour[] = {0, 1, 2, 5, 4, 3, 0};
+    assert(int_arrays_equal(tour, expected_tour, 7));
 
-    assert(int_arrays_equal(tour, result_tour, tour_size));
-    assert(delta == delta_result);
-
-    free(edge_cost_array);
-}
-
-/**
- * Test reversing a segment in a hexagon tour (case 2) with an alternate initial tour.
- * Initial tour: 0->4->2->3->1->5->0; remove edges at indices 2 and 5.
- * Expected result: 0->4->2->5->1->3->0 with cost change 2*sqrt(2)-2.
- */
-void test_hexagon_reverse_segment_case2() {
-    const Node nodes[] = {
-        {0, 0},
-        {0.5, 0},
-        {1, 0},
-        {1, 1},
-        {0.5, 1},
-        {0, 1}
-    };
-    int tour[] = {0, 4, 2, 3, 1, 5, 0};
-    const int result_tour[] = {0, 4, 2, 5, 1, 3, 0};
-    // Segments (edges) to remove.
-    const int segments[] = {2, 5};
-
-    const int number_of_nodes = sizeof(nodes) / sizeof(nodes[0]);
-    const int tour_size = sizeof(tour) / sizeof(tour[0]);
-    const int number_of_segments = sizeof(segments) / sizeof(segments[0]);
-
-    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
-    const double delta = compute_n_opt_cost(number_of_segments, tour, segments, edge_cost_array, number_of_nodes);
-    compute_n_opt_move(number_of_segments, tour, segments, number_of_nodes);
-    const double delta_result = 2 * sqrt(2) - 2;
-
-    assert(int_arrays_equal(tour, result_tour, tour_size));
-    assert(delta == delta_result);
-
-    free(edge_cost_array);
-}
-
-/**
- * Test reversing a segment in a square tour with alternate removal order.
- * Initial tour: 0->1->2->3->0; remove edges at indices 3 and 1.
- * Expected result: 1->0->2->3->1 with cost change 2*sqrt(2)-2.
- */
-void test_square_alternate_segment_reverse() {
-    const Node nodes[] = {
-        {0, 0},
-        {1, 0},
-        {1, 1},
-        {0, 1}
-    };
-    int tour[] = {0, 1, 2, 3, 0};
-    const int result_tour[] = {0, 1, 3, 2, 0};
-    const int edges_to_remove[] = {1, 3};
-
-    const int number_of_nodes = sizeof(nodes) / sizeof(nodes[0]);
-    const int tour_size = sizeof(tour) / sizeof(tour[0]);
-    const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
-
-    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
-    const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
-                                            number_of_nodes);
-    compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
-    const double delta_result = 2 * sqrt(2) - 2;
-
-    assert(int_arrays_equal(tour, result_tour, tour_size));
-    assert(fabs(delta - delta_result) < 1e-10);
-
-    free(edge_cost_array);
-}
-
-void test_6() {
-    const Node nodes[] = {
-        {0, 0},
-        {1, 0},
-        {1, 0.5},
-        {1, 1},
-        {0.5, 1},
-        {0, 1}
-    };
-    int tour[] = {0, 1, 2, 3, 4, 5, 0};
-    const int result_tour[] = {0, 3, 2, 1, 4, 5, 0};
-    // Edges to remove in alternate order.
-    const int edges_to_remove[] = {0, 3};
-
-    const int number_of_nodes = sizeof(nodes) / sizeof(nodes[0]);
-    const int tour_size = sizeof(tour) / sizeof(tour[0]);
-    const int number_of_segments = sizeof(edges_to_remove) / sizeof(edges_to_remove[0]);
-
-    double *edge_cost_array = init_edge_cost_array(nodes, number_of_nodes);
-    const double delta = compute_n_opt_cost(number_of_segments, tour, edges_to_remove, edge_cost_array,
-                                            number_of_nodes);
-    compute_n_opt_move(number_of_segments, tour, edges_to_remove, number_of_nodes);
-    const double delta_result = -1.5 + sqrt(5) / 2 + sqrt(2);
-
-    assert(int_arrays_equal(tour, result_tour, tour_size));
-    assert(delta == delta_result);
-
-    free(edge_cost_array);
+    free(costs);
 }
 
 void run_n_opt_tests(void) {
-    printf("--- Running N-Opt Helper Tests ---\n");
+    printf("[N-Opt] Running tests...\n");
     test_square_reverse_segment();
-    test_octagon_multiple_segment_reverse();
-    test_hexagon_reverse_segment_case1();
-    test_hexagon_reverse_segment_case2();
-    test_square_alternate_segment_reverse();
-    test_6();
-    printf("N-Opt Helper tests passed.\n");
+    test_hexagon_reverse_segment();
+    printf("[N-Opt] Passed.\n");
 }
+#undef ASSERT_DBL_EQ

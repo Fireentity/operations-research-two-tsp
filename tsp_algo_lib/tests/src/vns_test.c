@@ -2,68 +2,44 @@
 #include <assert.h>
 #include <stdio.h>
 #include "variable_neighborhood_search.h"
-#include "tsp_algorithm.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
-#include "costs_plotter.h"
+#include "cost_recorder.h"
 
-#define NUMBER_OF_NODES 10
-
-// --- Dummy Plotter for testing ---
-static void dummy_add_cost(const CostsPlotter *self, double cost) {
-    (void) self;
-    (void) cost;
-}
-
-static void dummy_plot(const CostsPlotter *self, const char *file_name) {
-    (void) self;
-    (void) file_name;
-}
-
-static void dummy_plot_free(const CostsPlotter *self) { (void) self; }
-
-static const CostsPlotter dummy_plotter = {
-    .add_cost = dummy_add_cost,
-    .plot = dummy_plot,
-    .free = dummy_plot_free,
-};
-// --- End Dummy Plotter ---
+#define NODES 20
+#define TIME_LIMIT 1.0
 
 void run_vns_tests(void) {
-    printf("--- Running VNS Algorithm Tests ---\n");
-    const TspInstance *instance = init_random_tsp_instance(
-        NUMBER_OF_NODES,
-        42,
-        (TspGenerationArea)
-    {
-        .
-        square_side = 100,
-        .
-        x_square = 0,
-        .
-        y_square = 0,
-    }
-    )
-    ;
+    printf("[VNS] Running tests...\n");
 
-    const TspSolution *solution = init_solution(instance);
-    const double time_limit = 1.0;
-    const int kick_repetitions = 20;
-    const int n_opt = 3;
+    // 1. Setup
+    TspGenerationArea area = {.x_square = 0, .y_square = 0, .square_side = 100};
+    TspInstance *instance = tsp_instance_create_random(NODES, 55, area);
+    TspSolution *solution = tsp_solution_create(instance);
+    CostRecorder *recorder = cost_recorder_create(100);
 
-    const TspAlgorithm *vns_algorithm = init_vns(kick_repetitions, n_opt, time_limit);
+    // 2. Config
+    VNSConfig config = {
+        .time_limit = TIME_LIMIT,
+        .kick_repetition = 5,
+        .n_opt = 3 // 3-opt kick
+    };
+    TspAlgorithm vns = vns_create(config);
 
-    vns_algorithm->solve(vns_algorithm, instance, solution, &dummy_plotter);
+    // 3. Run
+    tsp_algorithm_run(&vns, instance, solution, recorder);
 
-    const double cost = solution->get_cost(solution);
-    int tour[NUMBER_OF_NODES + 1];
-    solution->get_tour_copy(solution, tour);
+    // 4. Assertions
+    assert(tsp_solution_check_feasibility(solution) == FEASIBLE);
+    assert(tsp_solution_get_cost(solution) > 0);
 
-    assert(tour[0] == tour[NUMBER_OF_NODES]);
-    assert(cost > 0);
+    // 5. Cleanup
+    tsp_algorithm_destroy(&vns);
+    cost_recorder_destroy(recorder);
+    tsp_solution_destroy(solution);
+    tsp_instance_destroy(instance);
 
-    vns_algorithm->free(vns_algorithm);
-    solution->free(solution);
-    instance->free(instance);
-    printf("VNS test passed.\n");
+    printf("[VNS] Passed.\n");
 }
+#undef NODES
+#undef TIME_LIMIT

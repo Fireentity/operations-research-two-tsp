@@ -1,53 +1,48 @@
+#include "grasp_nn_helpers_test.h"
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
-
 #include "algorithms.h"
 
-// Helper function to create a simple edge cost matrix for testing
-void create_simple_edge_costs(double *edge_costs, const int num_nodes) {
-    // Creating a simple fully connected matrix with random costs for simplicity
-    for (int i = 0; i < num_nodes; i++) {
-        for (int j = 0; j < num_nodes; j++) {
-            if (i != j) {
-                edge_costs[i * num_nodes + j] = (double) (rand() % 100 + 1); // Random costs between 1 and 100
-            }
+static void create_dummy_costs(double *costs, int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            costs[i * n + j] = (i == j) ? 0.0 : 10.0;
         }
     }
 }
 
-// Test for a basic case with 3 nodes
-void test_grasp_nearest_neighbor_tour_basic_case() {
-    const int num_nodes = 5;
-    int tour[num_nodes + 1]; // Include the last node to close the tour
+static void test_grasp_construction_basic(void) {
+    const int n = 5;
+    double costs[25];
+    create_dummy_costs(costs, n);
+
+    int tour[6]; // n + 1
     double cost = 0.0;
-    double edge_costs[num_nodes * num_nodes];
-    create_simple_edge_costs(edge_costs, num_nodes);
 
-    assert(0 == grasp_nearest_neighbor_tour(0, tour, num_nodes, edge_costs, &cost, 0.5, 0.3, 0.2));
+    // Run with defined probabilities
+    int res = grasp_nearest_neighbor_tour(0, tour, n, costs, &cost, 0.5, 0.3, 0.2);
 
-    // Verify the tour is completed and cost is updated
-    assert(tour[0] == tour[num_nodes]); // Ensure it's a closed tour
-    assert(cost > 0); // Ensure a valid cost is calculated
+    assert(res == 0);
+    assert(tour[0] == 0);
+    assert(tour[n] == 0); // Closed
+    assert(cost > 0.0);
 }
 
-// Test for boundary conditions, starting node out of range
-void test_grasp_nearest_neighbor_tour_invalid_starting_node() {
-    const int num_nodes = 3;
-    int tour[num_nodes + 1];
-    double cost = 0.0;
-    double edge_costs[num_nodes * num_nodes];
-    create_simple_edge_costs(edge_costs, num_nodes);
+static void test_grasp_invalid_start_node(void) {
+    const int n = 5;
+    double costs[25];
+    create_dummy_costs(costs, n);
+    int tour[6];
+    double cost;
 
-    // Test for out-of-bounds starting node
-    assert(-1 == grasp_nearest_neighbor_tour(4, tour, num_nodes, edge_costs, &cost, 0.5, 0.3, 0.2));
+    // Start node 10 is out of bounds [0, 5)
+    int res = grasp_nearest_neighbor_tour(10, tour, n, costs, &cost, 1.0, 0.0, 0.0);
+    assert(res == -1);
 }
-
-// More tests can be added here...
 
 void run_grasp_nn_helpers_tests(void) {
-    printf("--- Running GRASP-NN Helper Tests ---\n");
-    test_grasp_nearest_neighbor_tour_basic_case();
-    test_grasp_nearest_neighbor_tour_invalid_starting_node();
-    printf("GRASP-NN Helper tests passed.\n");
+    printf("[GRASP Helper] Running tests...\n");
+    test_grasp_construction_basic();
+    test_grasp_invalid_start_node();
+    printf("[GRASP Helper] Passed.\n");
 }

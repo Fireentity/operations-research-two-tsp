@@ -1,6 +1,6 @@
 #include "grasp.h"
 #include "c_util.h"
-#include "algorithms/algorithms.h"
+#include "algorithms.h"
 #include "time_limiter.h"
 #include "logger.h"
 #include <stdlib.h>
@@ -59,7 +59,7 @@ static void run_grasp(const TspInstance *instance,
 
         if (res == 0) {
             // 2. Local Search Phase: 2-Opt
-            double improvement = two_opt(current_tour, number_of_nodes, edge_cost_array, timer, );
+            double improvement = two_opt(current_tour, number_of_nodes, edge_cost_array, timer);
             current_cost += improvement;
 
             cost_recorder_add(recorder, current_cost);

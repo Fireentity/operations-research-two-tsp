@@ -7,16 +7,15 @@
 #include "nn_test.h"
 
 int main(void) {
-    printf("=== Running All TSP Algorithm Tests ===\n\n");
+    printf("=== TSP Algorithm Tests Start ===\n\n");
 
-    // Test degli algoritmi principali
+    run_nn_tests();
     run_grasp_tests();
     run_ts_tests();
     run_vns_tests();
-    run_nn_tests();
     run_n_opt_tests();
     run_grasp_nn_helpers_tests();
 
-    printf("\n=== All Tests Passed ===\n");
+    printf("\n=== All Tests Passed Successfully ===\n");
     return 0;
-} //TODO fix tests
+}

@@ -45,7 +45,7 @@ static void run_nn(const TspInstance *instance,
 
         if (res == 0) {
             // Apply 2-Opt Local Search
-            current_cost += two_opt(current_tour, n, costs, timer, );
+            current_cost += two_opt(current_tour, n, costs, timer);
 
             cost_recorder_add(recorder, current_cost);
 

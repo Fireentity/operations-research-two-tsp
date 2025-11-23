@@ -2,68 +2,44 @@
 #include <assert.h>
 #include <stdio.h>
 #include "tabu_search.h"
-#include "tsp_algorithm.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
-#include "costs_plotter.h"
+#include "cost_recorder.h"
 
-#define NUMBER_OF_NODES 10
-
-// --- Dummy Plotter for testing ---
-static void dummy_add_cost(const CostsPlotter *self, double cost) {
-    (void) self;
-    (void) cost;
-}
-
-static void dummy_plot(const CostsPlotter *self, const char *file_name) {
-    (void) self;
-    (void) file_name;
-}
-
-static void dummy_plot_free(const CostsPlotter *self) { (void) self; }
-
-static const CostsPlotter dummy_plotter = {
-    .add_cost = dummy_add_cost,
-    .plot = dummy_plot,
-    .free = dummy_plot_free,
-};
-// --- End Dummy Plotter ---
+#define NODES 20
+#define TIME_LIMIT 1.0
 
 void run_ts_tests(void) {
-    printf("--- Running Tabu Search Algorithm Tests ---\n");
-    const TspInstance *instance = init_random_tsp_instance(
-        NUMBER_OF_NODES,
-        42,
-        (TspGenerationArea)
-    {
-        .
-        square_side = 100,
-        .
-        x_square = 0,
-        .
-        y_square = 0,
-    }
-    )
-    ;
+    printf("[Tabu Search] Running tests...\n");
 
-    const TspSolution *solution = init_solution(instance);
-    const double time_limit = 1.0;
-    const int tenure = 5;
-    const int max_stagnation = 50;
+    // 1. Setup
+    TspGenerationArea area = {.x_square = 0, .y_square = 0, .square_side = 100};
+    TspInstance *instance = tsp_instance_create_random(NODES, 99, area);
+    TspSolution *solution = tsp_solution_create(instance);
+    CostRecorder *recorder = cost_recorder_create(100);
 
-    const TspAlgorithm *ts_algorithm = init_tabu(tenure, max_stagnation, time_limit);
+    // 2. Config
+    TabuConfig config = {
+        .time_limit = TIME_LIMIT,
+        .tenure = 5,
+        .max_stagnation = 20
+    };
+    TspAlgorithm tabu = tabu_create(config);
 
-    ts_algorithm->solve(ts_algorithm, instance, solution, &dummy_plotter);
+    // 3. Run
+    tsp_algorithm_run(&tabu, instance, solution, recorder);
 
-    const double cost = solution->get_cost(solution);
-    int tour[NUMBER_OF_NODES + 1];
-    solution->get_tour_copy(solution, tour);
+    // 4. Assertions
+    assert(tsp_solution_check_feasibility(solution) == FEASIBLE);
+    assert(tsp_solution_get_cost(solution) > 0);
 
-    assert(tour[0] == tour[NUMBER_OF_NODES]);
-    assert(cost > 0);
+    // 5. Cleanup
+    tsp_algorithm_destroy(&tabu);
+    cost_recorder_destroy(recorder);
+    tsp_solution_destroy(solution);
+    tsp_instance_destroy(instance);
 
-    ts_algorithm->free(ts_algorithm);
-    solution->free(solution);
-    instance->free(instance);
-    printf("Tabu Search test passed.\n");
+    printf("[Tabu Search] Passed.\n");
 }
+#undef NODES
+#undef TIME_LIMIT

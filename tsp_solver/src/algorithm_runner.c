@@ -1,5 +1,4 @@
 #include "algorithm_runner.h"
-#include "tsp_algorithm.h"
 #include "nearest_neighbor.h"
 #include "variable_neighborhood_search.h"
 #include "tabu_search.h"
@@ -7,31 +6,32 @@
 #include "plot_util.h"
 #include "c_util.h"
 #include "logger.h"
+#include "constants.h"
 
 #include <stdio.h>
 #include <linux/limits.h>
 #include <string.h>
+
 
 static void execute_and_report(const TspAlgorithm *algo,
                                const TspInstance *instance,
                                const char *plot_file,
                                const char *costs_file) {
     // --- Cost Recorder ---
-    CostRecorder *recorder = cost_recorder_create(1024);
+    CostRecorder *recorder = cost_recorder_create(RECORDER_INITIAL_CAPACITY);
 
     // --- Solution ---
     TspSolution *solution = tsp_solution_create(instance);
 
     // --- Run Algorithm ---
-    tsp_algorithm_solve(algo, instance, solution, recorder);
-
+    tsp_algorithm_run(algo, instance, solution, recorder);
     // --- Extract Tour ---
-    int n = tsp_instance_get_num_nodes(instance);
+    const int n = tsp_instance_get_num_nodes(instance);
     int *tour_buffer = malloc((n + 1) * sizeof(int));
     check_alloc(tour_buffer);
 
     tsp_solution_get_tour(solution, tour_buffer);
-    double cost = tsp_solution_get_cost(solution);
+    const double cost = tsp_solution_get_cost(solution);
 
     // --- Plot Tour ---
     plot_tour(tour_buffer, n, tsp_instance_get_nodes(instance), plot_file);
@@ -53,13 +53,13 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     char full_costs_path[PATH_MAX];
 
 #define BUILD_PATHS(plot_fname, cost_fname) \
-    if (options->plots_path && strlen(options->plots_path) > 0) { \
-        join_path(full_plot_path, options->plots_path, plot_fname, PATH_MAX); \
-        join_path(full_costs_path, options->plots_path, cost_fname, PATH_MAX); \
-    } else { \
-        snprintf(full_plot_path, PATH_MAX, "%s", plot_fname); \
-        snprintf(full_costs_path, PATH_MAX, "%s", cost_fname); \
-    }
+        if (options->plots_path && strlen(options->plots_path) > 0) { \
+            join_path(full_plot_path, options->plots_path, plot_fname, PATH_MAX); \
+            join_path(full_costs_path, options->plots_path, cost_fname, PATH_MAX); \
+        } else { \
+            snprintf(full_plot_path, PATH_MAX, "%s", plot_fname); \
+            snprintf(full_costs_path, PATH_MAX, "%s", cost_fname); \
+        }
 
     // --- NN ---
     if (options->nn_params.enable) {

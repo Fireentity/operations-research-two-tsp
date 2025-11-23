@@ -1,64 +1,48 @@
+#include "nn_test.h"
 #include <assert.h>
 #include <stdio.h>
 #include "nearest_neighbor.h"
-#include "tsp_algorithm.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
-#include "costs_plotter.h" // Per il dummy plotter
+#include "cost_recorder.h"
 
-#define NUMBER_OF_NODES 10
-
-static void dummy_add_cost(const CostsPlotter *self, double cost) {
-    (void) self;
-    (void) cost;
-}
-
-static void dummy_plot(const CostsPlotter *self, const char *file_name) {
-    (void) self;
-    (void) file_name;
-}
-
-static void dummy_plot_free(const CostsPlotter *self) { (void) self; }
-
-static const CostsPlotter dummy_plotter = {
-    .add_cost = dummy_add_cost,
-    .plot = dummy_plot,
-    .free = dummy_plot_free,
-};
+#define NODES 20
+#define TIME_LIMIT 1.0
 
 void run_nn_tests(void) {
-    printf("--- Running NN Algorithm Tests ---\n");
-    const TspInstance *instance = init_random_tsp_instance(
-        NUMBER_OF_NODES,
-        42,
-        (TspGenerationArea)
-    {
-        .
-        square_side = 100,
-        .
-        x_square = 0,
-        .
-        y_square = 0,
-    }
-    )
-    ;
+    printf("[NN] Running tests...\n");
 
-    const TspSolution *solution = init_solution(instance);
-    const double time_limit = 1.0;
+    // 1. Setup Instance
+    TspGenerationArea area = {.x_square = 0, .y_square = 0, .square_side = 100};
+    TspInstance *instance = tsp_instance_create_random(NODES, 42, area);
+    TspSolution *solution = tsp_solution_create(instance);
+    CostRecorder *recorder = cost_recorder_create(100);
 
-    const TspAlgorithm *nn_algorithm = init_nearest_neighbor(time_limit);
+    // 2. Setup Algorithm
+    NNConfig config = {.time_limit = TIME_LIMIT};
+    TspAlgorithm nn = nn_create(config);
 
-    nn_algorithm->solve(nn_algorithm, instance, solution, &dummy_plotter);
+    // 3. Execution
+    tsp_algorithm_run(&nn, instance, solution, recorder);
 
-    double cost = solution->get_cost(solution);
-    int tour[NUMBER_OF_NODES + 1];
-    solution->get_tour_copy(solution, tour);
+    // 4. Validation
+    double cost = tsp_solution_get_cost(solution);
+    assert(cost > 0.0 && "Cost must be positive");
 
-    assert(tour[0] == tour[NUMBER_OF_NODES]);
-    assert(cost > 0);
+    int tour[NODES + 1];
+    tsp_solution_get_tour(solution, tour);
+    assert(tour[0] == tour[NODES] && "Tour must be closed");
 
-    nn_algorithm->free(nn_algorithm);
-    solution->free(solution);
-    instance->free(instance);
-    printf("NN Algorithm test passed.\n");
+    // Check tour validity (no duplicates)
+    assert(tsp_solution_check_feasibility(solution) == FEASIBLE);
+
+    // 5. Cleanup
+    tsp_algorithm_destroy(&nn);
+    cost_recorder_destroy(recorder);
+    tsp_solution_destroy(solution);
+    tsp_instance_destroy(instance);
+
+    printf("[NN] Passed.\n");
 }
+#undef NODES
+#undef TIME_LIMIT
