@@ -1,8 +1,8 @@
 
-#include "../../include/plotting/plot_util.h"
+#include "plot_util.h"
 #include <stdio.h>
 #include <c_util.h>
-#include "../../../common/include/constants.h"
+#include "constants.h"
 
 /**
  * @brief Generic boundaries calculator for plots.

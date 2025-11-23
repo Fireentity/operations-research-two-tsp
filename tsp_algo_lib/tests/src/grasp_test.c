@@ -53,7 +53,7 @@ static void test_grasp_algorithm_basic_case() {
     TspSolution *sol = tsp_solution_create(instance);
     const TspAlgorithm *grasp = init_grasp(60.0, 0.30, 0.30);
 
-    tsp_algorithm_solve(grasp, instance, sol, &dummy_plotter);
+    tsp_algorithm_solve(grasp, instance, sol, dummy_plotter);
 
     double cost = tsp_solution_get_cost(sol);
     int tour[NUMBER_OF_NODES + 1];
