@@ -1,22 +1,15 @@
 #ifndef NEAREST_NEIGHBOR_H
 #define NEAREST_NEIGHBOR_H
 
-#include <tsp_algorithm.h>
-#include <tsp_instance.h>
+#include "tsp_algorithm.h"
 
-/**
- * @brief Structure representing the nearest neighbor algorithm configuration.
- */
 typedef struct {
-    const double time_limit; /**< Maximum allowed time for the algorithm execution. */
-} NearestNeighbor;
+    double time_limit;
+} NNConfig;
 
 /**
- * @brief Initializes the nearest neighbor TSP algorithm.
- *
- * @param time_limit The time limit for the algorithm execution.
- * @return Pointer to a TspAlgorithm instance configured to use the nearest neighbor approach.
+ * @brief Creates a Nearest Neighbor algorithm strategy.
  */
-const TspAlgorithm *init_nearest_neighbor(double time_limit);
+TspAlgorithm nn_create(NNConfig config);
 
-#endif //NEAREST_NEIGHBOR_H
+#endif // NEAREST_NEIGHBOR_H

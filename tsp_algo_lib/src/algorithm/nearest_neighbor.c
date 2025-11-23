@@ -1,129 +1,78 @@
 #include "nearest_neighbor.h"
-#include <stdlib.h>
-#include <string.h>
-#include <c_util.h>
 #include "algorithms.h"
-#include "constants.h"
-#include "costs_plotter.h"
 #include "time_limiter.h"
-#include "tsp_instance.h"
-#include "tsp_solution.h"
+#include "c_util.h"
 #include "logger.h"
+#include <stdlib.h>
 
-union TspExtendedAlgorithms {
-    NearestNeighbor *nearest_neighbor;
-};
+#include "constants.h"
 
-static void free_this(const TspAlgorithm *self) {
-    if (!self) return;
-    if_verbose(VERBOSE_DEBUG, "Freeing NN algorithm struct...\n");
-    if (self->extended) {
-        if (self->extended->nearest_neighbor) free(self->extended->nearest_neighbor);
-        free(self->extended);
+static void run_nn(const TspInstance *instance,
+                   TspSolution *solution,
+                   const void *config_void,
+                   CostRecorder *recorder) {
+    const NNConfig *cfg = config_void;
+    const int n = tsp_instance_get_num_nodes(instance);
+    const double *costs = tsp_instance_get_cost_matrix(instance);
+
+    if_verbose(VERBOSE_DEBUG, "  NN: Time limit set to %.2fs.\n", cfg->time_limit);
+    TimeLimiter timer = time_limiter_create(cfg->time_limit);
+    time_limiter_start(&timer);
+
+    int *current_tour = malloc((n + 1) * sizeof(int));
+    check_alloc(current_tour);
+
+    // Generate Initial Solution (Single Shot - Random Start)
+    double init_cost;
+    // TODO remove rand here, put a specific rand function
+    if (nearest_neighbor_tour(rand() % n, current_tour, n, costs, &init_cost) == 0) {
+        tsp_solution_update_if_better(solution, current_tour, init_cost);
     }
-    free((void *) self);
-}
 
-static void improve(const TspAlgorithm *tsp_algorithm,
-                    const TspInstance *instance,
-                    TspSolution *solution,
-                    CostsPlotter *plotter) {
-    if_verbose(VERBOSE_DEBUG, "  NN: Starting improvement loop (multi-start NN + 2-Opt)...\n");
-    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
-    const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
-
-    const double time_limit = tsp_algorithm->extended->nearest_neighbor->time_limit;
-    if_verbose(VERBOSE_DEBUG, "  NN: Time limit set to %.2fs.\n", time_limit);
-    TimeLimiter *time_limiter = time_limiter_create(time_limit);
-    time_limiter_start(time_limiter);
-
-    int current_tour[number_of_nodes + 1];
-    int best_tour[number_of_nodes + 1];
-    double current_cost;
-
-    tsp_solution_get_tour(solution, current_tour);
-
-    int starting_nodes[number_of_nodes];
-    memcpy(starting_nodes, current_tour, number_of_nodes * sizeof(int));
-    shuffle_int_array(starting_nodes, number_of_nodes);
-
-    double best_cost = tsp_solution_get_cost(solution);
-    memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
-    if_verbose(VERBOSE_DEBUG, "  NN: Initial best cost: %lf\n", best_cost);
+    // Improvement Phase (Multi-start NN + 2-Opt)
+    int *starting_nodes = malloc(n * sizeof(int));
+    check_alloc(starting_nodes);
+    for (int i = 0; i < n; i++) starting_nodes[i] = i;
+    shuffle_int_array(starting_nodes, n);
 
     int iteration = 0;
-    while (!time_limiter_is_over(time_limiter) && iteration < number_of_nodes) {
-        if_verbose(VERBOSE_ALL, "    NN [Iteration %d]: Running from start node %d.\n", iteration,
-                   starting_nodes[iteration]);
+    double current_cost;
 
-        const int result = nearest_neighbor_tour(starting_nodes[iteration], current_tour, number_of_nodes,
-                                                 edge_cost_array, &current_cost);
-        if (result != 0) {
-            if_verbose(VERBOSE_INFO, "    NN [Iteration %d]: Failed to generate NN tour.\n", iteration);
-            iteration++;
-            continue;
-        }
+    while (!time_limiter_is_over(&timer) && iteration < n) {
+        const int start_node = starting_nodes[iteration];
 
-        current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
-        costs_plotter_add(plotter, current_cost);
+        const int res = nearest_neighbor_tour(start_node, current_tour, n, costs, &current_cost);
 
-        if (current_cost < best_cost - EPSILON) {
-            best_cost = current_cost;
-            memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
-            if_verbose(VERBOSE_DEBUG, "    NN [Iteration %d]: Found new best cost: %lf\n", iteration, best_cost);
+        if (res == 0) {
+            // Apply 2-Opt Local Search
+            current_cost += two_opt(current_tour, n, costs, timer, );
+
+            cost_recorder_add(recorder, current_cost);
+
+            if (tsp_solution_update_if_better(solution, current_tour, current_cost)) {
+                if_verbose(VERBOSE_DEBUG, "    NN [Iter %d]: New best cost: %lf\n", iteration, current_cost);
+            }
         }
         iteration++;
     }
 
-    if_verbose(VERBOSE_DEBUG, "  NN: Improvement loop finished after %d iterations.\n", iteration);
-    tsp_solution_update_if_better(solution, best_tour, best_cost);
-
-    time_limiter_destroy(time_limiter);
+    free(starting_nodes);
+    free(current_tour);
 }
 
-static void solve(const TspAlgorithm *tsp_algorithm,
-                  const TspInstance *instance,
-                  TspSolution *solution,
-                  CostsPlotter *plotter) {
-    if_verbose(VERBOSE_INFO, "Running Nearest Neighbor algorithm...\n");
-    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
-    const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
-
-    int initial_tour[number_of_nodes + 1];
-    double initial_cost;
-
-    if_verbose(VERBOSE_DEBUG, "  NN: Generating initial solution...\n");
-    const int result = nearest_neighbor_tour(rand() % number_of_nodes, initial_tour, number_of_nodes, edge_cost_array,
-                                             &initial_cost);
-
-    if (result != 0) {
-        if_verbose(VERBOSE_INFO, "  NN: Failed to generate initial solution.\n");
-        return;
-    }
-
-    tsp_solution_update_if_better(solution, initial_tour, initial_cost);
-    if_verbose(VERBOSE_DEBUG, "  NN: Initial solution cost: %lf\n", initial_cost);
-
-    improve(tsp_algorithm, instance, solution, plotter);
-    if_verbose(VERBOSE_INFO, "Nearest Neighbor algorithm finished.\n");
+static void free_nn_config(void *config) {
+    free(config);
 }
 
+TspAlgorithm nn_create(const NNConfig config) {
+    NNConfig *cfg_copy = malloc(sizeof(NNConfig));
+    check_alloc(cfg_copy);
+    *cfg_copy = config;
 
-const TspAlgorithm *init_nearest_neighbor(const double time_limit) {
-    if_verbose(VERBOSE_DEBUG, "Initializing NN (t=%.2f)\n", time_limit);
-    const NearestNeighbor nearest_neighbor = {
-        .time_limit = time_limit,
+    return (TspAlgorithm){
+        .name = "Nearest Neighbor",
+        .config = cfg_copy,
+        .run = run_nn,
+        .free_config = free_nn_config
     };
-
-    const TspExtendedAlgorithms extended_algorithms = {
-        .nearest_neighbor = memdup(&nearest_neighbor, sizeof(nearest_neighbor))
-    };
-
-    const TspAlgorithm tsp_algorithm = {
-        .solve = solve,
-        .free = free_this,
-        .extended = memdup(&extended_algorithms, sizeof(extended_algorithms)),
-    };
-
-    return memdup(&tsp_algorithm, sizeof(tsp_algorithm));
 }
