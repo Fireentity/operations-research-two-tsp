@@ -1,0 +1,47 @@
+#include "cost_recorder.h"
+#include <stdlib.h>
+#include "c_util.h"
+
+struct CostRecorder {
+    double *data;
+    size_t count;
+    size_t capacity;
+    bool enabled;
+};
+
+CostRecorder *cost_recorder_create(size_t initial_capacity) {
+    if (initial_capacity == 0) initial_capacity = 1024;
+
+    CostRecorder *r = malloc(sizeof(CostRecorder));
+    check_alloc(r);
+
+    r->data = malloc(initial_capacity * sizeof(double));
+    check_alloc(r->data);
+
+    r->count = 0;
+    r->capacity = initial_capacity;
+    r->enabled = true;
+
+    return r;
+}
+
+void cost_recorder_destroy(CostRecorder *r) {
+    if (!r) return;
+
+    free(r->data);
+    free(r);
+}
+
+void cost_recorder_add(CostRecorder *r, const double cost) {
+    if (!r || !r->enabled) return;
+
+    if (r->count == r->capacity) {
+        const size_t new_cap = r->capacity * 2;
+        double *tmp = realloc(r->data, new_cap * sizeof(double));
+        check_alloc(tmp);
+        r->data = tmp;
+        r->capacity = new_cap;
+    }
+
+    r->data[r->count++] = cost;
+}
