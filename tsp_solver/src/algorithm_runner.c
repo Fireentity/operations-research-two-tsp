@@ -1,150 +1,109 @@
 #include "algorithm_runner.h"
+#include "tsp_algorithm.h"
+#include "nearest_neighbor.h"
+#include "variable_neighborhood_search.h"
+#include "tabu_search.h"
+#include "grasp.h"
+#include "plot_util.h"
+#include "c_util.h"
+#include "logger.h"
+
 #include <stdio.h>
 #include <linux/limits.h>
 #include <string.h>
-#include "c_util.h"
-#include "logger.h"
-#include "variable_neighborhood_search.h"
-#include "nearest_neighbor.h"
-#include "tabu_search.h"
-#include "grasp.h"
-#include "tsp_solution.h"
-#include "costs_plotter.h"
-#include "../include/plotting/plot_util.h"
 
-typedef struct {
-    const TspAlgorithm *algorithm;
-    const char *name;
-    const char *plot_file;
-    const char *costs_file;
-} AlgorithmTask;
-
-/**
- * @brief Static helper function to run and report on a single algorithm.
- */
-static void execute_and_report(const TspAlgorithm *algorithm,
+static void execute_and_report(const TspAlgorithm *algo,
                                const TspInstance *instance,
-                               const char *algorithm_name,
                                const char *plot_file,
                                const char *costs_file) {
-    if_verbose(VERBOSE_DEBUG, "  Initializing plotter for %s...\n", algorithm_name);
-    CostsPlotter *plotter = costs_plotter_create(tsp_instance_get_num_nodes(instance));
+    // --- Cost Recorder ---
+    CostRecorder *recorder = cost_recorder_create(1024);
 
-    if_verbose(VERBOSE_DEBUG, "  Initializing solution for %s...\n", algorithm_name);
+    // --- Solution ---
     TspSolution *solution = tsp_solution_create(instance);
 
-    if_verbose(VERBOSE_DEBUG, "  Calling solve() for %s...\n", algorithm_name);
-    tsp_solution_solve(solution, algorithm, plotter);
+    // --- Run Algorithm ---
+    tsp_algorithm_solve(algo, instance, solution, recorder);
 
-    if_verbose(VERBOSE_DEBUG, "  Plotting tour to %s.\n", plot_file);
-    const int nr_nodes = tsp_instance_get_num_nodes(instance);
-    int tour_buffer[nr_nodes + 1];
+    // --- Extract Tour ---
+    int n = tsp_instance_get_num_nodes(instance);
+    int *tour_buffer = malloc((n + 1) * sizeof(int));
+    check_alloc(tour_buffer);
+
     tsp_solution_get_tour(solution, tour_buffer);
-    plot_tour(tour_buffer,
-              tsp_instance_get_num_nodes(instance),
-              tsp_instance_get_nodes(instance),
-              plot_file);
+    double cost = tsp_solution_get_cost(solution);
 
-    if_verbose(VERBOSE_DEBUG, "  Plotting costs to %s.\n", costs_file);
-    costs_plotter_plot(plotter, costs_file);
+    // --- Plot Tour ---
+    plot_tour(tour_buffer, n, tsp_instance_get_nodes(instance), plot_file);
 
-    if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algorithm_name, tsp_solution_get_cost(solution));
+    // --- TODO: integrate with new CostPlotter architecture ---
+    // cost_reporter_export(&reporter, costs_file);
 
-    // Resources created in this function are freed here
-    if_verbose(VERBOSE_DEBUG, "  Freeing solution for %s.\n", algorithm_name);
+    if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algo->name, cost);
+
+    // --- Cleanup ---
+    free(tour_buffer);
+    cost_recorder_destroy(recorder);
     tsp_solution_destroy(solution);
-
-    if_verbose(VERBOSE_DEBUG, "  Freeing plotter for %s.\n", algorithm_name);
-    costs_plotter_destroy(plotter);
+    tsp_algorithm_destroy((TspAlgorithm *) algo);
 }
 
-// Implementation of the public function
-void run_selected_algorithms(const TspInstance *instance, const CmdOptions *cmd_options) {
-    // TODO hardcoded magic number
-    AlgorithmTask tasks[4]; // Max number of algorithms
-    int task_count = 0;
-
-    if_verbose(VERBOSE_DEBUG, "Configuring algorithm run queue...\n");
-
-    if (cmd_options->nn_params.enable) {
-        if_verbose(VERBOSE_DEBUG, "  Queueing NN (t=%.2fs)\n", cmd_options->tsp.time_limit);
-        tasks[task_count++] = (AlgorithmTask){
-            .algorithm = init_nearest_neighbor(cmd_options->tsp.time_limit),
-            .name = "NN",
-            .plot_file = cmd_options->nn_params.plot_file,
-            .costs_file = cmd_options->nn_params.cost_file
-        };
-    }
-    if (cmd_options->vns_params.enable) {
-        if_verbose(VERBOSE_DEBUG, "  Queueing VNS (k=%d, n_opt=%d, t=%.2fs)\n",
-                   (int)cmd_options->vns_params.kick_repetitions,
-                   (int)cmd_options->vns_params.n_opt,
-                   cmd_options->tsp.time_limit);
-        tasks[task_count++] = (AlgorithmTask){
-            .algorithm = init_vns((int) cmd_options->vns_params.kick_repetitions,
-                                  (int) cmd_options->vns_params.n_opt,
-                                  (int) cmd_options->tsp.time_limit),
-            .name = "VNS",
-            .plot_file = cmd_options->vns_params.plot_file,
-            .costs_file = cmd_options->vns_params.cost_file
-        };
-    }
-    if (cmd_options->tabu_params.enable) {
-        if_verbose(VERBOSE_DEBUG, "  Queueing TS (tenure=%d, stagnation=%d, t=%.2fs)\n",
-                   (int)cmd_options->tabu_params.tenure,
-                   (int)cmd_options->tabu_params.max_stagnation,
-                   cmd_options->tsp.time_limit);
-        tasks[task_count++] = (AlgorithmTask){
-            .algorithm = init_tabu((int) cmd_options->tabu_params.tenure,
-                                   (int) cmd_options->tabu_params.max_stagnation,
-                                   cmd_options->tsp.time_limit),
-            .name = "TS",
-            .plot_file = cmd_options->tabu_params.plot_file,
-            .costs_file = cmd_options->tabu_params.cost_file
-        };
-    }
-    if (cmd_options->grasp_params.enable) {
-        if_verbose(VERBOSE_DEBUG, "  Queueing GRASP (p1=%.2f, p2=%.2f, t=%.2fs)\n",
-                   cmd_options->grasp_params.p1,
-                   cmd_options->grasp_params.p2,
-                   cmd_options->tsp.time_limit);
-        tasks[task_count++] = (AlgorithmTask){
-            .algorithm = init_grasp(cmd_options->tsp.time_limit,
-                                    cmd_options->grasp_params.p1,
-                                    cmd_options->grasp_params.p2),
-            .name = "GRASP",
-            .plot_file = cmd_options->grasp_params.plot_file,
-            .costs_file = cmd_options->grasp_params.cost_file
-        };
-    }
-
-    if_verbose(VERBOSE_INFO, "Running %d algorithm(s)...\n", task_count);
-
+void run_selected_algorithms(const TspInstance *instance, const CmdOptions *options) {
     char full_plot_path[PATH_MAX];
     char full_costs_path[PATH_MAX];
-    for (int i = 0; i < task_count; i++) {
-        if_verbose(VERBOSE_INFO, "--- Running %s ---\n", tasks[i].name);
 
-        if (cmd_options->plots_path && strlen(cmd_options->plots_path) > 0)
-            join_path(full_plot_path, cmd_options->plots_path, tasks[i].plot_file, PATH_MAX);
-        else
-            snprintf(full_plot_path, PATH_MAX, "%s", tasks[i].plot_file);
-
-        if (cmd_options->plots_path && strlen(cmd_options->plots_path) > 0)
-            join_path(full_costs_path, cmd_options->plots_path, tasks[i].costs_file, PATH_MAX);
-        else
-            snprintf(full_costs_path, PATH_MAX, "%s", tasks[i].costs_file);
-
-
-        execute_and_report(tasks[i].algorithm,
-                           instance,
-                           tasks[i].name,
-                           full_plot_path,
-                           full_costs_path);
-
-        if_verbose(VERBOSE_DEBUG, "Freeing algorithm %s.\n", tasks[i].name);
-        tasks[i].algorithm->free(tasks[i].algorithm);
+#define BUILD_PATHS(plot_fname, cost_fname) \
+    if (options->plots_path && strlen(options->plots_path) > 0) { \
+        join_path(full_plot_path, options->plots_path, plot_fname, PATH_MAX); \
+        join_path(full_costs_path, options->plots_path, cost_fname, PATH_MAX); \
+    } else { \
+        snprintf(full_plot_path, PATH_MAX, "%s", plot_fname); \
+        snprintf(full_costs_path, PATH_MAX, "%s", cost_fname); \
     }
 
-    if_verbose(VERBOSE_INFO, "All algorithms finished.\n");
+    // --- NN ---
+    if (options->nn_params.enable) {
+        NNConfig cfg = {.time_limit = options->tsp.time_limit};
+        TspAlgorithm algo = nn_create(cfg);
+        BUILD_PATHS(options->nn_params.plot_file, options->nn_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+    // --- VNS ---
+    if (options->vns_params.enable) {
+        VNSConfig cfg = {
+            .kick_repetition = (int) options->vns_params.kick_repetitions,
+            .n_opt = (int) options->vns_params.n_opt,
+            .time_limit = options->tsp.time_limit
+        };
+        TspAlgorithm algo = vns_create(cfg);
+        BUILD_PATHS(options->vns_params.plot_file, options->vns_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+    // --- TABU ---
+    if (options->tabu_params.enable) {
+        TabuConfig cfg = {
+            .tenure = (int) options->tabu_params.tenure,
+            .max_stagnation = (int) options->tabu_params.max_stagnation,
+            .time_limit = options->tsp.time_limit
+        };
+        TspAlgorithm algo = tabu_create(cfg);
+        BUILD_PATHS(options->tabu_params.plot_file, options->tabu_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+    // --- GRASP ---
+    if (options->grasp_params.enable) {
+        GraspConfig cfg = {
+            .p1 = options->grasp_params.p1,
+            .p2 = options->grasp_params.p2,
+            .time_limit = options->tsp.time_limit
+        };
+        TspAlgorithm algo = grasp_create(cfg);
+        BUILD_PATHS(options->grasp_params.plot_file, options->grasp_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+#undef BUILD_PATHS
 }
