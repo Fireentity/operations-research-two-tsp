@@ -45,3 +45,23 @@ void cost_recorder_add(CostRecorder *r, const double cost) {
 
     r->data[r->count++] = cost;
 }
+
+size_t cost_recorder_get_count(const CostRecorder *r) {
+    if (!r) return 0;
+    return r->count;
+}
+
+const double *cost_recorder_get_costs(const CostRecorder *r) {
+    if (!r) return NULL;
+    return r->data;
+}
+
+void cost_recorder_enable(CostRecorder *r) {
+    if (!r) return;
+    r->enabled = true;
+}
+
+void cost_recorder_disable(CostRecorder *r) {
+    if (!r) return;
+    r->enabled = false;
+}
