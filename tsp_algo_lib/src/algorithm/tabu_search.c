@@ -1,94 +1,70 @@
 #include "tabu_search.h"
-#include <float.h>
+#include "algorithms.h"
+#include "tsp_math_util.h"
+#include "time_limiter.h"
+#include "c_util.h"
+#include "logger.h"
 #include <stdlib.h>
 #include <string.h>
-#include <c_util.h>
-#include "algorithms.h"
+#include <float.h>
+
 #include "constants.h"
-#include "costs_plotter.h"
-#include "time_limiter.h"
-#include "tsp_instance.h"
-#include "tsp_solution.h"
-#include "tsp_math_util.h"
-#include "logger.h"
 
-union TspExtendedAlgorithms {
-    TabuSearch *tabu_search;
-};
+static void run_tabu(const TspInstance *instance,
+                     TspSolution *solution,
+                     const void *config_void,
+                     CostRecorder *recorder) {
+    const TabuConfig *cfg = config_void;
+    const int n = tsp_instance_get_num_nodes(instance);
+    const double *costs = tsp_instance_get_cost_matrix(instance);
 
-static void free_this(const TspAlgorithm *self) {
-    if (!self) return;
-    if_verbose(VERBOSE_DEBUG, "Freeing Tabu Search algorithm struct...\n");
-    if (self->extended) {
-        if (self->extended->tabu_search) {
-            free(self->extended->tabu_search);
-        }
-        free(self->extended);
-    }
-    free((void *) self);
-}
+    if_verbose(VERBOSE_DEBUG, "  Tabu Search (Tenure=%d, Stagnation=%d, t=%.2f)\n",
+               cfg->tenure, cfg->max_stagnation, cfg->time_limit);
 
-static void improve(const TspAlgorithm *tsp_algorithm,
-                    const TspInstance *instance,
-                    TspSolution *solution,
-                    CostsPlotter *plotter) {
-    if_verbose(VERBOSE_DEBUG, "  TS: Starting improvement loop...\n");
-    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
-    const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
+    TimeLimiter timer = time_limiter_create(cfg->time_limit);
+    time_limiter_start(&timer);
 
-    const double time_limit = tsp_algorithm->extended->tabu_search->time_limit;
-    const int tabu_tenure = tsp_algorithm->extended->tabu_search->tenure;
-    const int max_stagnation = tsp_algorithm->extended->tabu_search->max_stagnation;
-
-    if_verbose(VERBOSE_DEBUG, "  TS: Time limit=%.2fs, Tenure=%d, Max Stagnation=%d\n",
-               time_limit, tabu_tenure, max_stagnation);
-
-    TimeLimiter *time_limiter = time_limiter_create(time_limit);
-    time_limiter_start(time_limiter);
-
-    int current_tour[number_of_nodes + 1];
+    int *current_tour = malloc((n + 1) * sizeof(int));
+    check_alloc(current_tour);
     tsp_solution_get_tour(solution, current_tour);
     double current_cost = tsp_solution_get_cost(solution);
 
-    if_verbose(VERBOSE_DEBUG, "  TS: Running initial 2-Opt...\n");
-    current_cost += two_opt(current_tour, number_of_nodes, edge_cost_array, time_limiter, EPSILON);
+    current_cost += two_opt(current_tour, n, costs, timer, );
 
-    int best_tour[number_of_nodes + 1];
-    memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
+    int *best_tour = malloc((n + 1) * sizeof(int));
+    check_alloc(best_tour);
+    memcpy(best_tour, current_tour, (n + 1) * sizeof(int));
     double best_cost = current_cost;
-    if_verbose(VERBOSE_DEBUG, "  TS: Initial cost after 2-Opt: %lf\n", best_cost);
 
-    int *tabu = calloc(number_of_nodes * number_of_nodes, sizeof(int));
-    check_alloc(tabu);
+    int *tabu_matrix = calloc(n * n, sizeof(int));
+    check_alloc(tabu_matrix);
 
-    int no_improvements = 0;
+    int no_improv = 0;
     int iteration = 0;
 
-    while (!time_limiter_is_over(time_limiter) && no_improvements < max_stagnation) {
+    while (!time_limiter_is_over(&timer) && no_improv < cfg->max_stagnation) {
         iteration++;
         int best_i = -1, best_j = -1;
         double best_delta = DBL_MAX;
 
-        for (int i = 1; i < number_of_nodes - 1; i++) {
-            for (int j = i + 1; j < number_of_nodes; j++) {
+        for (int i = 1; i < n - 1; i++) {
+            for (int j = i + 1; j < n; j++) {
                 const int a = current_tour[i - 1];
                 const int b = current_tour[i];
                 const int c = current_tour[j];
                 const int d = current_tour[j + 1];
 
-                const double delta = edge_cost_array[a * number_of_nodes + c] +
-                                     edge_cost_array[b * number_of_nodes + d] -
-                                     (edge_cost_array[a * number_of_nodes + b] +
-                                      edge_cost_array[c * number_of_nodes + d]);
+                const double delta = costs[a * n + c] + costs[b * n + d] -
+                                     (costs[a * n + b] + costs[c * n + d]);
 
-                const int tabu_index = i * number_of_nodes + j;
-                const int move_is_tabu = (tabu[tabu_index] > iteration);
+                const int tabu_idx = i * n + j;
+                const int is_tabu = (tabu_matrix[tabu_idx] > iteration);
 
-                // Aspiration criterion
-                if (move_is_tabu && (current_cost + delta) >= best_cost)
+                if (is_tabu && (current_cost + delta >= best_cost - EPSILON)) {
                     continue;
+                }
 
-                if (delta < best_delta - EPSILON) {
+                if (delta < best_delta) {
                     best_delta = delta;
                     best_i = i;
                     best_j = j;
@@ -96,85 +72,49 @@ static void improve(const TspAlgorithm *tsp_algorithm,
             }
         }
 
-        if (best_i == -1 || best_j == -1) {
-            if_verbose(VERBOSE_DEBUG, "  TS: No non-tabu moves found, terminating.\n");
+        if (best_i != -1 && best_j != -1) {
+            const int edges[2] = {best_i - 1, best_j};
+            compute_n_opt_move(2, current_tour, edges, n);
+            current_cost += best_delta;
+
+            tabu_matrix[best_i * n + best_j] = iteration + cfg->tenure;
+
+            if (current_cost < best_cost - EPSILON) {
+                best_cost = current_cost;
+                memcpy(best_tour, current_tour, (n + 1) * sizeof(int));
+                no_improv = 0;
+                if_verbose(VERBOSE_DEBUG, "    Tabu: New best: %lf\n", best_cost);
+            } else {
+                no_improv++;
+            }
+        } else {
+            if_verbose(VERBOSE_DEBUG, "    Tabu: No valid moves found.\n");
             break;
         }
 
-        const int edges[2] = {best_i - 1, best_j};
-        compute_n_opt_move(2, current_tour, edges, number_of_nodes);
-        current_cost += best_delta;
-
-        tabu[best_i * number_of_nodes + best_j] = iteration + tabu_tenure;
-
-        if (current_cost < best_cost - EPSILON) {
-            if_verbose(VERBOSE_DEBUG, "    TS [Iteration %d]: Found new best cost: %lf (Stagnation reset)\n", iteration,
-                       current_cost);
-            best_cost = current_cost;
-            memcpy(best_tour, current_tour, (number_of_nodes + 1) * sizeof(int));
-            no_improvements = 0;
-        } else {
-            no_improvements++;
-        }
-        costs_plotter_add(plotter, current_cost);
-    }
-
-    if (no_improvements >= max_stagnation) {
-        if_verbose(VERBOSE_DEBUG, "  TS: Improvement loop stopped due to max stagnation (%d).\n", max_stagnation);
-    } else if (time_limiter_is_over(time_limiter)) {
-        if_verbose(VERBOSE_DEBUG, "  TS: Improvement loop stopped due to time limit.\n");
+        cost_recorder_add(recorder, current_cost);
     }
 
     tsp_solution_update_if_better(solution, best_tour, best_cost);
 
-    if_verbose(VERBOSE_DEBUG, "  TS: Cleaning up tabu list and time limiter.\n");
-    free(tabu);
-    time_limiter_destroy(time_limiter);
+    free(tabu_matrix);
+    free(best_tour);
+    free(current_tour);
 }
 
-static void solve(const TspAlgorithm *tsp_algorithm,
-                  const TspInstance *instance,
-                  TspSolution *solution,
-                  CostsPlotter *plotter) {
-    if_verbose(VERBOSE_INFO, "Running Tabu Search algorithm...\n");
-    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
-    const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
-
-    int initial_tour[number_of_nodes + 1];
-    double initial_cost;
-    if_verbose(VERBOSE_DEBUG, "  TS: Generating initial solution via Nearest Neighbor...\n");
-    const int result = nearest_neighbor_tour(rand() % number_of_nodes, initial_tour, number_of_nodes, edge_cost_array,
-                                             &initial_cost);
-
-    if (result != 0) {
-        // Assuming 0 (ALGO_SUCCESS) is success
-        if_verbose(VERBOSE_INFO, "  TS: Failed to generate initial solution.\n");
-        return;
-    }
-
-    tsp_solution_update_if_better(solution, initial_tour, initial_cost);
-    if_verbose(VERBOSE_DEBUG, "  TS: Initial solution cost: %lf\n", initial_cost);
-
-    improve(tsp_algorithm, instance, solution, plotter);
-    if_verbose(VERBOSE_INFO, "Tabu Search algorithm finished.\n");
+static void free_tabu_config(void *config) {
+    free(config);
 }
 
+TspAlgorithm tabu_create(const TabuConfig config) {
+    TabuConfig *cfg_copy = malloc(sizeof(TabuConfig));
+    check_alloc(cfg_copy);
+    *cfg_copy = config;
 
-const TspAlgorithm *init_tabu(const int tenure, const int max_stagnation, const double time_limit) {
-    if_verbose(VERBOSE_DEBUG, "Initializing TS (tenure=%d, stagnation=%d, t=%.2f)\n", tenure, max_stagnation,
-               time_limit);
-    const TabuSearch tabu_search = {
-        .tenure = tenure,
-        .time_limit = time_limit,
-        .max_stagnation = max_stagnation
+    return (TspAlgorithm){
+        .name = "Tabu Search",
+        .config = cfg_copy,
+        .run = run_tabu,
+        .free_config = free_tabu_config
     };
-    const TspExtendedAlgorithms extended_algorithms = {
-        .tabu_search = memdup(&tabu_search, sizeof(tabu_search))
-    };
-    const TspAlgorithm tsp_algorithm = {
-        .solve = solve,
-        .free = free_this,
-        .extended = memdup(&extended_algorithms, sizeof(extended_algorithms)),
-    };
-    return memdup(&tsp_algorithm, sizeof(tsp_algorithm));
 }
