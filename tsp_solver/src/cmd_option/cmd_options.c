@@ -6,12 +6,95 @@
 #include <string.h>
 #include "logger.h"
 
+// TODO does not print
 static const ParsingResult *validate_options(const CmdOptions *opt) {
-    if (opt->tsp.mode == TSP_INPUT_MODE_RANDOM) {
-        if (opt->tsp.number_of_nodes < 2) return MISSING_VALUE;
-    } else if (opt->tsp.mode == TSP_INPUT_MODE_FILE) {
-        if (!opt->tsp.input_file) return MISSING_MANDATORY_FLAG;
+    if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
+    // --- 1. TSP Instance Validation ---
+    if (opt->tsp.mode == TSP_INPUT_MODE_FILE) {
+        if (opt->tsp.input_file == NULL || strlen(opt->tsp.input_file) == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Mode is FILE but no input file provided (--file).\n");
+            return MISSING_MANDATORY_FLAG;
+        }
+    } else if (opt->tsp.mode == TSP_INPUT_MODE_RANDOM) {
+        if (opt->tsp.number_of_nodes < 2) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Random generation requires at least 2 nodes.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->tsp.generation_area.square_side == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Generation area square side must be > 0.\n");
+            return WRONG_VALUE_TYPE;
+        }
     }
+    if_verbose(VERBOSE_DEBUG, "TSP instance options validated.\n");
+
+    // --- 2. Nearest Neighbor Validation ---
+    if (opt->nn_params.enable) {
+        if (opt->nn_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] NN: Time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if_verbose(VERBOSE_DEBUG, "NN options validated.\n");
+    }
+
+    // --- 3. VNS Validation ---
+    if (opt->vns_params.enable) {
+        if (opt->vns_params.kick_repetitions == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: Kick repetitions must be > 0.\n");
+            return USAGE_ERROR;
+        }
+        if (opt->vns_params.n_opt < 2) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: n-opt must be at least 2 (e.g., 2-opt, 3-opt).\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->vns_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: Time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if_verbose(VERBOSE_DEBUG, "VNS options validated.\n");
+    }
+
+    // --- 4. Tabu Search Validation ---
+    if (opt->tabu_params.enable) {
+        if (opt->tabu_params.tenure == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Tenure must be > 0.\n");
+            return USAGE_ERROR;
+        }
+        if (opt->tabu_params.max_stagnation == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Max stagnation must be > 0.\n");
+            return USAGE_ERROR;
+        }
+        if (opt->tabu_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if_verbose(VERBOSE_DEBUG, "Tabu Search options validated.\n");
+    }
+
+    // --- 5. GRASP Validation ---
+    if (opt->grasp_params.enable) {
+        if (opt->grasp_params.p1 < 0.0 || opt->grasp_params.p1 > 1.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: p1 (probability) must be between 0.0 and 1.0.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->grasp_params.p2 < 0.0 || opt->grasp_params.p2 > 1.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: p2 must be between 0.0 and 1.0.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->grasp_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: Time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if_verbose(VERBOSE_DEBUG, "GRASP options validated.\n");
+    }
+
+    // --- 6. General Warnings ---
+    // Check if no algorithms are enabled
+    if (!opt->nn_params.enable && !opt->vns_params.enable &&
+        !opt->tabu_params.enable && !opt->grasp_params.enable) {
+        if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled. The solver will exit after instance generation.\n");
+    }
+
+    if_verbose(VERBOSE_DEBUG, "Configuration validation completed successfully.\n");
     return SUCCESS;
 }
 
