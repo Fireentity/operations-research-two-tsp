@@ -30,8 +30,8 @@ static void free_this(const TspAlgorithm *self) {
 
 static void improve(const TspAlgorithm *tsp_algorithm,
                     const TspInstance *instance,
-                    const TspSolution *solution,
-                    const CostsPlotter *plotter) {
+                    TspSolution *solution,
+                    CostsPlotter *plotter) {
     if_verbose(VERBOSE_DEBUG, "  TS: Starting improvement loop...\n");
     const int number_of_nodes = tsp_instance_get_num_nodes(instance);
     const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
@@ -134,8 +134,8 @@ static void improve(const TspAlgorithm *tsp_algorithm,
 
 static void solve(const TspAlgorithm *tsp_algorithm,
                   const TspInstance *instance,
-                  const TspSolution *solution,
-                  const CostsPlotter *plotter) {
+                  TspSolution *solution,
+                  CostsPlotter *plotter) {
     if_verbose(VERBOSE_INFO, "Running Tabu Search algorithm...\n");
     const int number_of_nodes = tsp_instance_get_num_nodes(instance);
     const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);

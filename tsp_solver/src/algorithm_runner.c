@@ -28,7 +28,7 @@ static void execute_and_report(const TspAlgorithm *algorithm,
                                const char *plot_file,
                                const char *costs_file) {
     if_verbose(VERBOSE_DEBUG, "  Initializing plotter for %s...\n", algorithm_name);
-    const CostsPlotter *plotter = costs_plotter_create(tsp_instance_get_num_nodes(instance));
+    CostsPlotter *plotter = costs_plotter_create(tsp_instance_get_num_nodes(instance));
 
     if_verbose(VERBOSE_DEBUG, "  Initializing solution for %s...\n", algorithm_name);
     TspSolution *solution = tsp_solution_create(instance);
