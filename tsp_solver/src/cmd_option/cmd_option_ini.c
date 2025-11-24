@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stddef.h>
 
+#include "logger.h"
+
 typedef struct {
     CmdOptions *opt;
 } IniContext;
@@ -16,7 +18,8 @@ typedef enum {
     TYPE_DOUBLE,
     TYPE_UDOUBLE,
     TYPE_BOOL,
-    TYPE_STRING
+    TYPE_STRING,
+    TYPE_TSP_MODE
 } IniType;
 
 typedef struct {
@@ -30,6 +33,7 @@ static const IniMapping mappings[] = {
     {"general", "verbosity", TYPE_UINT, offsetof(CmdOptions, verbosity)},
     {"general", "plots_path", TYPE_STRING, offsetof(CmdOptions, plots_path)},
 
+    {"tsp", "mode", TYPE_TSP_MODE, offsetof(CmdOptions, tsp.mode)},
     {"tsp", "file", TYPE_STRING, offsetof(CmdOptions, tsp.input_file)},
     {"tsp", "nodes", TYPE_UINT, offsetof(CmdOptions, tsp.number_of_nodes)},
     {"tsp", "seed", TYPE_INT, offsetof(CmdOptions, tsp.seed)},
@@ -71,15 +75,15 @@ static void handle_string(const char *value, char **dest) {
     }
     parse_string(value, dest);
 }
+static void handle_tsp_mode(const char *v, void *dst) {
+    TspInputMode *m = dst;
+    if (strcmp(v, "file") == 0) *m = TSP_INPUT_MODE_FILE;
+    else *m = TSP_INPUT_MODE_RANDOM;
+}
 
 static int config_ini_handler(void *user, const char *section, const char *name, const char *value) {
     const IniContext *ctx = (IniContext *) user;
     CmdOptions *opt = ctx->opt;
-
-    if (strcmp(section, "tsp") == 0 && strcmp(name, "mode") == 0) {
-        opt->tsp.mode = strcmp(value, "file") == 0 ? TSP_INPUT_MODE_FILE : TSP_INPUT_MODE_RANDOM;
-        return 1;
-    }
 
     const size_t n = sizeof(mappings) / sizeof(mappings[0]);
     for (size_t i = 0; i < n; i++) {
@@ -108,6 +112,9 @@ static int config_ini_handler(void *user, const char *section, const char *name,
                 case TYPE_STRING:
                     handle_string(value, field);
                     break;
+                case TYPE_TSP_MODE:
+                    handle_tsp_mode(value, field);
+                    break;
             }
             return 1;
         }
@@ -118,5 +125,15 @@ static int config_ini_handler(void *user, const char *section, const char *name,
 
 void cmd_options_parse_ini_file(CmdOptions *dest, const char *filename) {
     IniContext ctx = {dest};
-    ini_parse(filename, config_ini_handler, &ctx);
+    const int r = ini_parse(filename, config_ini_handler, &ctx);
+
+    if_verbose(VERBOSE_DEBUG, "INI: parsing '%s' finished with code %d\n", filename, r);
+
+    if (r == 0) {
+        if_verbose(VERBOSE_INFO, "INI: file '%s' parsed successfully\n", filename);
+    } else if (r == -1) {
+        if_verbose(VERBOSE_INFO, "INI: could not open '%s'\n", filename);
+    } else {
+        if_verbose(VERBOSE_INFO, "INI: error at line %d in '%s'\n", r, filename);
+    }
 }
