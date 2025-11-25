@@ -4,8 +4,46 @@
 #include "c_util.h"
 #include "logger.h"
 #include <stdlib.h>
-
+#include <string.h>
+#include <float.h>
 #include "constants.h"
+#include "tsp_math_util.h"
+
+/* Building a clean NN tour from a fixed start improves multi-start quality */
+static double build_nn_tour(int start_node, int *tour, int *visited, int n, const double *costs) {
+    memset(visited, 0, n * sizeof(int));
+
+    tour[0] = start_node;
+    visited[start_node] = 1;
+
+    int current = start_node;
+    double cost = 0.0;
+
+    for (int step = 1; step < n; step++) {
+        int next = -1;
+        double best = DBL_MAX;
+
+        const double *row = &costs[current * n];
+
+        for (int j = 0; j < n; j++) {
+            if (!visited[j] && row[j] < best) {
+                best = row[j];
+                next = j;
+            }
+        }
+
+        if (next == -1) break;
+
+        tour[step] = next;
+        visited[next] = 1;
+        cost += best;
+        current = next;
+    }
+
+    tour[n] = start_node;
+    cost += costs[current * n + start_node];
+    return cost;
+}
 
 static void run_nn(const TspInstance *instance,
                    TspSolution *solution,
@@ -15,49 +53,48 @@ static void run_nn(const TspInstance *instance,
     const int n = tsp_instance_get_num_nodes(instance);
     const double *costs = tsp_instance_get_cost_matrix(instance);
 
-    if_verbose(VERBOSE_DEBUG, "  NN: Time limit set to %.2fs.\n", cfg->time_limit);
+    if_verbose(VERBOSE_INFO, "NN: time limit = %.2f\n", cfg->time_limit);
+
     TimeLimiter timer = time_limiter_create(cfg->time_limit);
     time_limiter_start(&timer);
 
-    int *current_tour = malloc((n + 1) * sizeof(int));
-    check_alloc(current_tour);
+    int *tour = malloc((n + 1) * sizeof(int));
+    check_alloc(tour);
 
-    // Generate Initial Solution (Single Shot - Random Start)
-    double init_cost;
-    // TODO remove rand here, put a specific rand function
-    if (nearest_neighbor_tour(rand() % n, current_tour, n, costs, &init_cost) == 0) {
-        tsp_solution_update_if_better(solution, current_tour, init_cost);
-    }
+    int *visited = malloc(n * sizeof(int));
+    check_alloc(visited);
 
-    // Improvement Phase (Multi-start NN + 2-Opt)
-    int *starting_nodes = malloc(n * sizeof(int));
-    check_alloc(starting_nodes);
-    for (int i = 0; i < n; i++) starting_nodes[i] = i;
-    shuffle_int_array(starting_nodes, n);
+    int *starts = malloc(n * sizeof(int));
+    check_alloc(starts);
 
-    int iteration = 0;
-    double current_cost;
+    for (int i = 0; i < n; i++) starts[i] = i;
+    shuffle_int_array(starts, n);
 
-    while (!time_limiter_is_over(&timer) && iteration < n) {
-        const int start_node = starting_nodes[iteration];
+    int iter = 0;
 
-        const int res = nearest_neighbor_tour(start_node, current_tour, n, costs, &current_cost);
+    while (!time_limiter_is_over(&timer) && iter < n) {
+        const int s = starts[iter];
 
-        if (res == 0) {
-            // Apply 2-Opt Local Search
-            current_cost += two_opt(current_tour, n, costs, timer);
+        double cost = build_nn_tour(s, tour, visited, n, costs);
+        cost += two_opt(tour, n, costs, timer);
 
-            cost_recorder_add(recorder, current_cost);
+        cost_recorder_add(recorder, cost);
 
-            if (tsp_solution_update_if_better(solution, current_tour, current_cost)) {
-                if_verbose(VERBOSE_DEBUG, "    NN [Iter %d]: New best cost: %lf\n", iteration, current_cost);
-            }
+        if (tsp_solution_update_if_better(solution, tour, cost)) {
+            if_verbose(VERBOSE_DEBUG,
+                       "\tNN: new best %.2f from start %d\n",
+                       cost, s);
         }
-        iteration++;
+
+        iter++;
     }
 
-    free(starting_nodes);
-    free(current_tour);
+    if (time_limiter_is_over(&timer))
+        if_verbose(VERBOSE_INFO, "\tNN: time is over\n");
+
+    free(starts);
+    free(visited);
+    free(tour);
 }
 
 static void free_nn_config(void *config) {
@@ -65,13 +102,13 @@ static void free_nn_config(void *config) {
 }
 
 TspAlgorithm nn_create(const NNConfig config) {
-    NNConfig *cfg_copy = malloc(sizeof(NNConfig));
-    check_alloc(cfg_copy);
-    *cfg_copy = config;
+    NNConfig *cpy = malloc(sizeof(NNConfig));
+    check_alloc(cpy);
+    *cpy = config;
 
     return (TspAlgorithm){
         .name = "Nearest Neighbor",
-        .config = cfg_copy,
+        .config = cpy,
         .run = run_nn,
         .free_config = free_nn_config
     };
