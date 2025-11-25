@@ -42,12 +42,23 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
             if_verbose(VERBOSE_INFO, "[Config Error] VNS: Kick repetitions must be > 0.\n");
             return USAGE_ERROR;
         }
-        if (opt->vns_params.n_opt < 2) {
-            if_verbose(VERBOSE_INFO, "[Config Error] VNS: n-opt must be at least 2 (e.g., 2-opt, 3-opt).\n");
+        if (opt->vns_params.min_k < 2) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k must be >= 2 (e.g., 2-opt, 3-opt).\n");
             return WRONG_VALUE_TYPE;
         }
-        if (opt->vns_params.time_limit < 0.0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] VNS: Time limit cannot be negative.\n");
+
+        if (opt->vns_params.max_k < 2) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: max_k must be >= 2 (e.g., 2-opt, 3-opt).\n");
+            return WRONG_VALUE_TYPE;
+        }
+
+        if (opt->vns_params.min_k > opt->vns_params.max_k) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k cannot be greater than max_k.\n");
+            return WRONG_VALUE_TYPE;
+        }
+
+        if (opt->vns_params.max_stagnation <= 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: Max Stagnation must be positive.\n");
             return WRONG_VALUE_TYPE;
         }
         if_verbose(VERBOSE_DEBUG, "VNS options validated.\n");
@@ -55,8 +66,12 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
 
     // --- 4. Tabu Search Validation ---
     if (opt->tabu_params.enable) {
-        if (opt->tabu_params.tenure == 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Tenure must be > 0.\n");
+        if (opt->tabu_params.min_tenure == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Min Tenure must be > 0.\n");
+            return USAGE_ERROR;
+        }
+        if (opt->tabu_params.max_tenure == 0 || opt->tabu_params.min_tenure > opt->tabu_params.max_tenure) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Max Tenure must be > 0 and >= min_tenure.\n");
             return USAGE_ERROR;
         }
         if (opt->tabu_params.max_stagnation == 0) {
@@ -154,15 +169,18 @@ static void merge_ini_into_options(CmdOptions *final,
 
         // VNS
         {"--vns", OPT_BOOL, &final->vns_params.enable, &ini->vns_params.enable},
-        {"--vns-k", OPT_UINT, &final->vns_params.kick_repetitions, &ini->vns_params.kick_repetitions},
-        {"--vns-n", OPT_UINT, &final->vns_params.n_opt, &ini->vns_params.n_opt},
+        {"--vns-min-k", OPT_UINT, &final->vns_params.min_k, &ini->vns_params.min_k},
+        {"--vns-max-k", OPT_UINT, &final->vns_params.max_k, &ini->vns_params.max_k},
+        {"--vns-kik-reps", OPT_UINT, &final->vns_params.kick_repetitions, &ini->vns_params.kick_repetitions},
+        {"--vns-stagnation", OPT_UINT, &final->vns_params.max_stagnation, &ini->vns_params.max_stagnation},
         {"--vns-plot", OPT_STRING, &final->vns_params.plot_file, &ini->vns_params.plot_file},
         {"--vns-cost", OPT_STRING, &final->vns_params.cost_file, &ini->vns_params.cost_file},
         {"--vns-seconds", OPT_DOUBLE, &final->vns_params.time_limit, &ini->vns_params.time_limit},
 
         // TABU
         {"--ts", OPT_BOOL, &final->tabu_params.enable, &ini->tabu_params.enable},
-        {"--ts-tenure", OPT_UINT, &final->tabu_params.tenure, &ini->tabu_params.tenure},
+        {"--ts-min-tenure", OPT_UINT, &final->tabu_params.min_tenure, &ini->tabu_params.min_tenure},
+        {"--ts-max-tenure", OPT_UINT, &final->tabu_params.max_tenure, &ini->tabu_params.max_tenure},
         {"--ts-stagnation", OPT_UINT, &final->tabu_params.max_stagnation, &ini->tabu_params.max_stagnation},
         {"--ts-plot", OPT_STRING, &final->tabu_params.plot_file, &ini->tabu_params.plot_file},
         {"--ts-cost", OPT_STRING, &final->tabu_params.cost_file, &ini->tabu_params.cost_file},
@@ -252,14 +270,15 @@ void print_configuration(const CmdOptions *options) {
                "VNS:                 %s\n"
                "  plot:              %s\n"
                "  cost:              %s\n"
-               "  kicks:             %u\n"
-               "  n-opt:             %u\n"
+               "  kicks MIN-MAX:     %u-%u\n"
+               "  kicks reps:        %u\n"
+               "  max stagnation:    %u\n"
                "  time limit:        %.3f\n"
                "\n"
                "Tabu Search:         %s\n"
                "  plot:              %s\n"
                "  cost:              %s\n"
-               "  tenure:            %u\n"
+               "  tenure, MIN-MAX:   %u-%u\n"
                "  max stagnation:    %u\n"
                "  time limit:        %.3f\n"
                "\n"
@@ -289,14 +308,17 @@ void print_configuration(const CmdOptions *options) {
                options->vns_params.enable ? "ENABLED" : "DISABLED",
                options->vns_params.plot_file ? options->vns_params.plot_file : "(none)",
                options->vns_params.cost_file ? options->vns_params.cost_file : "(none)",
+               options->vns_params.min_k,
+               options->vns_params.max_k,
                options->vns_params.kick_repetitions,
-               options->vns_params.n_opt,
+               options->vns_params.max_stagnation,
                options->vns_params.time_limit,
 
                options->tabu_params.enable ? "ENABLED" : "DISABLED",
                options->tabu_params.plot_file ? options->tabu_params.plot_file : "(none)",
                options->tabu_params.cost_file ? options->tabu_params.cost_file : "(none)",
-               options->tabu_params.tenure,
+               options->tabu_params.min_tenure,
+               options->tabu_params.max_tenure,
                options->tabu_params.max_stagnation,
                options->tabu_params.time_limit,
 

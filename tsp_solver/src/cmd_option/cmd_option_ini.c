@@ -47,14 +47,17 @@ static const IniMapping mappings[] = {
     {"nn", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, nn_params.time_limit)},
 
     {"vns", "enabled", TYPE_BOOL, offsetof(CmdOptions, vns_params.enable)},
+    {"vns", "min_k", TYPE_UINT, offsetof(CmdOptions, vns_params.min_k)},
+    {"vns", "max_k", TYPE_UINT, offsetof(CmdOptions, vns_params.max_k)},
     {"vns", "kick-repetitions", TYPE_UINT, offsetof(CmdOptions, vns_params.kick_repetitions)},
-    {"vns", "n-opt", TYPE_UINT, offsetof(CmdOptions, vns_params.n_opt)},
+    {"vns", "max-stagnation", TYPE_UINT, offsetof(CmdOptions, vns_params.max_stagnation)},
     {"vns", "plot_file", TYPE_STRING, offsetof(CmdOptions, vns_params.plot_file)},
     {"vns", "cost_file", TYPE_STRING, offsetof(CmdOptions, vns_params.cost_file)},
     {"vns", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, vns_params.time_limit)},
 
     {"tabu", "enabled", TYPE_BOOL, offsetof(CmdOptions, tabu_params.enable)},
-    {"tabu", "tenure", TYPE_UINT, offsetof(CmdOptions, tabu_params.tenure)},
+    {"tabu", "min-tenure", TYPE_UINT, offsetof(CmdOptions, tabu_params.min_tenure)},
+    {"tabu", "max-tenure", TYPE_UINT, offsetof(CmdOptions, tabu_params.max_tenure)},
     {"tabu", "max-stagnation", TYPE_UINT, offsetof(CmdOptions, tabu_params.max_stagnation)},
     {"tabu", "plot_file", TYPE_STRING, offsetof(CmdOptions, tabu_params.plot_file)},
     {"tabu", "cost_file", TYPE_STRING, offsetof(CmdOptions, tabu_params.cost_file)},
@@ -75,6 +78,7 @@ static void handle_string(const char *value, char **dest) {
     }
     parse_string(value, dest);
 }
+
 static void handle_tsp_mode(const char *v, void *dst) {
     TspInputMode *m = dst;
     if (strcmp(v, "file") == 0) *m = TSP_INPUT_MODE_FILE;

@@ -4,7 +4,8 @@
 #include "tsp_algorithm.h"
 
 typedef struct {
-    int tenure;
+    int min_tenure;
+    int max_tenure;
     int max_stagnation;
     double time_limit;
 } TabuConfig;

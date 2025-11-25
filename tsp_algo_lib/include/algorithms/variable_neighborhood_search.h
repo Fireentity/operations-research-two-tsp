@@ -4,9 +4,11 @@
 #include "tsp_algorithm.h"
 
 typedef struct {
+    int min_k;
+    int max_k;
     int kick_repetition;
-    int n_opt;
     double time_limit;
+    int max_stagnation;
 } VNSConfig;
 
 /**

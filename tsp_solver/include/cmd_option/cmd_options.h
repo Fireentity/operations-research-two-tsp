@@ -34,16 +34,19 @@ typedef struct {
     bool enable;
     char *plot_file;
     char *cost_file;
+    unsigned int min_k;
+    unsigned int max_k;
     unsigned int kick_repetitions;
-    unsigned int n_opt;
     double time_limit;
+    unsigned int max_stagnation;
 } VnsOptions;
 
 typedef struct {
     bool enable;
     char *plot_file;
     char *cost_file;
-    unsigned int tenure;
+    unsigned int min_tenure;
+    unsigned int max_tenure;
     unsigned int max_stagnation;
     double time_limit;
 } TabuOptions;

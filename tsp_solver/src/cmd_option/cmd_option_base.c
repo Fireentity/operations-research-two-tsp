@@ -21,16 +21,18 @@ static void set_nn_defaults(NNOptions *opt) {
 
 static void set_vns_defaults(VnsOptions *opt) {
     opt->enable = false;
-    opt->kick_repetitions = 100;
-    opt->n_opt = 5;
+    opt->min_k = 3;
+    opt->max_k = 10;
+    opt->kick_repetitions = 1;
     opt->plot_file = strdup("VNS-plot.png");
     opt->cost_file = strdup("VNS-costs.txt");
 }
 
 static void set_tabu_defaults(TabuOptions *opt) {
     opt->enable = false;
-    opt->tenure = 10;
-    opt->max_stagnation = 100;
+    opt->min_tenure = 5;
+    opt->max_tenure = 30;
+    opt->max_stagnation = 200;
     opt->plot_file = strdup("TS-plot.png");
     opt->cost_file = strdup("TS-costs.txt");
 }

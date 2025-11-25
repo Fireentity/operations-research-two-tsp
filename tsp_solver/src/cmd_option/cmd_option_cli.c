@@ -25,24 +25,29 @@ FlagParser *cmd_options_build_cli_parser(CmdOptions *opt) {
 
     // NN
     flag_parser_add_bool(p, "--nn", NULL, "Enable NN", &opt->nn_params.enable, FLAG_OPTIONAL);
-    flag_parser_add_double(p, "--nn-seconds", NULL, "Time limit for NN in seconds", &opt->nn_params.time_limit, FLAG_OPTIONAL);
+    flag_parser_add_double(p, "--nn-seconds", NULL, "Time limit for NN in seconds", &opt->nn_params.time_limit,
+                           FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--nn-plot", NULL, "NN plot file", &opt->nn_params.plot_file, FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--nn-cost", NULL, "NN cost file", &opt->nn_params.cost_file, FLAG_OPTIONAL);
 
     // VNS
     flag_parser_add_bool(p, "--vns", NULL, "Enable VNS", &opt->vns_params.enable, FLAG_OPTIONAL);
-    flag_parser_add_uint(p, "--vns-k", NULL, "VNS Kicks", &opt->vns_params.kick_repetitions, FLAG_OPTIONAL);
-    flag_parser_add_uint(p, "--vns-n", NULL, "VNS N-Opt", &opt->vns_params.n_opt, FLAG_OPTIONAL);
-    flag_parser_add_udouble(p, "--vns-seconds", NULL, "Time limit for VNS in seconds", &opt->vns_params.time_limit, FLAG_OPTIONAL);
+    flag_parser_add_uint(p, "--vns-min-k", NULL, "VNS Min K", &opt->vns_params.min_k, FLAG_OPTIONAL);
+    flag_parser_add_uint(p, "--vns-max-k", NULL, "VNS Max K", &opt->vns_params.max_k, FLAG_OPTIONAL);
+    flag_parser_add_uint(p, "--vns-k-reps", NULL, "VNS Kicks Repetitions", &opt->vns_params.kick_repetitions, FLAG_OPTIONAL);
+    flag_parser_add_udouble(p, "--vns-seconds", NULL, "Time limit for VNS in seconds", &opt->vns_params.time_limit,
+                            FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--vns-plot", NULL, "VNS plot file", &opt->vns_params.plot_file, FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--vns-cost", NULL, "VNS cost file", &opt->vns_params.cost_file, FLAG_OPTIONAL);
 
     // Tabu
     flag_parser_add_bool(p, "--ts", NULL, "Enable Tabu", &opt->tabu_params.enable, FLAG_OPTIONAL);
-    flag_parser_add_uint(p, "--ts-tenure", NULL, "TS Tenure", &opt->tabu_params.tenure, FLAG_OPTIONAL);
+    flag_parser_add_uint(p, "--ts-min-tenure", NULL, "TS Min Tenure", &opt->tabu_params.min_tenure, FLAG_OPTIONAL);
+    flag_parser_add_uint(p, "--ts-max-tenure", NULL, "TS Max Tenure", &opt->tabu_params.max_tenure, FLAG_OPTIONAL);
     flag_parser_add_uint(p, "--ts-stagnation", NULL, "TS Max Stagnation", &opt->tabu_params.max_stagnation,
                          FLAG_OPTIONAL);
-    flag_parser_add_udouble(p, "--ts-seconds", NULL, "Time limit for TS in seconds", &opt->tabu_params.time_limit, FLAG_OPTIONAL);
+    flag_parser_add_udouble(p, "--ts-seconds", NULL, "Time limit for TS in seconds", &opt->tabu_params.time_limit,
+                            FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--ts-plot", NULL, "TS plot file", &opt->tabu_params.plot_file, FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--ts-cost", NULL, "TS cost file", &opt->tabu_params.cost_file, FLAG_OPTIONAL);
 
@@ -50,7 +55,8 @@ FlagParser *cmd_options_build_cli_parser(CmdOptions *opt) {
     flag_parser_add_bool(p, "--grasp", NULL, "Enable GRASP", &opt->grasp_params.enable, FLAG_OPTIONAL);
     flag_parser_add_udouble(p, "--grasp-p1", NULL, "GRASP P1", &opt->grasp_params.p1, FLAG_OPTIONAL);
     flag_parser_add_udouble(p, "--grasp-p2", NULL, "GRASP P2", &opt->grasp_params.p2, FLAG_OPTIONAL);
-    flag_parser_add_udouble(p, "--grasp-seconds", NULL, "Time limit for GRASP in seconds", &opt->grasp_params.time_limit, FLAG_OPTIONAL);
+    flag_parser_add_udouble(p, "--grasp-seconds", NULL, "Time limit for GRASP in seconds",
+                            &opt->grasp_params.time_limit, FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--grasp-plot", NULL, "GRASP plot file", &opt->grasp_params.plot_file,
                                  FLAG_OPTIONAL);
     flag_parser_add_string_owned(p, "--grasp-cost", NULL, "GRASP cost file", &opt->grasp_params.cost_file,

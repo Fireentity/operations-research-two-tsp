@@ -73,8 +73,9 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     // --- VNS ---
     if (options->vns_params.enable) {
         VNSConfig cfg = {
+            .min_k = (int) options->vns_params.min_k,
+            .max_k = (int) options->vns_params.max_k,
             .kick_repetition = (int) options->vns_params.kick_repetitions,
-            .n_opt = (int) options->vns_params.n_opt,
             .time_limit = options->vns_params.time_limit
         };
         TspAlgorithm algo = vns_create(cfg);
@@ -85,7 +86,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     // --- TABU ---
     if (options->tabu_params.enable) {
         TabuConfig cfg = {
-            .tenure = (int) options->tabu_params.tenure,
+            .min_tenure = (int) options->tabu_params.min_tenure,
+            .max_tenure = (int) options->tabu_params.max_tenure,
             .max_stagnation = (int) options->tabu_params.max_stagnation,
             .time_limit = options->tabu_params.time_limit
         };
