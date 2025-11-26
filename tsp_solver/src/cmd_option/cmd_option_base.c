@@ -54,6 +54,13 @@ static const OptionMeta options_registry[] = {
     {"--grasp-seconds", NULL, "Time limit for GRASP", "grasp", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, grasp_params.time_limit)},
     {"--grasp-plot", NULL, "GRASP plot filename", "grasp", "plot_file", OPT_STRING, offsetof(CmdOptions, grasp_params.plot_file)},
     {"--grasp-cost", NULL, "GRASP cost filename", "grasp", "cost_file", OPT_STRING, offsetof(CmdOptions, grasp_params.cost_file)},
+
+    // EXTRA MILEAGE
+    {"--em", NULL, "Enable EXTRA MILEAGE", "em", "enabled", OPT_BOOL, offsetof(CmdOptions, em_params.enable)},
+    {"--em-seconds", NULL, "Time limit for EXTRA MILEAGE", "em", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, em_params.time_limit)},
+    {"--em-plot", NULL, "EXTRA MILEAGE plot filename", "em", "plot_file", OPT_STRING, offsetof(CmdOptions, em_params.plot_file)},
+    {"--em-cost", NULL, "EXTRA MILEAGE cost filename", "em", "cost_file", OPT_STRING, offsetof(CmdOptions, em_params.cost_file)},
+
 };
 
 const OptionMeta* cmd_options_get_metadata(void) {
@@ -109,6 +116,12 @@ static void set_grasp_defaults(GraspOptions *opt) {
     opt->cost_file = strdup("GR-costs.txt");
 }
 
+static void set_em_defaults(EMOptions *opt) {
+    opt->enable = false;
+    opt->plot_file = strdup("EM-plot.png");
+    opt->cost_file = strdup("EM-costs.txt");
+}
+
 CmdOptions *cmd_options_create_defaults(void) {
     CmdOptions *opt = calloc(1, sizeof(CmdOptions));
     check_alloc(opt);
@@ -122,6 +135,7 @@ CmdOptions *cmd_options_create_defaults(void) {
     set_vns_defaults(&opt->vns_params);
     set_tabu_defaults(&opt->tabu_params);
     set_grasp_defaults(&opt->grasp_params);
+    set_em_defaults(&opt->em_params);
 
     if_verbose(VERBOSE_DEBUG, "Options initialized with defaults\n");
 

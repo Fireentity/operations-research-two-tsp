@@ -12,6 +12,8 @@
 #include <linux/limits.h>
 #include <string.h>
 
+#include "extra_mileage.h"
+
 
 static void execute_and_report(const TspAlgorithm *algo,
                                const TspInstance *instance,
@@ -33,11 +35,8 @@ static void execute_and_report(const TspAlgorithm *algo,
     tsp_solution_get_tour(solution, tour_buffer);
     const double cost = tsp_solution_get_cost(solution);
 
-    // --- Plot Tour ---
     plot_tour(tour_buffer, n, tsp_instance_get_nodes(instance), plot_file);
 
-    // --- TODO: integrate with new CostPlotter architecture ---
-    // cost_reporter_export(&reporter, costs_file);
     plot_costs_evolution(cost_recorder_get_costs(recorder), cost_recorder_get_count(recorder), costs_file);
 
     if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algo->name, cost);
@@ -106,6 +105,16 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = grasp_create(cfg);
         BUILD_PATHS(options->grasp_params.plot_file, options->grasp_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+    // --- EM ---
+    if (options->grasp_params.enable) {
+        EMConfig cfg = {
+            .time_limit = options->grasp_params.time_limit
+        };
+        TspAlgorithm algo = em_create(cfg);
+        BUILD_PATHS(options->em_params.plot_file, options->em_params.cost_file);
         execute_and_report(&algo, instance, full_plot_path, full_costs_path);
     }
 

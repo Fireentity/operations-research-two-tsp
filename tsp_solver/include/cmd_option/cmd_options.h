@@ -62,6 +62,13 @@ typedef struct {
 } GraspOptions;
 
 typedef struct {
+    bool enable;
+    char *plot_file;
+    char *cost_file;
+    double time_limit;
+} EMOptions;
+
+typedef struct {
     char *config_file;
     char *plots_path;
     bool help;
@@ -72,6 +79,7 @@ typedef struct {
     VnsOptions vns_params;
     TabuOptions tabu_params;
     GraspOptions grasp_params;
+    EMOptions em_params;
 } CmdOptions;
 
 CmdOptions *cmd_options_create_defaults(void);
