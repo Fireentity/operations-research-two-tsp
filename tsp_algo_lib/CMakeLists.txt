@@ -10,6 +10,7 @@ set(TSP_ALGO_SOURCES
         src/algorithm/tabu_search.c
         src/algorithm/variable_neighborhood_search.c
         src/algorithm/extra_mileage.c
+        src/algorithm/genetic.c
         src/algorithm/common/constructive.c
         src/algorithm/common/local_search.c
         src/api/tsp_instance.c

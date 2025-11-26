@@ -61,6 +61,17 @@ static const OptionMeta options_registry[] = {
     {"--em-plot", NULL, "EXTRA MILEAGE plot filename", "em", "plot_file", OPT_STRING, offsetof(CmdOptions, em_params.plot_file)},
     {"--em-cost", NULL, "EXTRA MILEAGE cost filename", "em", "cost_file", OPT_STRING, offsetof(CmdOptions, em_params.cost_file)},
 
+    // GENETIC ALGORITHM
+    {"--ga", NULL, "Enable Genetic Algorithm", "genetic", "enabled", OPT_BOOL, offsetof(CmdOptions, genetic_params.enable)},
+    {"--ga-pop-size", NULL, "Population size", "genetic", "pop_size", OPT_UINT, offsetof(CmdOptions, genetic_params.population_size)},
+    {"--ga-elite", NULL, "Elite count", "genetic", "elite_count", OPT_UINT, offsetof(CmdOptions, genetic_params.elite_count)},
+    {"--ga-mutation", NULL, "Mutation rate", "genetic", "mutation_rate", OPT_UDOUBLE, offsetof(CmdOptions, genetic_params.mutation_rate)},
+    {"--ga-cut-min", NULL, "Crossover cut min ratio", "genetic", "cut_min", OPT_UINT, offsetof(CmdOptions, genetic_params.crossover_cut_min_ratio)},
+    {"--ga-cut-max", NULL, "Crossover cut max ratio", "genetic", "cut_max", OPT_UINT, offsetof(CmdOptions, genetic_params.crossover_cut_max_ratio)},
+    {"--ga-seconds", NULL, "Time limit for GA", "genetic", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, genetic_params.time_limit)},
+    {"--ga-plot", NULL, "GA plot filename", "genetic", "plot_file", OPT_STRING, offsetof(CmdOptions, genetic_params.plot_file)},
+    {"--ga-cost", NULL, "GA cost filename", "genetic", "cost_file", OPT_STRING, offsetof(CmdOptions, genetic_params.cost_file)},
+
 };
 
 const OptionMeta* cmd_options_get_metadata(void) {
@@ -86,7 +97,7 @@ static void set_tsp_defaults(TspInstanceOptions *opt) {
 static void set_nn_defaults(NNOptions *opt) {
     opt->enable = false;
     opt->plot_file = strdup("NN-plot.png");
-    opt->cost_file = strdup("NN-costs.txt");
+    opt->cost_file = strdup("NN-costs.png");
 }
 
 static void set_vns_defaults(VnsOptions *opt) {
@@ -95,7 +106,7 @@ static void set_vns_defaults(VnsOptions *opt) {
     opt->max_k = 10;
     opt->kick_repetitions = 1;
     opt->plot_file = strdup("VNS-plot.png");
-    opt->cost_file = strdup("VNS-costs.txt");
+    opt->cost_file = strdup("VNS-costs.png");
 }
 
 static void set_tabu_defaults(TabuOptions *opt) {
@@ -104,7 +115,7 @@ static void set_tabu_defaults(TabuOptions *opt) {
     opt->max_tenure = 30;
     opt->max_stagnation = 200;
     opt->plot_file = strdup("TS-plot.png");
-    opt->cost_file = strdup("TS-costs.txt");
+    opt->cost_file = strdup("TS-costs.png");
 }
 
 static void set_grasp_defaults(GraspOptions *opt) {
@@ -113,13 +124,24 @@ static void set_grasp_defaults(GraspOptions *opt) {
     opt->probability = 0.3;
     opt->max_stagnation = 200;
     opt->plot_file = strdup("GR-plot.png");
-    opt->cost_file = strdup("GR-costs.txt");
+    opt->cost_file = strdup("GR-costs.png");
 }
 
 static void set_em_defaults(EMOptions *opt) {
     opt->enable = false;
     opt->plot_file = strdup("EM-plot.png");
-    opt->cost_file = strdup("EM-costs.txt");
+    opt->cost_file = strdup("EM-costs.png");
+}
+
+static void set_genetic_defaults(GeneticOptions *opt) {
+    opt->enable = false;
+    opt->population_size = 1000;    // Recommended size
+    opt->elite_count = 1;           // Preserve the champion
+    opt->mutation_rate = 0.1;       // ~10% mutation rate
+    opt->crossover_cut_min_ratio = 25; // Cut point not too close to head/tail
+    opt->crossover_cut_max_ratio = 75;
+    opt->plot_file = strdup("GA-plot.png");
+    opt->cost_file = strdup("GA-costs.png");
 }
 
 CmdOptions *cmd_options_create_defaults(void) {
@@ -136,6 +158,7 @@ CmdOptions *cmd_options_create_defaults(void) {
     set_tabu_defaults(&opt->tabu_params);
     set_grasp_defaults(&opt->grasp_params);
     set_em_defaults(&opt->em_params);
+    set_genetic_defaults(&opt->genetic_params);
 
     if_verbose(VERBOSE_DEBUG, "Options initialized with defaults\n");
 

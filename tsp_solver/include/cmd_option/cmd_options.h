@@ -69,6 +69,18 @@ typedef struct {
 } EMOptions;
 
 typedef struct {
+    bool enable;
+    char *plot_file;
+    char *cost_file;
+    double time_limit;
+    unsigned int population_size;
+    unsigned int elite_count;
+    double mutation_rate;
+    unsigned int crossover_cut_min_ratio;
+    unsigned int crossover_cut_max_ratio;
+} GeneticOptions;
+
+typedef struct {
     char *config_file;
     char *plots_path;
     bool help;
@@ -80,6 +92,7 @@ typedef struct {
     TabuOptions tabu_params;
     GraspOptions grasp_params;
     EMOptions em_params;
+    GeneticOptions genetic_params;
 } CmdOptions;
 
 CmdOptions *cmd_options_create_defaults(void);

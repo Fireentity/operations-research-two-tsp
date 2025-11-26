@@ -99,9 +99,41 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
+    /* Genetic Algorithm validation */
+    if (opt->genetic_params.enable) {
+        if (opt->genetic_params.population_size < 2) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Population size must be at least 2.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->genetic_params.elite_count < 0 || opt->genetic_params.elite_count >= opt->genetic_params.population_size) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Elite count must be >= 0 and < population size.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->genetic_params.mutation_rate < 0.0 || opt->genetic_params.mutation_rate > 1.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Mutation rate must be in [0, 1].\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->genetic_params.crossover_cut_min_ratio < 0 || opt->genetic_params.crossover_cut_min_ratio > 100) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Crossover cut min ratio must be in [0, 100].\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->genetic_params.crossover_cut_max_ratio < 0 || opt->genetic_params.crossover_cut_max_ratio > 100) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Crossover cut max ratio must be in [0, 100].\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->genetic_params.crossover_cut_min_ratio > opt->genetic_params.crossover_cut_max_ratio) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Crossover min ratio cannot be greater than max ratio.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->genetic_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+    }
+
     /* Warn if no metaheuristic is active; execution will be short-lived. */
-    if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable && !
-        opt->em_params.enable) {
+    if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable &&
+        !opt->em_params.enable && !opt->genetic_params.enable) {
         if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled.\n");
     }
 
@@ -197,7 +229,6 @@ const ParsingResult *cmd_options_load(CmdOptions *options,
     return val;
 }
 
-/* Debug-print gives a quick summary without full structured output. */
 void print_configuration(const CmdOptions *options) {
     if_verbose(VERBOSE_DEBUG,
                "--- Options ---\n\n"
@@ -212,6 +243,11 @@ void print_configuration(const CmdOptions *options) {
                "\n\n"
                "--- Algorithms ---\n"
                "Nearest Neighbor:    %s\n"
+               "  plot:              %s\n"
+               "  cost:              %s\n"
+               "  time limit:        %.3f\n"
+               "\n"
+               "Extra Mileage:       %s\n"
                "  plot:              %s\n"
                "  cost:              %s\n"
                "  time limit:        %.3f\n"
@@ -238,6 +274,15 @@ void print_configuration(const CmdOptions *options) {
                "  probability:       %.3f\n"
                "  max stagnation:    %d\n"
                "  time limit:        %.3f\n"
+               "\n"
+               "Genetic Algorithm:   %s\n"
+               "  plot:              %s\n"
+               "  cost:              %s\n"
+               "  pop size:          %d\n"
+               "  elite count:       %d\n"
+               "  mutation rate:     %.3f\n"
+               "  cut ratio MIN-MAX: %d-%d\n"
+               "  time limit:        %.3f\n"
                "--------------\n",
                (options->tsp.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
                options->tsp.input_file ? options->tsp.input_file : "(none)",
@@ -254,6 +299,11 @@ void print_configuration(const CmdOptions *options) {
                options->nn_params.plot_file ? options->nn_params.plot_file : "(none)",
                options->nn_params.cost_file ? options->nn_params.cost_file : "(none)",
                options->nn_params.time_limit,
+
+               options->em_params.enable ? "ENABLED" : "DISABLED",
+               options->em_params.plot_file ? options->em_params.plot_file : "(none)",
+               options->em_params.cost_file ? options->em_params.cost_file : "(none)",
+               options->em_params.time_limit,
 
                options->vns_params.enable ? "ENABLED" : "DISABLED",
                options->vns_params.plot_file ? options->vns_params.plot_file : "(none)",
@@ -278,6 +328,16 @@ void print_configuration(const CmdOptions *options) {
                options->grasp_params.rcl_size,
                options->grasp_params.probability,
                options->grasp_params.max_stagnation,
-               options->grasp_params.time_limit
+               options->grasp_params.time_limit,
+
+               options->genetic_params.enable ? "ENABLED" : "DISABLED",
+               options->genetic_params.plot_file ? options->genetic_params.plot_file : "(none)",
+               options->genetic_params.cost_file ? options->genetic_params.cost_file : "(none)",
+               options->genetic_params.population_size,
+               options->genetic_params.elite_count,
+               options->genetic_params.mutation_rate,
+               options->genetic_params.crossover_cut_min_ratio,
+               options->genetic_params.crossover_cut_max_ratio,
+               options->genetic_params.time_limit
     );
 }

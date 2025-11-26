@@ -1,4 +1,7 @@
 #include <stdio.h>
+
+#include "em_test.h"
+#include "genetic_test.h"
 #include "grasp_test.h"
 #include "vns_test.h"
 #include "n_opt_test.h"
@@ -18,6 +21,7 @@ int main(void) {
     run_ts_tests();
     run_vns_tests();
     run_em_tests();
+    run_genetic_tests();
     run_n_opt_tests();
     run_grasp_nn_helpers_tests();
 

@@ -13,6 +13,7 @@
 #include <string.h>
 
 #include "extra_mileage.h"
+#include "genetic.h"
 
 
 static void execute_and_report(const TspAlgorithm *algo,
@@ -111,10 +112,27 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     // --- EM ---
     if (options->em_params.enable) {
         EMConfig cfg = {
-            .time_limit = options->grasp_params.time_limit
+            .time_limit = options->em_params.time_limit
         };
         TspAlgorithm algo = em_create(cfg);
         BUILD_PATHS(options->em_params.plot_file, options->em_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+    // --- GENETIC ALGORITHM ---
+    if (options->genetic_params.enable) {
+        GeneticConfig cfg = {
+            .time_limit = options->genetic_params.time_limit,
+            .population_size = (int) options->genetic_params.population_size,
+            .elite_count = (int) options->genetic_params.elite_count,
+            .mutation_rate = options->genetic_params.mutation_rate,
+            .crossover_cut_min_ratio = (int) options->genetic_params.crossover_cut_min_ratio,
+            .crossover_cut_max_ratio = (int) options->genetic_params.crossover_cut_max_ratio
+        };
+
+        TspAlgorithm algo = genetic_create(cfg);
+
+        BUILD_PATHS(options->genetic_params.plot_file, options->genetic_params.cost_file);
         execute_and_report(&algo, instance, full_plot_path, full_costs_path);
     }
 
