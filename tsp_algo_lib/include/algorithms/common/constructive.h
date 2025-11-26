@@ -22,4 +22,8 @@ int grasp_nearest_neighbor_tour_threshold(int starting_node,
                                           double *cost,
                                           double alpha);
 
+int extra_mileage_tour(int *tour,
+                       int n,
+                       const double *costs,
+                       double *cost);
 #endif //CONSTRUCTIVE_H

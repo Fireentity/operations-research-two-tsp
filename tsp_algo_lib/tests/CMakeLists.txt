@@ -5,6 +5,7 @@ set(TEST_SOURCES
         src/grasp_test.c
         src/ts_test.c
         src/vns_test.c
+        src/em_test.c
         src/n_opt_test.c
         src/nn_test.c
         src/grasp_nn_helpers_test.c

@@ -264,3 +264,92 @@ int grasp_nearest_neighbor_tour_threshold(const int starting_node,
 
     return 0;
 }
+
+int extra_mileage_tour(int *tour,
+                       const int n,
+                       const double *costs,
+                       double *cost) {
+    if (n < 2) {
+        if_verbose(VERBOSE_INFO, "[ERROR] Extra-Mileage: n=%d is too small.\n", n);
+        return -1;
+    }
+
+    if_verbose(VERBOSE_DEBUG, "\tExtra-Mileage: starting construction for n=%d\n", n);
+
+    int node_a = 0, node_b = 1;
+    double max_dist = -DBL_MAX;
+
+    for (int i = 0; i < n; i++) {
+        const double *row = &costs[i * n];
+        for (int j = i + 1; j < n; j++) {
+            const double d = row[j];
+            if (d > max_dist) {
+                max_dist = d;
+                node_a = i;
+                node_b = j;
+            }
+        }
+    }
+
+    if_verbose(VERBOSE_DEBUG, "\tExtra-Mileage: diameter nodes = (%d,%d), dist=%.6f\n", node_a, node_b, max_dist);
+
+    int *visited = calloc(n, sizeof(int));
+    check_alloc(visited);
+
+    tour[0] = node_a;
+    tour[1] = node_b;
+    tour[2] = node_a;
+    visited[node_a] = 1;
+    visited[node_b] = 1;
+
+    int tour_size = 2;
+
+    while (tour_size < n) {
+        double best_delta = DBL_MAX;
+        int best_node = -1;
+        int best_pos = -1;
+
+        for (int h = 0; h < n; h++) {
+            if (visited[h]) continue;
+
+            for (int p = 0; p < tour_size; p++) {
+                const int i = tour[p];
+                const int j = tour[p + 1];
+                const double delta =
+                        costs[i * n + h] +
+                        costs[h * n + j] -
+                        costs[i * n + j];
+
+                if (delta < best_delta) {
+                    best_delta = delta;
+                    best_node = h;
+                    best_pos = p;
+                }
+            }
+        }
+
+        if (best_node == -1) {
+            if_verbose(VERBOSE_INFO, "[ERROR] Extra-Mileage: no feasible insertion found.\n");
+            free(visited);
+            return -1;
+        }
+
+        if_verbose(VERBOSE_DEBUG, "\tExtra-Mileage: inserting node %d at pos %d (delta=%.6f)\n", best_node, best_pos,
+                   best_delta);
+
+        memmove(&tour[best_pos + 2],
+                &tour[best_pos + 1],
+                (tour_size - best_pos) * sizeof(int));
+
+        tour[best_pos + 1] = best_node;
+        visited[best_node] = 1;
+        tour_size++;
+    }
+
+    *cost = calculate_tour_cost(tour, n, costs);
+
+    if_verbose(VERBOSE_DEBUG, "\tExtra-Mileage: tour completed, cost=%.6f\n", *cost);
+
+    free(visited);
+    return 0;
+}
