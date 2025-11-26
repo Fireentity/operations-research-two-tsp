@@ -7,9 +7,10 @@
  * @brief Configuration structure for GRASP algorithm.
  */
 typedef struct {
+    int rcl_size;
+    double probability;
+    int max_stagnation;
     double time_limit;
-    double p1;
-    double p2;
 } GraspConfig;
 
 /**

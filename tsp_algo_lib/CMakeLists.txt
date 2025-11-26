@@ -9,11 +9,13 @@ set(TSP_ALGO_SOURCES
         src/algorithm/nearest_neighbor.c
         src/algorithm/tabu_search.c
         src/algorithm/variable_neighborhood_search.c
-        src/algorithm/algorithms.c
+        src/algorithm/common/constructive.c
+        src/algorithm/common/local_search.c
         src/api/tsp_instance.c
         src/api/tsp_solution.c
-        src/api/tsp_math_util.c
         src/api/tsp_algorithm.c
+        src/utility/tsp_math.c
+        src/utility/tsp_tour.c
         src/utility/feasibility_result.c
         src/utility/time_limiter.c
         src/utility/cost_recorder.c
@@ -27,6 +29,7 @@ add_library(tsp_algo_lib ${TSP_ALGO_SOURCES})
 # Include directories for tsp_algo_lib
 target_include_directories(tsp_algo_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms/common
         ${CMAKE_CURRENT_SOURCE_DIR}/include/api
         ${CMAKE_CURRENT_SOURCE_DIR}/include/parser
         ${CMAKE_CURRENT_SOURCE_DIR}/include/utility

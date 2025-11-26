@@ -45,9 +45,15 @@ DEFINE_ARRAYS_EQUAL(double, double, a==b)
 /* random non-contiguous extraction (static → moved to .c) */
 void rand_k_non_contiguous(int low, int high, int k, int result[]);
 
+
+static inline void swap_int(int *a, int *b) {
+    const int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
 /* swap macros */
 #define DEFINE_SWAP(type, suffix)                                   \
-static inline void swap_##suffix(type arr[], size_t i, size_t j) {  \
+static inline void swap_array_##suffix(type arr[], size_t i, size_t j) {  \
     type tmp = arr[i];                                              \
     arr[i] = arr[j];                                                \
     arr[j] = tmp;                                                   \

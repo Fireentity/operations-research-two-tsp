@@ -21,8 +21,10 @@ void run_vns_tests(void) {
     // 2. Config
     VNSConfig config = {
         .time_limit = TIME_LIMIT,
-        .kick_repetition = 5,
-        .n_opt = 3 // 3-opt kick
+        .min_k = 3,           // Start perturbation with 3 random edges
+        .max_k = 5,           // Increase perturbation up to 5 edges
+        .kick_repetition = 5, // Number of kicks before increasing k
+        .max_stagnation = 20  // Stop after 20 iterations without improvement
     };
     TspAlgorithm vns = vns_create(config);
 

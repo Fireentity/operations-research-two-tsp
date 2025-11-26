@@ -8,7 +8,7 @@
 #include "constants.h"
 #include "feasibility_result.h"
 #include "tsp_instance.h"
-#include "tsp_math_util.h"
+#include "tsp_math.h"
 #include "c_util.h"
 #include "logger.h"
 
@@ -160,7 +160,7 @@ bool tsp_solution_update_if_better(TspSolution *self, const int *new_tour, doubl
 
     pthread_mutex_lock(&self->mutex);
     if (new_cost < self->cost - EPSILON) {
-        if_verbose(VERBOSE_DEBUG, "    Solution: New best cost found: %lf (was: %lf). Updating.\n", new_cost,
+        if_verbose(VERBOSE_DEBUG, "\tSolution: New best cost found: %lf (was: %lf). Updating.\n", new_cost,
                    self->cost);
         self->cost = new_cost;
         memcpy(self->tour, new_tour, (n + 1) * sizeof(int));

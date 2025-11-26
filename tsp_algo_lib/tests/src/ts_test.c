@@ -21,7 +21,8 @@ void run_ts_tests(void) {
     // 2. Config
     TabuConfig config = {
         .time_limit = TIME_LIMIT,
-        .tenure = 5,
+        .min_tenure = 5,
+        .max_tenure = 10,
         .max_stagnation = 20
     };
     TspAlgorithm tabu = tabu_create(config);

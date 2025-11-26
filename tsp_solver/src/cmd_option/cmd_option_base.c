@@ -39,8 +39,9 @@ static void set_tabu_defaults(TabuOptions *opt) {
 
 static void set_grasp_defaults(GraspOptions *opt) {
     opt->enable = false;
-    opt->p1 = 0.6;
-    opt->p2 = 0.2;
+    opt->rcl_size = 10;
+    opt->probability = 0.3;
+    opt->max_stagnation = 200;
     opt->plot_file = strdup("GR-plot.png");
     opt->cost_file = strdup("GR-costs.txt");
 }

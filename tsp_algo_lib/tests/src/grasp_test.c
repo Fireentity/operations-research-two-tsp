@@ -19,11 +19,12 @@ void run_grasp_tests(void) {
     CostRecorder *recorder = cost_recorder_create(100);
 
     // 2. Config & Create
+    // Updated to use RCL parameters and Stagnation
     GraspConfig config = {
         .time_limit = TIME_LIMIT,
-        .p1 = 0.5,
-        .p2 = 0.3
-        // p3 is calculated automatically
+        .rcl_size = 3,       // Keep top 3 candidates
+        .probability = 0.8,  // 80% chance to pick randomly from RCL
+        .max_stagnation = 50 // Stop if no improvement for 50 iterations
     };
     TspAlgorithm grasp = grasp_create(config);
 

@@ -1,49 +1,14 @@
 #include "nearest_neighbor.h"
-#include "algorithms.h"
 #include "time_limiter.h"
 #include "c_util.h"
 #include "logger.h"
 #include <stdlib.h>
 #include <string.h>
 #include <float.h>
-#include "constants.h"
-#include "tsp_math_util.h"
 
-/* Building a clean NN tour from a fixed start improves multi-start quality */
-static double build_nn_tour(int start_node, int *tour, int *visited, int n, const double *costs) {
-    memset(visited, 0, n * sizeof(int));
-
-    tour[0] = start_node;
-    visited[start_node] = 1;
-
-    int current = start_node;
-    double cost = 0.0;
-
-    for (int step = 1; step < n; step++) {
-        int next = -1;
-        double best = DBL_MAX;
-
-        const double *row = &costs[current * n];
-
-        for (int j = 0; j < n; j++) {
-            if (!visited[j] && row[j] < best) {
-                best = row[j];
-                next = j;
-            }
-        }
-
-        if (next == -1) break;
-
-        tour[step] = next;
-        visited[next] = 1;
-        cost += best;
-        current = next;
-    }
-
-    tour[n] = start_node;
-    cost += costs[current * n + start_node];
-    return cost;
-}
+#include "constructive.h"
+#include "tsp_math.h"
+#include "local_search.h"
 
 static void run_nn(const TspInstance *instance,
                    TspSolution *solution,
@@ -75,7 +40,8 @@ static void run_nn(const TspInstance *instance,
     while (!time_limiter_is_over(&timer) && iter < n) {
         const int s = starts[iter];
 
-        double cost = build_nn_tour(s, tour, visited, n, costs);
+        double cost;
+        nearest_neighbor_tour(s, tour, n, costs, &cost);
         cost += two_opt(tour, n, costs, timer);
 
         cost_recorder_add(recorder, cost);

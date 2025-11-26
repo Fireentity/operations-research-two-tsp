@@ -55,8 +55,9 @@ typedef struct {
     bool enable;
     char *plot_file;
     char *cost_file;
-    double p1;
-    double p2;
+    unsigned int rcl_size;
+    double probability;
+    unsigned int max_stagnation;
     double time_limit;
 } GraspOptions;
 

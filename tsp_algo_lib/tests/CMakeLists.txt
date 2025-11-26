@@ -8,6 +8,8 @@ set(TEST_SOURCES
         src/n_opt_test.c
         src/nn_test.c
         src/grasp_nn_helpers_test.c
+        src/parser_test.c
+        src/local_search_test.c
 )
 
 add_executable(tsp_alg_tests src/main.c ${TEST_SOURCES})

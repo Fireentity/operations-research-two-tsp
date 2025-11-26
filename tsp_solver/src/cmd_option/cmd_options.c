@@ -6,7 +6,6 @@
 #include <string.h>
 #include "logger.h"
 
-// TODO does not print
 static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
     // --- 1. TSP Instance Validation ---
@@ -87,25 +86,29 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
 
     // --- 5. GRASP Validation ---
     if (opt->grasp_params.enable) {
-        if (opt->grasp_params.p1 < 0.0 || opt->grasp_params.p1 > 1.0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: p1 (probability) must be between 0.0 and 1.0.\n");
+        if (opt->grasp_params.rcl_size < 1) {
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: RCL size must be >= 1.\n");
             return WRONG_VALUE_TYPE;
         }
-        if (opt->grasp_params.p2 < 0.0 || opt->grasp_params.p2 > 1.0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: p2 must be between 0.0 and 1.0.\n");
+        if (opt->grasp_params.probability < 0.0 || opt->grasp_params.probability > 1.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: probability must be in [0.0, 1.0].\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->grasp_params.max_stagnation <= 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: max stagnation must be >= 0.\n");
             return WRONG_VALUE_TYPE;
         }
         if (opt->grasp_params.time_limit < 0.0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: Time limit cannot be negative.\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: time limit cannot be negative.\n");
             return WRONG_VALUE_TYPE;
         }
         if_verbose(VERBOSE_DEBUG, "GRASP options validated.\n");
     }
 
+
     // --- 6. General Warnings ---
     // Check if no algorithms are enabled
-    if (!opt->nn_params.enable && !opt->vns_params.enable &&
-        !opt->tabu_params.enable && !opt->grasp_params.enable) {
+    if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable) {
         if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled. The solver will exit after instance generation.\n");
     }
 
@@ -188,8 +191,9 @@ static void merge_ini_into_options(CmdOptions *final,
 
         // GRASP
         {"--grasp", OPT_BOOL, &final->grasp_params.enable, &ini->grasp_params.enable},
-        {"--grasp-p1", OPT_DOUBLE, &final->grasp_params.p1, &ini->grasp_params.p1},
-        {"--grasp-p2", OPT_DOUBLE, &final->grasp_params.p2, &ini->grasp_params.p2},
+        {"--grasp-rcl-size", OPT_UINT, &final->grasp_params.rcl_size, &ini->grasp_params.rcl_size},
+        {"--grasp-probability", OPT_DOUBLE, &final->grasp_params.probability, &ini->grasp_params.probability},
+        {"--grasp-stagnation", OPT_UINT, &final->grasp_params.max_stagnation, &ini->grasp_params.max_stagnation},
         {"--grasp-plot", OPT_STRING, &final->grasp_params.plot_file, &ini->grasp_params.plot_file},
         {"--grasp-cost", OPT_STRING, &final->grasp_params.cost_file, &ini->grasp_params.cost_file},
         {"--grasp-seconds", OPT_DOUBLE, &final->grasp_params.time_limit, &ini->grasp_params.time_limit},
@@ -285,8 +289,9 @@ void print_configuration(const CmdOptions *options) {
                "GRASP:               %s\n"
                "  plot:              %s\n"
                "  cost:              %s\n"
-               "  p1:                %.3f\n"
-               "  p2:                %.3f\n"
+               "  RCL size:          %d\n"
+               "  probability:       %.3f\n"
+               "  max stagnation:    %d\n"
                "  time limit:        %.3f\n"
                "--------------\n",
                (options->tsp.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
@@ -325,8 +330,9 @@ void print_configuration(const CmdOptions *options) {
                options->grasp_params.enable ? "ENABLED" : "DISABLED",
                options->grasp_params.plot_file ? options->grasp_params.plot_file : "(none)",
                options->grasp_params.cost_file ? options->grasp_params.cost_file : "(none)",
-               options->grasp_params.p1,
-               options->grasp_params.p2,
+               options->grasp_params.rcl_size,
+               options->grasp_params.probability,
+               options->grasp_params.max_stagnation,
                options->grasp_params.time_limit
     );
 }

@@ -1,78 +1,84 @@
 #include "grasp.h"
 #include "c_util.h"
-#include "algorithms.h"
 #include "time_limiter.h"
 #include "logger.h"
 #include <stdlib.h>
+#include "constructive.h"
+#include "local_search.h"
 
-#include "constants.h"
-
-// Internal runner function matching TspSolverFn signature
 static void run_grasp(const TspInstance *instance,
                       TspSolution *solution,
                       const void *config_void,
                       CostRecorder *recorder) {
     const GraspConfig *cfg = config_void;
-    const double p3 = 1.0 - cfg->p1 - cfg->p2;
 
-    if_verbose(VERBOSE_DEBUG, "  GRASP (p1=%.2f, p2=%.2f, p3=%.2f, t=%.2f)\n",
-               cfg->p1, cfg->p2, p3, cfg->time_limit);
+    if_verbose(VERBOSE_INFO, "GRASP: RCL=%d, Prob=%.2f, Stagnation=%d, Time=%.2f\n",
+               cfg->rcl_size, cfg->probability, cfg->max_stagnation, cfg->time_limit);
 
-    const int number_of_nodes = tsp_instance_get_num_nodes(instance);
-    const double *edge_cost_array = tsp_instance_get_cost_matrix(instance);
+    const int n = tsp_instance_get_num_nodes(instance);
+    const double *costs = tsp_instance_get_cost_matrix(instance);
 
-    // Initialize timer
     TimeLimiter timer = time_limiter_create(cfg->time_limit);
     time_limiter_start(&timer);
 
-    // Allocate working buffers
-    int *current_tour = malloc((number_of_nodes + 1) * sizeof(int));
+    int *current_tour = malloc((n + 1) * sizeof(int));
     check_alloc(current_tour);
 
     // Get initial solution state (if any)
     tsp_solution_get_tour(solution, current_tour);
 
     // Prepare starting nodes for multi-start
-    int *starting_nodes = malloc(number_of_nodes * sizeof(int));
+    int *starting_nodes = malloc(n * sizeof(int));
     check_alloc(starting_nodes);
-    for (int i = 0; i < number_of_nodes; i++) starting_nodes[i] = i;
-    shuffle_int_array(starting_nodes, number_of_nodes);
+    for (int i = 0; i < n; i++) starting_nodes[i] = i;
+    shuffle_int_array(starting_nodes, n);
 
     double current_cost;
-    int iteration = 0;
+    int iter = 0;
+    int stagnation_counter = 0;
 
     // Main GRASP Loop
-    while (!time_limiter_is_over(&timer) && iteration < number_of_nodes) {
-        const int start_node = starting_nodes[iteration];
+    // Continue until: Time is over OR all start nodes visited OR stagnation reached
+    while (!time_limiter_is_over(&timer) && iter < n && stagnation_counter < cfg->max_stagnation) {
+        const int start_node = starting_nodes[iter];
 
-        // 1. Constructive Phase: Randomized Greedy
+        // 1. Constructive Phase: RCL Greedy
         const int res = grasp_nearest_neighbor_tour(
             start_node,
             current_tour,
-            number_of_nodes,
-            edge_cost_array,
+            n,
+            costs,
             &current_cost,
-            cfg->p1,
-            cfg->p2,
-            p3
+            cfg->rcl_size,
+            cfg->probability
         );
 
         if (res == 0) {
             // 2. Local Search Phase: 2-Opt
-            double improvement = two_opt(current_tour, number_of_nodes, edge_cost_array, timer);
-            current_cost += improvement;
+            // two_opt returns negative delta (improvement), so we add it to reduce cost
+            current_cost += two_opt(current_tour, n, costs, timer);
 
             cost_recorder_add(recorder, current_cost);
 
             // 3. Update Global Solution
             if (tsp_solution_update_if_better(solution, current_tour, current_cost)) {
-                if_verbose(VERBOSE_DEBUG, "    GRASP [Iter %d]: New best cost: %lf\n", iteration, current_cost);
+                if_verbose(VERBOSE_DEBUG, "\tGRASP [Iter %d, Start %d]: New best cost: %.2f\n", iter, start_node,
+                           current_cost);
+                stagnation_counter = 0; // Reset stagnation on improvement
+            } else {
+                stagnation_counter++; // Increment stagnation
             }
         }
-        iteration++;
+        iter++;
     }
 
-    if_verbose(VERBOSE_DEBUG, "  GRASP: Finished after %d iterations.\n", iteration);
+    if (time_limiter_is_over(&timer)) {
+        if_verbose(VERBOSE_INFO, "\tTabu: time is over\n");
+    }
+    if (stagnation_counter >= cfg->max_stagnation) {
+        if_verbose(VERBOSE_INFO, "\tGRASP: Max stagnation reached.\n");
+    }
+    if_verbose(VERBOSE_DEBUG, "GRASP: Finished after %d iterations.\n", iter);
 
     // Cleanup
     free(starting_nodes);

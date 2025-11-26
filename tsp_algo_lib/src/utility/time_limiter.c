@@ -3,12 +3,9 @@
 #include "logger.h"
 
 TimeLimiter time_limiter_create(const double limit_seconds) {
-    return (TimeLimiter)
-    {
-        .
-        start_time = 0.0,
-        .
-        limit_seconds = limit_seconds
+    return (TimeLimiter){
+        .start_time = 0.0,
+        .limit_seconds = limit_seconds
     };
 }
 

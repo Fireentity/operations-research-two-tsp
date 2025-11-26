@@ -186,6 +186,16 @@ const ParsingResult *flag_parser_parse(const FlagParser *parser,
 bool flag_parser_mark_visited(const FlagParser *parser, const char *flag_name);
 
 /**
+ * @brief Clears the "visited" state of all registered flags.
+ *
+ * Call this before invoking flag_parser_parse() again if the same parser
+ * instance is reused multiple times.
+ *
+ * @param parser The parser context.
+ */
+void flag_parser_reset_visited(FlagParser *parser);
+
+/**
  * @brief Search if a flag is marked as "visited".
  * Use this when loading from a config file or environment variables.
  *

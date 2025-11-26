@@ -1,6 +1,5 @@
 #include "tabu_search.h"
-#include "algorithms.h"
-#include "tsp_math_util.h"
+#include "tsp_math.h"
 #include "time_limiter.h"
 #include "c_util.h"
 #include "logger.h"
@@ -8,6 +7,8 @@
 #include <string.h>
 #include <float.h>
 #include "constants.h"
+#include "local_search.h"
+#include "tsp_tour.h"
 
 static int get_random_tenure(const int min, const int max) {
     if (min >= max) return min;

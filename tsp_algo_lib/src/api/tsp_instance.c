@@ -1,7 +1,7 @@
 #include "tsp_instance.h"
 #include "tsp_parser.h"
 #include "c_util.h"
-#include "tsp_math_util.h"
+#include "tsp_math.h"
 #include "logger.h"
 #include <stdlib.h>
 #include <string.h>

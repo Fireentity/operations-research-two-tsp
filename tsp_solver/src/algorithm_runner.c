@@ -99,8 +99,9 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     // --- GRASP ---
     if (options->grasp_params.enable) {
         GraspConfig cfg = {
-            .p1 = options->grasp_params.p1,
-            .p2 = options->grasp_params.p2,
+            .rcl_size = (int) options->grasp_params.rcl_size,
+            .probability = options->grasp_params.probability,
+            .max_stagnation = (int) options->grasp_params.max_stagnation,
             .time_limit = options->grasp_params.time_limit
         };
         TspAlgorithm algo = grasp_create(cfg);

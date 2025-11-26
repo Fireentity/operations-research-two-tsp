@@ -1,12 +1,13 @@
 #include "variable_neighborhood_search.h"
-#include "algorithms.h"
-#include "tsp_math_util.h"
+#include "tsp_math.h"
 #include "time_limiter.h"
 #include "c_util.h"
 #include "logger.h"
 #include <stdlib.h>
 #include <string.h>
 #include "constants.h"
+#include "local_search.h"
+#include "tsp_tour.h"
 
 static double vns_kick(int *tour, int n, const double *costs, int k_opt) {
     if (k_opt > n) k_opt = n;

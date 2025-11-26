@@ -349,6 +349,15 @@ bool flag_parser_mark_visited(const FlagParser *parser, const char *flag_name) {
     return false;
 }
 
+void flag_parser_reset_visited(FlagParser *parser) {
+    if (!parser || !parser->visited_flags) return;
+    for (size_t i = 0; i < parser->definition_count; ++i)
+        parser->visited_flags[i] = false;
+
+    // Would be the same as the memset here but is more "future-proof"
+    // memset(parser->visited_flags, 0, parser->definition_count * sizeof(bool));
+}
+
 bool flag_parser_is_visited(const FlagParser *parser, const char *flag_name) {
     const int def_index = find_flag_by_name(parser, flag_name);
     if (def_index != -1) {

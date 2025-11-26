@@ -64,8 +64,9 @@ static const IniMapping mappings[] = {
     {"tabu", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, tabu_params.time_limit)},
 
     {"grasp", "enabled", TYPE_BOOL, offsetof(CmdOptions, grasp_params.enable)},
-    {"grasp", "p1", TYPE_UDOUBLE, offsetof(CmdOptions, grasp_params.p1)},
-    {"grasp", "p2", TYPE_UDOUBLE, offsetof(CmdOptions, grasp_params.p2)},
+    {"grasp", "rcl-size", TYPE_UINT, offsetof(CmdOptions, grasp_params.rcl_size)},
+    {"grasp", "probability", TYPE_UDOUBLE, offsetof(CmdOptions, grasp_params.probability)},
+    {"grasp", "max-stagnation", TYPE_UINT, offsetof(CmdOptions, grasp_params.max_stagnation)},
     {"grasp", "plot_file", TYPE_STRING, offsetof(CmdOptions, grasp_params.plot_file)},
     {"grasp", "cost_file", TYPE_STRING, offsetof(CmdOptions, grasp_params.cost_file)},
     {"grasp", "seconds", TYPE_UDOUBLE, offsetof(CmdOptions, grasp_params.time_limit)},

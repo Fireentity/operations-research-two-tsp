@@ -4,7 +4,8 @@
 #include <math.h>
 #include <stdio.h>
 #include "c_util.h"
-#include "tsp_math_util.h"
+#include "tsp_math.h"
+#include "tsp_tour.h" // Added: needed for compute_n_opt_move
 
 // Helper to assert double equality with epsilon
 #define ASSERT_DBL_EQ(a, b) assert(fabs((a) - (b)) < 1e-9)
