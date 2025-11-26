@@ -109,7 +109,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     }
 
     // --- EM ---
-    if (options->grasp_params.enable) {
+    if (options->em_params.enable) {
         EMConfig cfg = {
             .time_limit = options->grasp_params.time_limit
         };

@@ -91,8 +91,17 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
+    /* Extra Mileage validation. */
+    if (opt->em_params.enable) {
+        if (opt->em_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] EM: time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+    }
+
     /* Warn if no metaheuristic is active; execution will be short-lived. */
-    if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable) {
+    if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable && !
+        opt->em_params.enable) {
         if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled.\n");
     }
 
