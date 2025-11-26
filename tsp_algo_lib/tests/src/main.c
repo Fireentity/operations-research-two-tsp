@@ -17,6 +17,7 @@ int main(void) {
     run_grasp_tests();
     run_ts_tests();
     run_vns_tests();
+    run_em_tests();
     run_n_opt_tests();
     run_grasp_nn_helpers_tests();
 

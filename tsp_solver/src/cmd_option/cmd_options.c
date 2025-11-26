@@ -1,147 +1,131 @@
 #include "cmd_options.h"
 #include "cmd_option_internal.h"
 #include "flag_parser.h"
-#include "c_util.h" // for memdup
+#include "logger.h"
 #include <stdlib.h>
 #include <string.h>
-#include "logger.h"
 
+/* Validation rejects configurations that would lead to undefined solver behavior. */
 static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
-    // --- 1. TSP Instance Validation ---
+
+    /* TSP instance rules ensure consistent instance creation. */
     if (opt->tsp.mode == TSP_INPUT_MODE_FILE) {
-        if (opt->tsp.input_file == NULL || strlen(opt->tsp.input_file) == 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Mode is FILE but no input file provided (--file).\n");
+        if (!opt->tsp.input_file || strlen(opt->tsp.input_file) == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Mode FILE requires a valid --file.\n");
             return MISSING_MANDATORY_FLAG;
         }
-    } else if (opt->tsp.mode == TSP_INPUT_MODE_RANDOM) {
+    } else {
         if (opt->tsp.number_of_nodes < 2) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Random generation requires at least 2 nodes.\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] Random mode requires at least 2 nodes.\n");
             return WRONG_VALUE_TYPE;
         }
         if (opt->tsp.generation_area.square_side == 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Generation area square side must be > 0.\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] Generation area side must be > 0.\n");
             return WRONG_VALUE_TYPE;
         }
     }
-    if_verbose(VERBOSE_DEBUG, "TSP instance options validated.\n");
 
-    // --- 2. Nearest Neighbor Validation ---
+    /* NN validation: negative duration makes the algorithm unusable. */
     if (opt->nn_params.enable) {
         if (opt->nn_params.time_limit < 0.0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] NN: Time limit cannot be negative.\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] NN: time limit cannot be negative.\n");
             return WRONG_VALUE_TYPE;
         }
-        if_verbose(VERBOSE_DEBUG, "NN options validated.\n");
     }
 
-    // --- 3. VNS Validation ---
+    /* VNS validation ensures meaningful search parameters. */
     if (opt->vns_params.enable) {
-        if (opt->vns_params.kick_repetitions == 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] VNS: Kick repetitions must be > 0.\n");
-            return USAGE_ERROR;
-        }
-        if (opt->vns_params.min_k < 2) {
-            if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k must be >= 2 (e.g., 2-opt, 3-opt).\n");
+        if (opt->vns_params.min_k < 2 || opt->vns_params.max_k < 2) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k and max_k must be >= 2.\n");
             return WRONG_VALUE_TYPE;
         }
-
-        if (opt->vns_params.max_k < 2) {
-            if_verbose(VERBOSE_INFO, "[Config Error] VNS: max_k must be >= 2 (e.g., 2-opt, 3-opt).\n");
-            return WRONG_VALUE_TYPE;
-        }
-
         if (opt->vns_params.min_k > opt->vns_params.max_k) {
-            if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k cannot be greater than max_k.\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k cannot exceed max_k.\n");
             return WRONG_VALUE_TYPE;
         }
-
-        if (opt->vns_params.max_stagnation <= 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] VNS: Max Stagnation must be positive.\n");
+        if (opt->vns_params.kick_repetitions == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: kick repetitions must be > 0.\n");
             return WRONG_VALUE_TYPE;
         }
-        if_verbose(VERBOSE_DEBUG, "VNS options validated.\n");
+        if (opt->vns_params.max_stagnation == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] VNS: max stagnation must be > 0.\n");
+            return WRONG_VALUE_TYPE;
+        }
     }
 
-    // --- 4. Tabu Search Validation ---
+    /* Tabu validation ensures stable tabu tenure logic. */
     if (opt->tabu_params.enable) {
-        if (opt->tabu_params.min_tenure == 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Min Tenure must be > 0.\n");
-            return USAGE_ERROR;
-        }
-        if (opt->tabu_params.max_tenure == 0 || opt->tabu_params.min_tenure > opt->tabu_params.max_tenure) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Max Tenure must be > 0 and >= min_tenure.\n");
-            return USAGE_ERROR;
+        if (opt->tabu_params.min_tenure == 0 || opt->tabu_params.max_tenure == 0 || opt->tabu_params.min_tenure > opt->
+            tabu_params.max_tenure) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: invalid tenure range.\n");
+            return WRONG_VALUE_TYPE;
         }
         if (opt->tabu_params.max_stagnation == 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Max stagnation must be > 0.\n");
-            return USAGE_ERROR;
-        }
-        if (opt->tabu_params.time_limit < 0.0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: Time limit cannot be negative.\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: max stagnation must be > 0.\n");
             return WRONG_VALUE_TYPE;
         }
-        if_verbose(VERBOSE_DEBUG, "Tabu Search options validated.\n");
+        if (opt->tabu_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Tabu: time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
     }
 
-    // --- 5. GRASP Validation ---
+    /* GRASP validation ensures proper construction parameters. */
     if (opt->grasp_params.enable) {
         if (opt->grasp_params.rcl_size < 1) {
             if_verbose(VERBOSE_INFO, "[Config Error] GRASP: RCL size must be >= 1.\n");
             return WRONG_VALUE_TYPE;
         }
         if (opt->grasp_params.probability < 0.0 || opt->grasp_params.probability > 1.0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: probability must be in [0.0, 1.0].\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: probability must be in [0,1].\n");
             return WRONG_VALUE_TYPE;
         }
         if (opt->grasp_params.max_stagnation <= 0) {
-            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: max stagnation must be >= 0.\n");
+            if_verbose(VERBOSE_INFO, "[Config Error] GRASP: max stagnation must be > 0.\n");
             return WRONG_VALUE_TYPE;
         }
         if (opt->grasp_params.time_limit < 0.0) {
             if_verbose(VERBOSE_INFO, "[Config Error] GRASP: time limit cannot be negative.\n");
             return WRONG_VALUE_TYPE;
         }
-        if_verbose(VERBOSE_DEBUG, "GRASP options validated.\n");
     }
 
-
-    // --- 6. General Warnings ---
-    // Check if no algorithms are enabled
+    /* Warn if no metaheuristic is active; execution will be short-lived. */
     if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable) {
-        if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled. The solver will exit after instance generation.\n");
+        if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled.\n");
     }
 
     if_verbose(VERBOSE_DEBUG, "Configuration validation completed successfully.\n");
     return SUCCESS;
 }
 
-typedef enum { OPT_INT, OPT_UINT, OPT_DOUBLE, OPT_BOOL, OPT_STRING } OptType;
-
-typedef struct {
-    const char *flag; // CLI flag name used to detect overrides
-    OptType type; // type of the option
-    void *final_ptr; // pointer into final options struct
-    const void *ini_ptr; // pointer into ini-loaded temp struct
-} OptionMapEntry;
-
-static void merge_value(OptType type, void *dst, const void *src) {
+/* merge_ini_into_options copies values where CLI has not overridden them. */
+static void copy_option_value(OptionType type, void *dst, const void *src) {
     switch (type) {
         case OPT_INT:
+        case OPT_TSP_MODE:
             *(int *) dst = *(const int *) src;
             break;
+
         case OPT_UINT:
             *(unsigned int *) dst = *(const unsigned int *) src;
             break;
+
         case OPT_DOUBLE:
+        case OPT_UDOUBLE:
             *(double *) dst = *(const double *) src;
             break;
+
         case OPT_BOOL:
             *(bool *) dst = *(const bool *) src;
             break;
+
         case OPT_STRING:
-            if (*(char **) dst) free(*(char **) dst);
-            *(char **) dst = *(char * const*) src ? strdup(*(char * const*) src) : NULL;
+            free(*(char **) dst);
+            *(char **) dst = *(char * const *) src
+                                 ? strdup(*(char * const *) src)
+                                 : NULL;
             break;
     }
 }
@@ -149,72 +133,30 @@ static void merge_value(OptType type, void *dst, const void *src) {
 static void merge_ini_into_options(CmdOptions *final,
                                    const CmdOptions *ini,
                                    const FlagParser *cli) {
-    const OptionMapEntry map[] = {
-        // GENERAL
-        {"--verbosity", OPT_UINT, &final->verbosity, &ini->verbosity},
-        {"--plot-path", OPT_STRING, &final->plots_path, &ini->plots_path},
+    const OptionMeta *meta = cmd_options_get_metadata();
+    const size_t count = cmd_options_get_metadata_count();
 
-        // TSP
-        {"--mode", OPT_INT, &final->tsp.mode, &ini->tsp.mode},
-        {"--nodes", OPT_UINT, &final->tsp.number_of_nodes, &ini->tsp.number_of_nodes},
-        {"--seed", OPT_INT, &final->tsp.seed, &ini->tsp.seed},
-        {"--file", OPT_STRING, &final->tsp.input_file, &ini->tsp.input_file},
-
-        {"--x-square", OPT_INT, &final->tsp.generation_area.x_square, &ini->tsp.generation_area.x_square},
-        {"--y-square", OPT_INT, &final->tsp.generation_area.y_square, &ini->tsp.generation_area.y_square},
-        {"--square-side", OPT_UINT, &final->tsp.generation_area.square_side, &ini->tsp.generation_area.square_side},
-
-        // NN
-        {"--nn", OPT_BOOL, &final->nn_params.enable, &ini->nn_params.enable},
-        {"--nn-plot", OPT_STRING, &final->nn_params.plot_file, &ini->nn_params.plot_file},
-        {"--nn-cost", OPT_STRING, &final->nn_params.cost_file, &ini->nn_params.cost_file},
-        {"--nn-seconds", OPT_DOUBLE, &final->nn_params.time_limit, &ini->nn_params.time_limit},
-
-        // VNS
-        {"--vns", OPT_BOOL, &final->vns_params.enable, &ini->vns_params.enable},
-        {"--vns-min-k", OPT_UINT, &final->vns_params.min_k, &ini->vns_params.min_k},
-        {"--vns-max-k", OPT_UINT, &final->vns_params.max_k, &ini->vns_params.max_k},
-        {"--vns-kik-reps", OPT_UINT, &final->vns_params.kick_repetitions, &ini->vns_params.kick_repetitions},
-        {"--vns-stagnation", OPT_UINT, &final->vns_params.max_stagnation, &ini->vns_params.max_stagnation},
-        {"--vns-plot", OPT_STRING, &final->vns_params.plot_file, &ini->vns_params.plot_file},
-        {"--vns-cost", OPT_STRING, &final->vns_params.cost_file, &ini->vns_params.cost_file},
-        {"--vns-seconds", OPT_DOUBLE, &final->vns_params.time_limit, &ini->vns_params.time_limit},
-
-        // TABU
-        {"--ts", OPT_BOOL, &final->tabu_params.enable, &ini->tabu_params.enable},
-        {"--ts-min-tenure", OPT_UINT, &final->tabu_params.min_tenure, &ini->tabu_params.min_tenure},
-        {"--ts-max-tenure", OPT_UINT, &final->tabu_params.max_tenure, &ini->tabu_params.max_tenure},
-        {"--ts-stagnation", OPT_UINT, &final->tabu_params.max_stagnation, &ini->tabu_params.max_stagnation},
-        {"--ts-plot", OPT_STRING, &final->tabu_params.plot_file, &ini->tabu_params.plot_file},
-        {"--ts-cost", OPT_STRING, &final->tabu_params.cost_file, &ini->tabu_params.cost_file},
-        {"--ts-seconds", OPT_DOUBLE, &final->tabu_params.time_limit, &ini->tabu_params.time_limit},
-
-        // GRASP
-        {"--grasp", OPT_BOOL, &final->grasp_params.enable, &ini->grasp_params.enable},
-        {"--grasp-rcl-size", OPT_UINT, &final->grasp_params.rcl_size, &ini->grasp_params.rcl_size},
-        {"--grasp-probability", OPT_DOUBLE, &final->grasp_params.probability, &ini->grasp_params.probability},
-        {"--grasp-stagnation", OPT_UINT, &final->grasp_params.max_stagnation, &ini->grasp_params.max_stagnation},
-        {"--grasp-plot", OPT_STRING, &final->grasp_params.plot_file, &ini->grasp_params.plot_file},
-        {"--grasp-cost", OPT_STRING, &final->grasp_params.cost_file, &ini->grasp_params.cost_file},
-        {"--grasp-seconds", OPT_DOUBLE, &final->grasp_params.time_limit, &ini->grasp_params.time_limit},
-    };
-
-    const size_t count = sizeof(map) / sizeof(map[0]);
+    char *fb = (char *) final;
+    const char *ib = (const char *) ini;
 
     for (size_t i = 0; i < count; i++) {
-        const OptionMapEntry *e = &map[i];
-        if (!flag_parser_is_visited(cli, e->flag)) {
-            merge_value(e->type, e->final_ptr, e->ini_ptr);
+        const OptionMeta *m = &meta[i];
+
+        /* CLI takes priority; INI applies only to non-overridden fields. */
+        if (!flag_parser_is_visited(cli, m->cli_long)) {
+            void *dst = fb + m->offset;
+            const void *src = ib + m->offset;
+            copy_option_value(m->type, dst, src);
         }
     }
 }
 
-const ParsingResult *cmd_options_load(CmdOptions *options, const int argc, const char **argv) {
-    // 1. Build CLI Parser tied to 'options'
+const ParsingResult *cmd_options_load(CmdOptions *options,
+                                      const int argc,
+                                      const char **argv) {
     FlagParser *parser = cmd_options_build_cli_parser(options);
     if (!parser) return INTERNAL_ERROR;
 
-    // 2. Parse CLI (overwrites defaults in 'options', marks flags visited)
     const ParsingResult *res = flag_parser_parse(parser, argc, argv, false);
 
     if (options->help) {
@@ -228,31 +170,25 @@ const ParsingResult *cmd_options_load(CmdOptions *options, const int argc, const
         return res;
     }
 
-    // 3. INI Parsing & Merging
+    /* INI file extends defaults and is overridden by CLI. */
     if (options->config_file) {
-        // Create temp options with DEFAULTS (to have a clean base for INI)
-        CmdOptions *ini_opt = cmd_options_create_defaults();
+        if_verbose(VERBOSE_DEBUG, "Loading configuration file: %s\n", options->config_file);
 
-        // Parse INI into temp struct
+        CmdOptions *ini_opt = cmd_options_create_defaults();
         cmd_options_parse_ini_file(ini_opt, options->config_file);
 
-        // Merge INI -> Options (respecting CLI priority via parser state)
         merge_ini_into_options(options, ini_opt, parser);
 
-        // Cleanup temp
         cmd_options_destroy(ini_opt);
     }
 
-    // 4. Validation
-    const ParsingResult *val_res = validate_options(options);
+    const ParsingResult *val = validate_options(options);
 
     flag_parser_free(parser);
-    return val_res;
+    return val;
 }
 
-/**
- * @brief Prints the current configuration to the log if verbosity allows.
- */
+/* Debug-print gives a quick summary without full structured output. */
 void print_configuration(const CmdOptions *options) {
     if_verbose(VERBOSE_DEBUG,
                "--- Options ---\n\n"
