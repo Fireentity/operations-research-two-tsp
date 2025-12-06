@@ -11,7 +11,8 @@ static void run_grasp(const TspInstance *instance,
                       const void *config_void,
                       CostRecorder *recorder) {
     const GraspConfig *cfg = config_void;
-
+    RandomState rng;
+    random_init(&rng, cfg->seed);
     if_verbose(VERBOSE_INFO, "GRASP: RCL=%d, Prob=%.2f, Stagnation=%d, Time=%.2f\n",
                cfg->rcl_size, cfg->probability, cfg->max_stagnation, cfg->time_limit);
 
@@ -50,7 +51,8 @@ static void run_grasp(const TspInstance *instance,
             costs,
             &current_cost,
             cfg->rcl_size,
-            cfg->probability
+            cfg->probability,
+            &rng
         );
 
         if (res == 0) {

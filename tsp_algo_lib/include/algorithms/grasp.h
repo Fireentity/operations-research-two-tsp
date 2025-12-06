@@ -1,6 +1,8 @@
 #ifndef GRASP_H
 #define GRASP_H
 
+#include <stdint.h>
+
 #include "tsp_algorithm.h"
 
 /**
@@ -11,6 +13,7 @@ typedef struct {
     double probability;
     int max_stagnation;
     double time_limit;
+    uint64_t seed;
 } GraspConfig;
 
 /**
