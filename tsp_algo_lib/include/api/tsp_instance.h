@@ -43,7 +43,6 @@ typedef struct TspInstance TspInstance;
  * @return Pointer to the generated TSP instance.
  */
 TspInstance *tsp_instance_create_random(size_t number_of_nodes,
-                                        int seed,
                                         TspGenerationArea area);
 
 /**

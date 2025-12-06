@@ -25,8 +25,7 @@ static TspInstance *instance_create_from_nodes(Node *nodes, const size_t n) {
 
     return inst;
 }
-//TODO
-TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const int seed, const TspGenerationArea area) {
+TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const TspGenerationArea area) {
 
     Node *nodes = malloc(number_of_nodes * sizeof(Node));
     check_alloc(nodes);

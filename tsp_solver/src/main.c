@@ -39,7 +39,7 @@ static TspInstance *create_tsp_instance(const CmdOptions *options) {
             .y_square = options->tsp.generation_area.y_square,
             .square_side = options->tsp.generation_area.square_side
         };
-        instance = tsp_instance_create_random(options->tsp.number_of_nodes, options->tsp.seed, area);
+        instance = tsp_instance_create_random(options->tsp.number_of_nodes, area);
     }
 
 

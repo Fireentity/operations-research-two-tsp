@@ -14,7 +14,7 @@ void run_em_tests(void) {
 
     // 1. Setup
     TspGenerationArea area = {.x_square = 0, .y_square = 0, .square_side = 100};
-    TspInstance *instance = tsp_instance_create_random(NODES, 777, area);
+    TspInstance *instance = tsp_instance_create_random(NODES, area);
     TspSolution *solution = tsp_solution_create(instance);
     CostRecorder *recorder = cost_recorder_create(100);
 
