@@ -42,9 +42,6 @@ DEFINE_ARRAYS_EQUAL(long, long, a==b)
 DEFINE_ARRAYS_EQUAL(float, float, a==b)
 DEFINE_ARRAYS_EQUAL(double, double, a==b)
 
-/* random non-contiguous extraction (static → moved to .c) */
-void rand_k_non_contiguous(int low, int high, int k, int result[]);
-
 
 static inline void swap_int(int *a, int *b) {
     const int tmp = *a;

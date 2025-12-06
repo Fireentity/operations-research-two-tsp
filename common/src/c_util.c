@@ -58,14 +58,3 @@ void str_trim(char *s) {
     }
 }
 
-void rand_k_non_contiguous(const int low, const int high, const int k, int result[]) {
-    const int m = high - low + 1 - (k - 1);
-    int s[k];
-
-    s[0] = rand() % (m - (k - 1));
-    for (int i = 1; i < k; i++)
-        s[i] = s[i - 1] + 1 + rand() % (m - s[i - 1] - (k - i));
-
-    for (int i = 0; i < k; i++)
-        result[i] = low + s[i] + i;
-}
