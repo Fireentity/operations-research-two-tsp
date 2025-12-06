@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "random.h"
+
 /* --- Nearest Neighbor Implementation --- */
 int nearest_neighbor_tour(const int starting_node,
                           int *tour,
@@ -74,7 +76,8 @@ int grasp_nearest_neighbor_tour(const int starting_node,
                                 const double *edge_cost_array,
                                 double *cost,
                                 const int rcl_size,
-                                const double probability) {
+                                const double probability,
+                                RandomState *rng) {
     if (starting_node < 0 || starting_node >= number_of_nodes) {
         if_verbose(VERBOSE_INFO,
                    "[ERROR] GRASP-NN: starting node %d out of bounds [0,%d)\n",
@@ -149,8 +152,8 @@ int grasp_nearest_neighbor_tour(const int starting_node,
         int chosen_tour_index;
         double added_cost;
 
-        if (normalized_rand() <= probability) {
-            const int r_idx = (int) (normalized_rand() * candidates_found);
+        if (random_double(rng) <= probability) {
+            const int r_idx = random_int(rng, 0, candidates_found - 1);
             chosen_tour_index = rcl_nodes[r_idx];
             added_cost = rcl_costs[r_idx];
         } else {
@@ -171,91 +174,6 @@ int grasp_nearest_neighbor_tour(const int starting_node,
 
     free(rcl_nodes);
     free(rcl_costs);
-    return 0;
-}
-
-/* --- GRASP Threshold Implementation (unchanged style) --- */
-int grasp_nearest_neighbor_tour_threshold(const int starting_node,
-                                          int *tour,
-                                          const int number_of_nodes,
-                                          const double *edge_cost_array,
-                                          double *cost,
-                                          const double alpha) {
-    if (starting_node < 0 || starting_node >= number_of_nodes) {
-        if_verbose(VERBOSE_INFO,
-                   "[ERROR] GRASP-Threshold: Starting node (%d) is out of bounds [0, %d).\n",
-                   starting_node, number_of_nodes);
-        fprintf(stderr,
-                "[ERROR] GRASP-Threshold: Starting node (%d) is out of bounds [0, %d).\n",
-                starting_node, number_of_nodes);
-        return -1;
-    }
-
-    if_verbose(VERBOSE_DEBUG,
-               "\tGRASP-Threshold: Building tour from node %d (alpha=%.2f)...\n",
-               starting_node, alpha);
-
-    for (int i = 0; i < number_of_nodes; i++)
-        tour[i] = i;
-    swap_int(tour, tour + starting_node);
-
-    int visited_count = 1;
-    int current_node = tour[0];
-    tour[number_of_nodes] = tour[0];
-
-    int *rcl = malloc(number_of_nodes * sizeof(int));
-    check_alloc(rcl);
-
-    const double effective_alpha = fmax(0.0, fmin(1.0, alpha));
-
-    while (visited_count < number_of_nodes) {
-        double min_cost = DBL_MAX;
-        double max_cost = -DBL_MAX;
-
-        for (int i = visited_count; i < number_of_nodes; i++) {
-            const int candidate = tour[i];
-            const double dist =
-                    edge_cost_array[current_node * number_of_nodes + candidate];
-            if (dist < min_cost) min_cost = dist;
-            if (dist > max_cost) max_cost = dist;
-        }
-
-        if (min_cost == DBL_MAX) {
-            if_verbose(VERBOSE_INFO,
-                       "[ERROR] GRASP-Threshold: No candidates found.\n");
-            free(rcl);
-            return -1;
-        }
-
-        const double threshold =
-                min_cost + effective_alpha * (max_cost - min_cost);
-
-        int rcl_size = 0;
-        for (int i = visited_count; i < number_of_nodes; i++) {
-            const int candidate = tour[i];
-            const double dist =
-                    edge_cost_array[current_node * number_of_nodes + candidate];
-            if (dist <= threshold + EPSILON)
-                rcl[rcl_size++] = i;
-        }
-
-        const int chosen_index = rcl[(int) (normalized_rand() * rcl_size)];
-
-        if_verbose(VERBOSE_DEBUG,
-                   "\tGRASP-Threshold: Chose node %d (RCL size %d).\n",
-                   tour[chosen_index], rcl_size);
-
-        swap_int(tour + visited_count, tour + chosen_index);
-        current_node = tour[visited_count];
-        visited_count++;
-    }
-
-    free(rcl);
-    *cost = calculate_tour_cost(tour, number_of_nodes, edge_cost_array);
-
-    if_verbose(VERBOSE_DEBUG,
-               "\tGRASP-Threshold: Built tour. Cost: %lf\n", *cost);
-
     return 0;
 }
 

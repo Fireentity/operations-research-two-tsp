@@ -1,5 +1,6 @@
 #ifndef CONSTRUCTIVE_H
 #define CONSTRUCTIVE_H
+#include "random.h"
 
 
 /**
@@ -20,7 +21,8 @@ int grasp_nearest_neighbor_tour(int starting_node,
                                 const double *edge_cost_array,
                                 double *cost,
                                 int rcl_size,
-                                double probability);
+                                double probability,
+                                RandomState *rng);
 
 /**
  * @brief Standard Extra Mileage Algorithm (starts from scratch).
