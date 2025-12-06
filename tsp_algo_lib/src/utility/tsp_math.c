@@ -14,10 +14,6 @@ double calculate_tour_cost(const int *const tour,
     return cost;
 }
 
-double normalized_rand() {
-    return (double) rand() / RAND_MAX;
-}
-
 double *init_edge_cost_array(const Node *nodes, const int number_of_nodes) {
     if_verbose(VERBOSE_DEBUG, "\tAllocating edge cost array for %d nodes (%lu bytes).\n",
                number_of_nodes, (unsigned long) (number_of_nodes * number_of_nodes * sizeof(double)));

@@ -5,6 +5,7 @@
 #include "logger.h"
 #include <stdlib.h>
 #include <string.h>
+#include "random.h"
 
 struct TspInstance {
     int number_of_nodes;
@@ -24,16 +25,15 @@ static TspInstance *instance_create_from_nodes(Node *nodes, const size_t n) {
 
     return inst;
 }
-
+//TODO
 TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const int seed, const TspGenerationArea area) {
-    srand(seed);
 
     Node *nodes = malloc(number_of_nodes * sizeof(Node));
     check_alloc(nodes);
 
     for (int i = 0; i < number_of_nodes; i++) {
-        nodes[i].x = area.x_square + normalized_rand() * area.square_side;
-        nodes[i].y = area.y_square + normalized_rand() * area.square_side;
+        nodes[i].x = area.x_square + global_random_double() * area.square_side;
+        nodes[i].y = area.y_square + global_random_double() * area.square_side;
     }
 
     return instance_create_from_nodes(nodes, number_of_nodes);

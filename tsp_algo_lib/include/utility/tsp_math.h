@@ -15,15 +15,6 @@
 double calculate_tour_cost(const int *tour, int number_of_nodes, const double *edge_cost_array);
 
 /**
- * @brief Generates a normalized random number.
- *
- * Produces a random number normalized to the range [0,1].
- *
- * @return A normalized random number.
- */
-double normalized_rand();
-
-/**
  * @brief Initializes the edge cost array.
  *
  * Computes and returns an array containing the cost between nodes based on their coordinates.
