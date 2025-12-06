@@ -10,10 +10,11 @@
 #include "ts_test.h"
 #include "nn_test.h"
 #include "parser_test.h"
+#include "random.h"
 
 int main(void) {
     printf("=== TSP Algorithm Tests Start ===\n\n");
-
+    global_random_init(10);
     run_parser_tests();
     run_local_search_tests();
     run_nn_tests();

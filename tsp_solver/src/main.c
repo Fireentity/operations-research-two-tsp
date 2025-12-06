@@ -4,15 +4,18 @@
 #include "tsp_instance.h"
 #include "logger.h"
 #include "c_util.h"
+#include "random.h"
 
 /**
- * @brief Configures the global logger based on command line options.
+ * @brief Configures the global services based on command line options.
  */
-static void setup_logging(const CmdOptions *options) {
+static void setup_global(const CmdOptions *options) {
 #ifndef DISABLE_VERBOSE
     logger_set_verbosity(options->verbosity);
 #endif
+    global_random_init(options->tsp.seed);
 }
+
 
 /**
  * @brief Loads a TSP instance from a file or generates a random one based on options.
@@ -60,7 +63,7 @@ int main(const int argc, const char *argv[]) {
     }
 
     // Setup Logging
-    setup_logging(options);
+    setup_global(options);
     print_configuration(options);
 
     // Create/Load Instance
