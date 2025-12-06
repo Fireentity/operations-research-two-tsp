@@ -64,7 +64,10 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
     // --- NN ---
     if (options->nn_params.enable) {
-        NNConfig cfg = {.time_limit = options->nn_params.time_limit};
+        NNConfig cfg = {
+            .time_limit = options->nn_params.time_limit,
+            .seed = options->tsp.seed
+        };
         TspAlgorithm algo = nn_create(cfg);
         BUILD_PATHS(options->nn_params.plot_file, options->nn_params.cost_file);
         execute_and_report(&algo, instance, full_plot_path, full_costs_path);
@@ -76,7 +79,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .min_k = (int) options->vns_params.min_k,
             .max_k = (int) options->vns_params.max_k,
             .kick_repetition = (int) options->vns_params.kick_repetitions,
-            .time_limit = options->vns_params.time_limit
+            .time_limit = options->vns_params.time_limit,
+            .seed = options->tsp.seed
         };
         TspAlgorithm algo = vns_create(cfg);
         BUILD_PATHS(options->vns_params.plot_file, options->vns_params.cost_file);
@@ -89,7 +93,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .min_tenure = (int) options->tabu_params.min_tenure,
             .max_tenure = (int) options->tabu_params.max_tenure,
             .max_stagnation = (int) options->tabu_params.max_stagnation,
-            .time_limit = options->tabu_params.time_limit
+            .time_limit = options->tabu_params.time_limit,
+            .seed = options->tsp.seed
         };
         TspAlgorithm algo = tabu_create(cfg);
         BUILD_PATHS(options->tabu_params.plot_file, options->tabu_params.cost_file);
@@ -102,7 +107,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .rcl_size = (int) options->grasp_params.rcl_size,
             .probability = options->grasp_params.probability,
             .max_stagnation = (int) options->grasp_params.max_stagnation,
-            .time_limit = options->grasp_params.time_limit
+            .time_limit = options->grasp_params.time_limit,
+            .seed = options->tsp.seed
         };
         TspAlgorithm algo = grasp_create(cfg);
         BUILD_PATHS(options->grasp_params.plot_file, options->grasp_params.cost_file);
@@ -112,7 +118,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     // --- EM ---
     if (options->em_params.enable) {
         EMConfig cfg = {
-            .time_limit = options->em_params.time_limit
+            .time_limit = options->em_params.time_limit,
+            .seed = options->tsp.seed
         };
         TspAlgorithm algo = em_create(cfg);
         BUILD_PATHS(options->em_params.plot_file, options->em_params.cost_file);
@@ -127,7 +134,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .elite_count = (int) options->genetic_params.elite_count,
             .mutation_rate = options->genetic_params.mutation_rate,
             .crossover_cut_min_ratio = (int) options->genetic_params.crossover_cut_min_ratio,
-            .crossover_cut_max_ratio = (int) options->genetic_params.crossover_cut_max_ratio
+            .crossover_cut_max_ratio = (int) options->genetic_params.crossover_cut_max_ratio,
+            .seed = options->tsp.seed
         };
 
         TspAlgorithm algo = genetic_create(cfg);
