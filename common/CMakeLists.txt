@@ -9,6 +9,7 @@ set(COMMON_SOURCES
         src/ini.c
         src/logger.c
         src/c_util.c
+        src/random.c
 )
 
 # Create a library for common
