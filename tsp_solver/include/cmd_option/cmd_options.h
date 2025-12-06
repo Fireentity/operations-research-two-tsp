@@ -78,6 +78,10 @@ typedef struct {
     double mutation_rate;
     unsigned int crossover_cut_min_ratio;
     unsigned int crossover_cut_max_ratio;
+    int tournament_size;
+    int init_grasp_rcl_size;
+    double init_grasp_prob;
+    int init_grasp_percent;
 } GeneticOptions;
 
 typedef struct {

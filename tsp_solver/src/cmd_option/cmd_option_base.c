@@ -71,6 +71,10 @@ static const OptionMeta options_registry[] = {
     {"--ga-seconds", NULL, "Time limit for GA", "genetic", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, genetic_params.time_limit)},
     {"--ga-plot", NULL, "GA plot filename", "genetic", "plot_file", OPT_STRING, offsetof(CmdOptions, genetic_params.plot_file)},
     {"--ga-cost", NULL, "GA cost filename", "genetic", "cost_file", OPT_STRING, offsetof(CmdOptions, genetic_params.cost_file)},
+    {"--ga-tournament", NULL, "Tournament size", "genetic", "tournament_size", OPT_UINT, offsetof(CmdOptions, genetic_params.tournament_size)},
+    {"--ga-grasp-rcl", NULL, "Init GRASP RCL size", "genetic", "grasp_rcl", OPT_UINT, offsetof(CmdOptions, genetic_params.init_grasp_rcl_size)},
+    {"--ga-grasp-prob", NULL, "Init GRASP probability", "genetic", "grasp_prob", OPT_UDOUBLE, offsetof(CmdOptions, genetic_params.init_grasp_prob)},
+    {"--ga-grasp-perc", NULL, "Init GRASP percentage", "genetic", "grasp_percent", OPT_UINT, offsetof(CmdOptions, genetic_params.init_grasp_percent)},
 
 };
 
@@ -142,6 +146,10 @@ static void set_genetic_defaults(GeneticOptions *opt) {
     opt->crossover_cut_max_ratio = 75;
     opt->plot_file = strdup("GA-plot.png");
     opt->cost_file = strdup("GA-costs.png");
+    opt->tournament_size = 5;
+    opt->init_grasp_rcl_size = 5;
+    opt->init_grasp_prob = 0.2;
+    opt->init_grasp_percent = 90;
 }
 
 CmdOptions *cmd_options_create_defaults(void) {
