@@ -1,6 +1,8 @@
 #ifndef TABU_SEARCH_H
 #define TABU_SEARCH_H
 
+#include <stdint.h>
+
 #include "tsp_algorithm.h"
 
 typedef struct {
@@ -8,6 +10,7 @@ typedef struct {
     int max_tenure;
     int max_stagnation;
     double time_limit;
+    uint64_t seed;
 } TabuConfig;
 
 /**

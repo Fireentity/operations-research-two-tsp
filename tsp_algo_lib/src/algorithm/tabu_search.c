@@ -8,12 +8,14 @@
 #include <float.h>
 #include "constants.h"
 #include "local_search.h"
+#include "random.h"
 #include "tsp_tour.h"
 
-static int get_random_tenure(const int min, const int max) {
+static int get_random_tenure(RandomState* rng, const int min, const int max) {
     if (min >= max) return min;
-    return min + (int) (normalized_rand() * (max - min + 1));
+    return random_int(rng, min, max);
 }
+
 
 
 static void run_tabu(const TspInstance *instance,
@@ -21,6 +23,8 @@ static void run_tabu(const TspInstance *instance,
                      const void *config_void,
                      CostRecorder *recorder) {
     const TabuConfig *cfg = config_void;
+    RandomState rng;
+    random_init(&rng, cfg->seed);
     const int n = tsp_instance_get_num_nodes(instance);
     const double *costs = tsp_instance_get_cost_matrix(instance);
 
@@ -100,7 +104,7 @@ static void run_tabu(const TspInstance *instance,
         int node_b = current_tour[best_j];
         int node_d = current_tour[(best_j + 1) % n];
 
-        int tenure = get_random_tenure(cfg->min_tenure, cfg->max_tenure);
+        int tenure = get_random_tenure(&rng,cfg->min_tenure, cfg->max_tenure);
 
         tabu_matrix[node_a * n + node_c] = iteration + tenure;
         tabu_matrix[node_c * n + node_a] = iteration + tenure;
