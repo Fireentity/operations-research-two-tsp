@@ -1,6 +1,8 @@
 #ifndef VARIABLE_NEIGHBORHOOD_SEARCH_H
 #define VARIABLE_NEIGHBORHOOD_SEARCH_H
 
+#include <stdint.h>
+
 #include "tsp_algorithm.h"
 
 typedef struct {
@@ -9,6 +11,7 @@ typedef struct {
     int kick_repetition;
     double time_limit;
     int max_stagnation;
+    uint64_t seed;
 } VNSConfig;
 
 /**

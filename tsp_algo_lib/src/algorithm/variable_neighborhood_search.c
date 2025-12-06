@@ -7,15 +7,37 @@
 #include <string.h>
 #include "constants.h"
 #include "local_search.h"
+#include "random.h"
 #include "tsp_tour.h"
 
-static double vns_kick(int *tour, int n, const double *costs, int k_opt) {
+static double vns_kick(int *tour, int n, const double *costs, int k_opt, RandomState *rng) {
     if (k_opt > n) k_opt = n;
 
     int *edges = malloc(k_opt * sizeof(int));
     check_alloc(edges);
 
-    rand_k_non_contiguous(0, n - 1, k_opt, edges);
+    const int low = 0;
+
+    const int m = n - k_opt + 1;
+
+    int s_prev = 0;
+
+
+    int bound = m - (k_opt - 1);
+    if (bound < 1) bound = 1;
+
+    int s_curr = random_int(rng, 0, bound - 1);
+    edges[0] = low + s_curr;
+    s_prev = s_curr;
+
+    for (int i = 1; i < k_opt; i++) {
+        bound = m - s_prev - (k_opt - i);
+        if (bound < 1) bound = 1;
+
+        s_curr = s_prev + 1 + random_int(rng, 0, bound - 1);
+        edges[i] = low + s_curr + i;
+        s_prev = s_curr;
+    }
 
     const double delta = compute_n_opt_cost(k_opt, tour, edges, costs, n);
     compute_n_opt_move(k_opt, tour, edges, n);
@@ -29,6 +51,8 @@ static void run_vns(const TspInstance *instance,
                     const void *config_void,
                     CostRecorder *recorder) {
     const VNSConfig *cfg = config_void;
+    RandomState rng;
+    random_init(&rng, cfg->seed);
     const int n = tsp_instance_get_num_nodes(instance);
     const double *costs = tsp_instance_get_cost_matrix(instance);
 
@@ -57,9 +81,8 @@ static void run_vns(const TspInstance *instance,
     int stagnation = 0;
 
     while (!time_limiter_is_over(&timer) && stagnation < cfg->max_stagnation) {
-
         for (int i = 0; i < cfg->kick_repetition; i++)
-            current_cost += vns_kick(current_tour, n, costs, current_k);
+            current_cost += vns_kick(current_tour, n, costs, current_k, &rng);
 
         current_cost += two_opt(current_tour, n, costs, timer);
 
