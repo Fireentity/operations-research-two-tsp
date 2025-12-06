@@ -26,7 +26,12 @@ void run_genetic_tests(void) {
         .elite_count = 2,             // Keep top 2
         .mutation_rate = 0.1,         // 10% mutation chance
         .crossover_cut_min_ratio = 25,
-        .crossover_cut_max_ratio = 75
+        .crossover_cut_max_ratio = 75,
+        .init_grasp_rcl_size = 5,
+        .init_grasp_prob = 0.2,
+        .init_grasp_percent = 90,
+        .tournament_size = 5,
+        .seed = 12345
     };
     
     TspAlgorithm ga = genetic_create(config);

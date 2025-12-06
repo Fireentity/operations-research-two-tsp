@@ -9,39 +9,58 @@
 #include <string.h>
 #include <float.h>
 
+#include "random.h"
+
 typedef struct {
     int *genes;
     double *costs;
-    int n;
+    int n;          // Number of nodes
+    int stride;     // Actual size in memory (n + 1) to include closing node
     int pop_size;
 } Population;
 
-static void population_alloc(Population *pop, int size, int n) {
+static void population_alloc(Population *pop, const int size, const int n) {
     pop->n = n;
+    pop->stride = n + 1; // Extra space for closing node
     pop->pop_size = size;
-    pop->genes = malloc(size * n * sizeof(int));
-    pop->costs = malloc(size * sizeof(double));
+    // Use calloc for safety (initializes to 0)
+    pop->genes = calloc(size * pop->stride, sizeof(int));
+    pop->costs = calloc(size, sizeof(double));
     check_alloc(pop->genes);
     check_alloc(pop->costs);
 }
 
-static void population_free(Population *pop) {
+static void population_free(const Population *pop) {
     free(pop->genes);
     free(pop->costs);
 }
 
-static void population_copy_individual(Population *dest, int dest_idx,
-                                       const Population *src, int src_idx) {
-    memcpy(&dest->genes[dest_idx * dest->n],
-           &src->genes[src_idx * src->n],
-           dest->n * sizeof(int));
+static void population_copy_individual(const Population *dest, int dest_idx,
+                                       const Population *src, const int src_idx) {
+    memcpy(&dest->genes[dest_idx * dest->stride],
+           &src->genes[src_idx * src->stride],
+           dest->stride * sizeof(int));
     dest->costs[dest_idx] = src->costs[src_idx];
 }
 
-/* Repair Strategy: Shortcut + Cheapest Insertion (Extra Mileage logic) */
-static void repair_child(int *child, int n, const double *costs) {
-    if_verbose(VERBOSE_DEBUG, "GA: Repairing child\n");
+static void population_swap(Population *pop, int idx1, int idx2) {
+    if (idx1 == idx2) return;
 
+    double temp_cost = pop->costs[idx1];
+    pop->costs[idx1] = pop->costs[idx2];
+    pop->costs[idx2] = temp_cost;
+
+    int *temp_genes = malloc(pop->stride * sizeof(int));
+    check_alloc(temp_genes);
+
+    memcpy(temp_genes, &pop->genes[idx1 * pop->stride], pop->stride * sizeof(int));
+    memcpy(&pop->genes[idx1 * pop->stride], &pop->genes[idx2 * pop->stride], pop->stride * sizeof(int));
+    memcpy(&pop->genes[idx2 * pop->stride], temp_genes, pop->stride * sizeof(int));
+
+    free(temp_genes);
+}
+
+static void repair_child(int *child, int n, const double *costs) {
     int *visited = calloc(n, sizeof(int));
     check_alloc(visited);
 
@@ -49,32 +68,47 @@ static void repair_child(int *child, int n, const double *costs) {
     check_alloc(temp_tour);
 
     int current_len = 0;
+
+    // Phase 1: Keep valid and unique nodes
     for (int i = 0; i < n; i++) {
-        int node = child[i];
-        if (!visited[node]) {
-            visited[node] = 1;
-            temp_tour[current_len++] = node;
+        const int node = child[i];
+        if (node >= 0 && node < n) {
+            if (!visited[node]) {
+                visited[node] = 1;
+                temp_tour[current_len++] = node;
+            }
         }
     }
 
-    int *missing = malloc((n - current_len) * sizeof(int));
+    // Phase 2: Identify missing nodes
+    int *missing = malloc(n * sizeof(int));
+    check_alloc(missing);
+
     int missing_count = 0;
     for (int i = 0; i < n; i++) {
         if (!visited[i])
             missing[missing_count++] = i;
     }
 
+    // Phase 3: Greedy insertion of missing nodes
     for (int k = 0; k < missing_count; k++) {
-        int node_to_insert = missing[k];
+        const int node_to_insert = missing[k];
         double best_delta = DBL_MAX;
         int best_pos = -1;
 
+        if (current_len == 0) {
+            temp_tour[0] = node_to_insert;
+            current_len++;
+            continue;
+        }
+
+        // Simulate closed cycle to find best position
         for (int i = 0; i < current_len; i++) {
-            int u = temp_tour[i];
-            int v = temp_tour[(i + 1) % current_len];
-            double delta = costs[u * n + node_to_insert] +
-                           costs[node_to_insert * n + v] -
-                           costs[u * n + v];
+            const int u = temp_tour[i];
+            const int v = temp_tour[(i + 1) % current_len];
+            const double delta = costs[u * n + node_to_insert] +
+                                 costs[node_to_insert * n + v] -
+                                 costs[u * n + v];
             if (delta < best_delta) {
                 best_delta = delta;
                 best_pos = i;
@@ -90,20 +124,21 @@ static void repair_child(int *child, int n, const double *costs) {
 
     memcpy(child, temp_tour, n * sizeof(int));
 
+    // Crucial: Explicitly close the tour
+    child[n] = child[0];
+
     free(missing);
     free(temp_tour);
     free(visited);
 }
 
 static void crossover_operator(const int *parent1, const int *parent2,
-                               int *child, int n, const double *costs_matrix,
-                               TimeLimiter *timer, int cut_min, int cut_max) {
-    int range = cut_max - cut_min;
-    int ratio = cut_min + (rand() % (range + 1));
-    int cut_point = (n * ratio) / 100;
-
-    if_verbose(VERBOSE_DEBUG,
-               "GA: Crossover cut=%d (ratio=%d)\n", cut_point, ratio);
+                               int *child, const int n, const double *costs_matrix,
+                               const TimeLimiter *timer, const int cut_min, const int cut_max,
+                               RandomState *rng) {
+    const int range = cut_max - cut_min;
+    const int ratio = cut_min + random_int(rng, 0, range);
+    const int cut_point = n * ratio / 100;
 
     memcpy(child, parent1, cut_point * sizeof(int));
     memcpy(child + cut_point,
@@ -111,25 +146,26 @@ static void crossover_operator(const int *parent1, const int *parent2,
            (n - cut_point) * sizeof(int));
 
     repair_child(child, n, costs_matrix);
-
-    if_verbose(VERBOSE_DEBUG, "GA: Running 2-opt on child\n");
     two_opt(child, n, costs_matrix, *timer);
 }
 
-static void mutate(int *tour, int n) {
-    int i = rand() % n;
-    int j = rand() % n;
-    int t = tour[i];
+static void mutate(int *tour, const int n, RandomState *rng) {
+    const int i = random_int(rng, 0, n - 1);
+    const int j = random_int(rng, 0, n - 1);
+    const int t = tour[i];
     tour[i] = tour[j];
     tour[j] = t;
+
+    // Ensure closure is consistent if index 0 was swapped
+    tour[n] = tour[0];
 }
 
-static int tournament_selection(const Population *pop, int k) {
-    int best_idx = rand() % pop->pop_size;
+static int tournament_selection(const Population *pop, int k, RandomState *rng) {
+    int best_idx = random_int(rng, 0, pop->pop_size - 1);
     double best_cost = pop->costs[best_idx];
 
     for (int i = 1; i < k; i++) {
-        int idx = rand() % pop->pop_size;
+        const int idx = random_int(rng, 0, pop->pop_size - 1);
         if (pop->costs[idx] < best_cost) {
             best_idx = idx;
             best_cost = pop->costs[idx];
@@ -143,6 +179,8 @@ static void run_genetic(const TspInstance *instance,
                         const void *config_void,
                         CostRecorder *recorder) {
     const GeneticConfig *cfg = config_void;
+    RandomState rng;
+    random_init(&rng, cfg->seed);
     const int n = tsp_instance_get_num_nodes(instance);
     const double *costs_matrix = tsp_instance_get_cost_matrix(instance);
 
@@ -160,90 +198,105 @@ static void run_genetic(const TspInstance *instance,
     population_alloc(&current_pop, cfg->population_size, n);
     population_alloc(&next_pop, cfg->population_size, n);
 
-    int grasp_count = (cfg->population_size * 90) / 100;
+    int grasp_count = (cfg->population_size * cfg->init_grasp_percent) / 100;
 
     if_verbose(VERBOSE_INFO,
                "GA: Initializing population (%d GRASP, %d random)\n",
                grasp_count, cfg->population_size - grasp_count);
 
     for (int i = 0; i < cfg->population_size; i++) {
-        int *tour = &current_pop.genes[i * n];
+        // Access individual using correct stride
+        int *tour = &current_pop.genes[i * current_pop.stride];
 
         if (i < grasp_count) {
-            if_verbose(VERBOSE_DEBUG, "GA: Init individual %d via GRASP\n", i);
             double c;
-            grasp_nearest_neighbor_tour((int) (normalized_rand() * n), tour, n, costs_matrix, &c, 5, 0.2);
+            int res = grasp_nearest_neighbor_tour(random_int(&rng, 0, n - 1),
+                                                  tour,
+                                                  n,
+                                                  costs_matrix, &c,
+                                                  cfg->init_grasp_rcl_size,
+                                                  cfg->init_grasp_prob,
+                                                  &rng);
+            // grasp_nearest_neighbor_tour already closes the tour (tour[n] = tour[0])
+
+            if (res != 0) {
+                // Fallback
+                for (int k = 0; k < n; k++) tour[k] = k;
+                tour[n] = tour[0];
+            }
         } else {
-            if_verbose(VERBOSE_DEBUG, "GA: Init individual %d via random\n", i);
             for (int k = 0; k < n; k++) tour[k] = k;
-            shuffle_int_array(tour, n);
+            // Fisher-Yates
+            for (int k = n - 1; k > 0; k--) {
+                const int j = random_int(&rng, 0, k);
+                const int temp = tour[k];
+                tour[k] = tour[j];
+                tour[j] = temp;
+            }
+            tour[n] = tour[0]; // Explicitly close
         }
 
         two_opt(tour, n, costs_matrix, timer);
         current_pop.costs[i] = calculate_tour_cost(tour, n, costs_matrix);
-
-        if_verbose(VERBOSE_DEBUG,
-                   "GA: Init indiv %d cost=%.3f\n", i, current_pop.costs[i]);
     }
 
     int generation = 0;
     while (!time_limiter_is_over(&timer)) {
-        if_verbose(VERBOSE_DEBUG,
-                   "GA: Generation %d\n", generation);
+        if_verbose(VERBOSE_DEBUG, "GA: Generation %d\n", generation);
 
-        int best_idx = 0;
-        for (int i = 1; i < cfg->population_size; i++)
-            if (current_pop.costs[i] < current_pop.costs[best_idx])
-                best_idx = i;
+        // Elitism: move best individuals to the beginning
+        for (int k = 0; k < cfg->elite_count && k < cfg->population_size; k++) {
+            int best_idx = k;
+            for (int i = k + 1; i < cfg->population_size; i++) {
+                if (current_pop.costs[i] < current_pop.costs[best_idx]) {
+                    best_idx = i;
+                }
+            }
+            population_swap(&current_pop, k, best_idx);
+            population_copy_individual(&next_pop, k, &current_pop, k);
+        }
 
-        if_verbose(VERBOSE_INFO,
-                   "GA: Gen %d best=%.2f\n",
-                   generation, current_pop.costs[best_idx]);
+        double best_gen_cost = current_pop.costs[0];
+        if_verbose(VERBOSE_INFO, "GA: Gen %d best=%.2f\n", generation, best_gen_cost);
 
+        // Update solution (index 0 is the best after elitism swap)
         tsp_solution_update_if_better(solution,
-                                      &current_pop.genes[best_idx * n],
-                                      current_pop.costs[best_idx]);
+                                      &current_pop.genes[0],
+                                      best_gen_cost);
 
-        cost_recorder_add(recorder, current_pop.costs[best_idx]);
+        cost_recorder_add(recorder, best_gen_cost);
 
-        population_copy_individual(&next_pop, 0, &current_pop, best_idx);
-
-        for (int i = 1; i < cfg->population_size; i++) {
-            int p1 = tournament_selection(&current_pop, 5);
-            int p2 = tournament_selection(&current_pop, 5);
-
-            if_verbose(VERBOSE_DEBUG,
-                       "GA: Crossover parents: %d & %d → child %d\n",
-                       p1, p2, i);
+        // Crossover and Mutation for the rest
+        for (int i = cfg->elite_count; i < cfg->population_size; i++) {
+            const int p1 = tournament_selection(&current_pop, cfg->tournament_size, &rng);
+            const int p2 = tournament_selection(&current_pop, cfg->tournament_size, &rng);
 
             crossover_operator(
-                &current_pop.genes[p1 * n],
-                &current_pop.genes[p2 * n],
-                &next_pop.genes[i * n],
+                &current_pop.genes[p1 * current_pop.stride],
+                &current_pop.genes[p2 * current_pop.stride],
+                &next_pop.genes[i * next_pop.stride],
                 n, costs_matrix, &timer,
                 cfg->crossover_cut_min_ratio,
-                cfg->crossover_cut_max_ratio
+                cfg->crossover_cut_max_ratio,
+                &rng
             );
 
-            if (normalized_rand() < cfg->mutation_rate) {
-                if_verbose(VERBOSE_DEBUG,
-                           "GA: Mutation applied to indiv %d\n", i);
-                mutate(&next_pop.genes[i * n], n);
+            if (random_double(&rng) < cfg->mutation_rate) {
+                mutate(&next_pop.genes[i * next_pop.stride], n, &rng);
             }
 
             next_pop.costs[i] =
-                    calculate_tour_cost(&next_pop.genes[i * n], n, costs_matrix);
+                    calculate_tour_cost(&next_pop.genes[i * next_pop.stride], n, costs_matrix);
         }
 
-        Population tmp = current_pop;
+        const Population tmp = current_pop;
         current_pop = next_pop;
         next_pop = tmp;
 
         generation++;
     }
 
-    if_verbose(VERBOSE_INFO,
-               "GA: Time limit reached at gen %d\n", generation);
+    if_verbose(VERBOSE_INFO, "GA: Time limit reached at gen %d\n", generation);
 
     population_free(&current_pop);
     population_free(&next_pop);
