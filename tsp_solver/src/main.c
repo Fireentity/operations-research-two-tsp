@@ -13,7 +13,7 @@ static void setup_global(const CmdOptions *options) {
 #ifndef DISABLE_VERBOSE
     logger_set_verbosity(options->verbosity);
 #endif
-    global_random_init(options->tsp.seed);
+    global_random_init(options->inst.seed);
 }
 
 
@@ -23,23 +23,23 @@ static void setup_global(const CmdOptions *options) {
  */
 static TspInstance *create_tsp_instance(const CmdOptions *options) {
     TspInstance *instance = NULL;
-    if (options->tsp.mode == TSP_INPUT_MODE_FILE) {
-        const TspError err = tsp_instance_load_from_file(&instance, options->tsp.input_file);
+    if (options->inst.mode == TSP_INPUT_MODE_FILE) {
+        const TspError err = tsp_instance_load_from_file(&instance, options->inst.input_file);
 
         if (err != TSP_OK) {
             fprintf(stderr, "Failed to load instance: %s\n", tsp_error_to_string(err));
             return NULL;
         }
     }
-    if (options->tsp.mode == TSP_INPUT_MODE_RANDOM) {
+    if (options->inst.mode == TSP_INPUT_MODE_RANDOM) {
         //Random Generation Mode
         // Construct the area struct cleaner for readability
         const TspGenerationArea area = {
-            .x_square = options->tsp.generation_area.x_square,
-            .y_square = options->tsp.generation_area.y_square,
-            .square_side = options->tsp.generation_area.square_side
+            .x_square = options->inst.generation_area.x_square,
+            .y_square = options->inst.generation_area.y_square,
+            .square_side = options->inst.generation_area.square_side
         };
-        instance = tsp_instance_create_random(options->tsp.number_of_nodes, area);
+        instance = tsp_instance_create_random(options->inst.number_of_nodes, area);
     }
 
 

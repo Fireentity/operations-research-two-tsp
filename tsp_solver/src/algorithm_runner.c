@@ -66,7 +66,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     if (options->nn_params.enable) {
         NNConfig cfg = {
             .time_limit = options->nn_params.time_limit,
-            .seed = options->tsp.seed
+            .seed = options->inst.seed
         };
         TspAlgorithm algo = nn_create(cfg);
         BUILD_PATHS(options->nn_params.plot_file, options->nn_params.cost_file);
@@ -80,7 +80,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .max_k = (int) options->vns_params.max_k,
             .kick_repetition = (int) options->vns_params.kick_repetitions,
             .time_limit = options->vns_params.time_limit,
-            .seed = options->tsp.seed
+            .seed = options->inst.seed
         };
         TspAlgorithm algo = vns_create(cfg);
         BUILD_PATHS(options->vns_params.plot_file, options->vns_params.cost_file);
@@ -94,7 +94,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .max_tenure = (int) options->tabu_params.max_tenure,
             .max_stagnation = (int) options->tabu_params.max_stagnation,
             .time_limit = options->tabu_params.time_limit,
-            .seed = options->tsp.seed
+            .seed = options->inst.seed
         };
         TspAlgorithm algo = tabu_create(cfg);
         BUILD_PATHS(options->tabu_params.plot_file, options->tabu_params.cost_file);
@@ -108,7 +108,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .probability = options->grasp_params.probability,
             .max_stagnation = (int) options->grasp_params.max_stagnation,
             .time_limit = options->grasp_params.time_limit,
-            .seed = options->tsp.seed
+            .seed = options->inst.seed
         };
         TspAlgorithm algo = grasp_create(cfg);
         BUILD_PATHS(options->grasp_params.plot_file, options->grasp_params.cost_file);
@@ -119,7 +119,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     if (options->em_params.enable) {
         EMConfig cfg = {
             .time_limit = options->em_params.time_limit,
-            .seed = options->tsp.seed
+            .seed = options->inst.seed
         };
         TspAlgorithm algo = em_create(cfg);
         BUILD_PATHS(options->em_params.plot_file, options->em_params.cost_file);
@@ -135,7 +135,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .mutation_rate = options->genetic_params.mutation_rate,
             .crossover_cut_min_ratio = (int) options->genetic_params.crossover_cut_min_ratio,
             .crossover_cut_max_ratio = (int) options->genetic_params.crossover_cut_max_ratio,
-            .seed = options->tsp.seed
+            .seed = options->inst.seed
         };
 
         TspAlgorithm algo = genetic_create(cfg);
