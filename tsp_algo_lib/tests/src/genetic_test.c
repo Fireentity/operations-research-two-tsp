@@ -9,6 +9,7 @@
 #define NODES 50
 #define TIME_LIMIT 1.0
 
+//TODO check this
 void run_genetic_tests(void) {
     printf("[Genetic] Running tests...\n");
 
