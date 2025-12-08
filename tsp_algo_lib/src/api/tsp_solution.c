@@ -169,29 +169,23 @@ bool tsp_solution_update_if_better(TspSolution *self, const int *new_tour, doubl
     return updated;
 }
 
-int tsp_solution_save(TspSolution *self, const char *path) {
-    if (!self || !path) return -1;
+TspError tsp_solution_save(TspSolution *self, const char *path) {
+    if (!self || !path) return TSP_ERR_MEMORY;
 
     FILE *f = fopen(path, "w");
-    if (!f) {
-        if_verbose(VERBOSE_INFO, "[Error] Save: Cannot open file '%s'\n", path);
-        return -1;
-    }
+    if (!f) return TSP_ERR_FILE_OPEN;
 
     pthread_mutex_lock(&self->mutex);
 
     int n = tsp_instance_get_num_nodes(self->instance);
 
-    // Write Header
     fprintf(f, "%s\n", SOL_V1_MAGIC);
     fprintf(f, "%s %.15g\n", SOL_V1_COST, self->cost);
     fprintf(f, "%s %d\n", SOL_V1_DIM, n);
     fprintf(f, "%s\n", SOL_V1_TOUR_SECTION);
 
-    // Write Tour
     for (int i = 0; i <= n; i++) {
         fprintf(f, "%d ", self->tour[i]);
-        // Add newline every 20 nodes for readability
         if (i > 0 && i % 20 == 0 && i != n) fprintf(f, "\n");
     }
     fprintf(f, "\n%s\n", SOL_V1_EOF);
@@ -199,50 +193,24 @@ int tsp_solution_save(TspSolution *self, const char *path) {
     pthread_mutex_unlock(&self->mutex);
     fclose(f);
 
-    if_verbose(VERBOSE_DEBUG, "Solution saved to '%s'\n", path);
-    return 0;
+    return TSP_OK;
 }
 
-int tsp_solution_load(TspSolution *self, const char *path) {
-    if (!self || !path) return -1;
+TspError tsp_solution_load(TspSolution *self, const char *path) {
+    if (!self || !path) return TSP_ERR_MEMORY;
 
     pthread_mutex_lock(&self->mutex);
 
-    int n = tsp_instance_get_num_nodes(self->instance);
+    const int n = tsp_instance_get_num_nodes(self->instance);
     double loaded_cost = 0.0;
 
-    // Use the parser infrastructure to load directly into the tour buffer
-    int res = tsp_parser_load_solution(path, n, self->tour, &loaded_cost);
+    const TspParserStatus st = tsp_parser_load_solution(path, n, self->tour, &loaded_cost);
+    const TspError err = tsp_error_from_parser_status(st);
 
-    if (res != PARSE_OK) {
-        const char *msg = "Unknown error";
-        switch (res) {
-            case PARSE_ERR_OPEN:    msg = "Cannot open file"; break;
-            case PARSE_ERR_FORMAT:  msg = "Invalid file format"; break;
-            case PARSE_ERR_DIM:     msg = "Dimension mismatch"; break;
-            case PARSE_ERR_INV:     msg = "Invalid tour logic"; break;
-            case PARSE_ERR_MEMORY:  msg = "Memory allocation failed"; break;
-            case PARSE_ERR_EXT:     msg = "Unsupported extension"; break;
-            default: break;
-        }
-        if_verbose(VERBOSE_INFO, "[Error] Load failed for '%s': %s (Code %d)\n", path, msg, res);
-        
-        pthread_mutex_unlock(&self->mutex);
-        return -1;
-    }
-
-    // Recompute cost to ensure internal consistency
-    self->cost = compute_cost_internal(self->instance, self->tour);
-
-    // Warning if file cost differs significantly from computed cost
-    if (fabs(self->cost - loaded_cost) > EPSILON) {
-        if_verbose(VERBOSE_INFO, 
-            "[Warn] Load: Recalculated cost (%.6f) differs from file cost (%.6f)\n", 
-            self->cost, loaded_cost);
+    if (err == TSP_OK) {
+        self->cost = compute_cost_internal(self->instance, self->tour);
     }
 
     pthread_mutex_unlock(&self->mutex);
-
-    if_verbose(VERBOSE_INFO, "Solution loaded from '%s' (Cost: %.6f)\n", path, self->cost);
-    return 0;
+    return err;
 }

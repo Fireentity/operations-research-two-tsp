@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "feasibility_result.h"
+#include "tsp_error.h"
 
 // Forward declarations
 typedef struct TspInstance TspInstance;
@@ -22,8 +23,8 @@ void tsp_solution_get_tour(TspSolution *self, int *tour_buffer);
 
 bool tsp_solution_update_if_better(TspSolution *self, const int *new_tour, double new_cost);
 
-int tsp_solution_save(TspSolution *self, const char *path);
+TspError tsp_solution_save(TspSolution *self, const char *path);
 
-int tsp_solution_load(TspSolution *self, const char *path);
+TspError tsp_solution_load(TspSolution *self, const char *path);
 
 #endif // TSP_SOLUTION_H
