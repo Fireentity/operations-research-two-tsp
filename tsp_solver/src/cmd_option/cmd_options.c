@@ -10,17 +10,17 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
 
     /* TSP instance rules ensure consistent instance creation. */
-    if (opt->tsp.mode == TSP_INPUT_MODE_FILE) {
-        if (!opt->tsp.input_file || strlen(opt->tsp.input_file) == 0) {
+    if (opt->inst.mode == TSP_INPUT_MODE_FILE) {
+        if (!opt->inst.input_file || strlen(opt->inst.input_file) == 0) {
             if_verbose(VERBOSE_INFO, "[Config Error] Mode FILE requires a valid --file.\n");
             return MISSING_MANDATORY_FLAG;
         }
     } else {
-        if (opt->tsp.number_of_nodes < 2) {
+        if (opt->inst.number_of_nodes < 2) {
             if_verbose(VERBOSE_INFO, "[Config Error] Random mode requires at least 2 nodes.\n");
             return WRONG_VALUE_TYPE;
         }
-        if (opt->tsp.generation_area.square_side == 0) {
+        if (opt->inst.generation_area.square_side == 0) {
             if_verbose(VERBOSE_INFO, "[Config Error] Generation area side must be > 0.\n");
             return WRONG_VALUE_TYPE;
         }
@@ -284,16 +284,16 @@ void print_configuration(const CmdOptions *options) {
                "  cut ratio MIN-MAX: %d-%d\n"
                "  time limit:        %.3f\n"
                "--------------\n",
-               (options->tsp.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
-               options->tsp.input_file ? options->tsp.input_file : "(none)",
+               (options->inst.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
+               options->inst.input_file ? options->inst.input_file : "(none)",
                options->config_file ? options->config_file : "(none)",
                options->verbosity,
                options->plots_path ? options->plots_path : "./",
-               options->tsp.number_of_nodes,
-               options->tsp.seed,
-               options->tsp.generation_area.x_square,
-               options->tsp.generation_area.y_square,
-               options->tsp.generation_area.square_side,
+               options->inst.number_of_nodes,
+               options->inst.seed,
+               options->inst.generation_area.x_square,
+               options->inst.generation_area.y_square,
+               options->inst.generation_area.square_side,
 
                options->nn_params.enable ? "ENABLED" : "DISABLED",
                options->nn_params.plot_file ? options->nn_params.plot_file : "(none)",

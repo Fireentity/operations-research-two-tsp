@@ -17,11 +17,16 @@ typedef struct {
 
 typedef struct {
     TspInputMode mode;
+    char *input_file;
     unsigned int number_of_nodes;
     int seed;
-    char *input_file;
     GenerationArea generation_area;
 } TspInstanceOptions;
+
+typedef struct {
+    char *load_file;
+    char *save_file;
+} TspSolutionOptions;
 
 typedef struct {
     bool enable;
@@ -90,7 +95,8 @@ typedef struct {
     bool help;
     unsigned int verbosity;
 
-    TspInstanceOptions tsp;
+    TspInstanceOptions inst;
+    TspSolutionOptions sol;
     NNOptions nn_params;
     VnsOptions vns_params;
     TabuOptions tabu_params;
