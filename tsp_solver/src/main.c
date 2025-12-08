@@ -24,6 +24,7 @@ static void setup_global(const CmdOptions *options) {
 static TspInstance *create_tsp_instance(const CmdOptions *options) {
     TspInstance *instance = NULL;
     if (options->tsp.mode == TSP_INPUT_MODE_FILE) {
+        //TODO error check this
         const TspError err = tsp_instance_load_from_file(&instance, options->tsp.input_file);
 
         if (err != TSP_OK) {

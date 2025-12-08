@@ -22,7 +22,8 @@ set(TSP_ALGO_SOURCES
         src/utility/time_limiter.c
         src/utility/cost_recorder.c
         src/parser/tsp_parser.c
-        src/parser/tsp_parser_tsplib.c
+        src/parser/instance/tsp_parser_tsplib.c
+        src/parser/solution/tsp_parser_sol_v1.c
 )
 
 # Create a library for tsp_algo_lib
@@ -34,6 +35,8 @@ target_include_directories(tsp_algo_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms/common
         ${CMAKE_CURRENT_SOURCE_DIR}/include/api
         ${CMAKE_CURRENT_SOURCE_DIR}/include/parser
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/parser/solution
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/parser/instance
         ${CMAKE_CURRENT_SOURCE_DIR}/include/utility
 )
 # Link tsp_algo_lib with common

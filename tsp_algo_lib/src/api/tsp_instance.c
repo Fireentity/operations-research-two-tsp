@@ -49,7 +49,7 @@ TspError tsp_instance_load_from_file(TspInstance **out_instance, const char *pat
     Node *nodes = NULL;
     int n = 0;
 
-    const TspError err = tsp_parse_by_extension(path, &nodes, &n);
+    const TspError err = tsp_parser_load_instance(path, &nodes, &n);
     if (err != TSP_OK) return err;
 
     *out_instance = instance_create_from_nodes(nodes, n);
