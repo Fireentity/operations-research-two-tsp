@@ -30,7 +30,7 @@ static const char* get_ext(const char *path) {
     return ext ? ext : "";
 }
 
-int tsp_parser_load_instance(const char *path, Node **out_nodes, int *out_n) {
+TspParserStatus tsp_parser_load_instance(const char *path, Node **out_nodes, int *out_n) {
     const char *ext = get_ext(path);
     for (int i = 0; inst_registry[i].ext; i++)
         if (strcasecmp(ext, inst_registry[i].ext) == 0)
@@ -38,10 +38,11 @@ int tsp_parser_load_instance(const char *path, Node **out_nodes, int *out_n) {
     return PARSE_ERR_EXT;
 }
 
-int tsp_parser_load_solution(const char *path, int n, int *tour_buf, double *out_cost) {
+TspParserStatus tsp_parser_load_solution(const char *path, int n, int *tour_buf, double *out_cost) {
     const char *ext = get_ext(path);
     for (int i = 0; sol_registry[i].ext; i++)
         if (strcasecmp(ext, sol_registry[i].ext) == 0)
             return sol_registry[i].fn(path, n, tour_buf, out_cost);
     return PARSE_ERR_EXT;
 }
+
