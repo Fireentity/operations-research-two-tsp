@@ -3,6 +3,6 @@
 
 #include "tsp_instance.h"
 
-int parse_instance_tsplib(const char *path, Node **out_nodes, int *out_n);
+TspParserStatus parse_instance_tsplib(const char *path, Node **out_nodes, int *out_n);
 
 #endif
