@@ -32,7 +32,7 @@ static void run_grasp(const TspInstance *instance,
     int *starting_nodes = malloc(n * sizeof(int));
     check_alloc(starting_nodes);
     for (int i = 0; i < n; i++) starting_nodes[i] = i;
-    shuffle_int_array(starting_nodes, n);
+    shuffle_int_array(starting_nodes, n, &rng);
 
     double current_cost;
     int iter = 0;

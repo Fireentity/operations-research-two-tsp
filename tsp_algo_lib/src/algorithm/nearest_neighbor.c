@@ -15,6 +15,8 @@ static void run_nn(const TspInstance *instance,
                    const void *config_void,
                    CostRecorder *recorder) {
     const NNConfig *cfg = config_void;
+    RandomState rng;
+    random_init(&rng, cfg->seed);
     const int n = tsp_instance_get_num_nodes(instance);
     const double *costs = tsp_instance_get_cost_matrix(instance);
 
@@ -33,7 +35,7 @@ static void run_nn(const TspInstance *instance,
     check_alloc(starts);
 
     for (int i = 0; i < n; i++) starts[i] = i;
-    shuffle_int_array(starts, n);
+    shuffle_int_array(starts, n, &rng);
 
     int iter = 0;
 
