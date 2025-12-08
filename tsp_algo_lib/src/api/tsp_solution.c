@@ -1,5 +1,6 @@
 #include "tsp_solution.h"
 
+#include <limits.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,8 @@
 #include "tsp_math.h"
 #include "c_util.h"
 #include "logger.h"
+#include "tsp_parser.h"
+#include "tsp_parser_solution.h"
 
 struct TspSolution {
     double cost;
@@ -19,7 +22,6 @@ struct TspSolution {
     pthread_mutex_t mutex;
 };
 
-// Internal Helpers
 static double compute_cost_internal(const TspInstance *instance, const int *tour) {
     return calculate_tour_cost(
         tour,
@@ -28,20 +30,19 @@ static double compute_cost_internal(const TspInstance *instance, const int *tour
     );
 }
 
-static int *allocate_tour(int n) {
+static int *allocate_tour(const int n) {
     int *tour = calloc(n + 1, sizeof(int));
     check_alloc(tour);
     return tour;
 }
 
-static void initialize_tour_identity(int *tour, int n) {
+static void initialize_tour_identity(int *tour, const int n) {
     for (int i = 0; i < n; i++) {
         tour[i] = i;
     }
     tour[n] = 0;
 }
 
-// Constructors
 TspSolution *tsp_solution_create(const TspInstance *instance) {
     if_verbose(VERBOSE_INFO, "Initializing TSP solution...\n");
     TspSolution *sol = malloc(sizeof(TspSolution));
@@ -67,7 +68,7 @@ TspSolution *tsp_solution_create(const TspInstance *instance) {
 
 TspSolution *tsp_solution_create_with_tour(const TspInstance *instance, const int *source_tour) {
     TspSolution *sol = tsp_solution_create(instance);
-    int n = tsp_instance_get_num_nodes(instance);
+    const int n = tsp_instance_get_num_nodes(instance);
 
     memcpy(sol->tour, source_tour, (n + 1) * sizeof(int));
     sol->cost = compute_cost_internal(instance, sol->tour);
@@ -75,7 +76,6 @@ TspSolution *tsp_solution_create_with_tour(const TspInstance *instance, const in
     return sol;
 }
 
-// Destructor
 void tsp_solution_destroy(TspSolution *self) {
     if (!self) return;
     if_verbose(VERBOSE_DEBUG, "Freeing TspSolution...\n");
@@ -87,18 +87,17 @@ void tsp_solution_destroy(TspSolution *self) {
     free(self);
 }
 
-// Core Operations
+
 FeasibilityResult tsp_solution_check_feasibility(TspSolution *self) {
     if_verbose(VERBOSE_DEBUG, "  Solution: Checking feasibility...\n");
 
-    int n = tsp_instance_get_num_nodes(self->instance);
+    const int n = tsp_instance_get_num_nodes(self->instance);
     int *tour_copy = malloc((n + 1) * sizeof(int));
     check_alloc(tour_copy);
-    double cost_copy;
 
     pthread_mutex_lock(&self->mutex);
     memcpy(tour_copy, self->tour, (n + 1) * sizeof(int));
-    cost_copy = self->cost;
+    const double cost_copy = self->cost;
     pthread_mutex_unlock(&self->mutex);
 
     int *counter = calloc(n, sizeof(int));
@@ -139,7 +138,6 @@ FeasibilityResult tsp_solution_check_feasibility(TspSolution *self) {
     return result;
 }
 
-// Accessors
 double tsp_solution_get_cost(TspSolution *self) {
     pthread_mutex_lock(&self->mutex);
     double c = self->cost;
@@ -169,4 +167,82 @@ bool tsp_solution_update_if_better(TspSolution *self, const int *new_tour, doubl
     pthread_mutex_unlock(&self->mutex);
 
     return updated;
+}
+
+int tsp_solution_save(TspSolution *self, const char *path) {
+    if (!self || !path) return -1;
+
+    FILE *f = fopen(path, "w");
+    if (!f) {
+        if_verbose(VERBOSE_INFO, "[Error] Save: Cannot open file '%s'\n", path);
+        return -1;
+    }
+
+    pthread_mutex_lock(&self->mutex);
+
+    int n = tsp_instance_get_num_nodes(self->instance);
+
+    // Write Header
+    fprintf(f, "%s\n", SOL_V1_MAGIC);
+    fprintf(f, "%s %.15g\n", SOL_V1_COST, self->cost);
+    fprintf(f, "%s %d\n", SOL_V1_DIM, n);
+    fprintf(f, "%s\n", SOL_V1_TOUR_SECTION);
+
+    // Write Tour
+    for (int i = 0; i <= n; i++) {
+        fprintf(f, "%d ", self->tour[i]);
+        // Add newline every 20 nodes for readability
+        if (i > 0 && i % 20 == 0 && i != n) fprintf(f, "\n");
+    }
+    fprintf(f, "\n%s\n", SOL_V1_EOF);
+
+    pthread_mutex_unlock(&self->mutex);
+    fclose(f);
+
+    if_verbose(VERBOSE_DEBUG, "Solution saved to '%s'\n", path);
+    return 0;
+}
+
+int tsp_solution_load(TspSolution *self, const char *path) {
+    if (!self || !path) return -1;
+
+    pthread_mutex_lock(&self->mutex);
+
+    int n = tsp_instance_get_num_nodes(self->instance);
+    double loaded_cost = 0.0;
+
+    // Use the parser infrastructure to load directly into the tour buffer
+    int res = tsp_parser_load_solution(path, n, self->tour, &loaded_cost);
+
+    if (res != PARSE_OK) {
+        const char *msg = "Unknown error";
+        switch (res) {
+            case PARSE_ERR_OPEN:    msg = "Cannot open file"; break;
+            case PARSE_ERR_FORMAT:  msg = "Invalid file format"; break;
+            case PARSE_ERR_DIM:     msg = "Dimension mismatch"; break;
+            case PARSE_ERR_INV:     msg = "Invalid tour logic"; break;
+            case PARSE_ERR_MEMORY:  msg = "Memory allocation failed"; break;
+            case PARSE_ERR_EXT:     msg = "Unsupported extension"; break;
+            default: break;
+        }
+        if_verbose(VERBOSE_INFO, "[Error] Load failed for '%s': %s (Code %d)\n", path, msg, res);
+        
+        pthread_mutex_unlock(&self->mutex);
+        return -1;
+    }
+
+    // Recompute cost to ensure internal consistency
+    self->cost = compute_cost_internal(self->instance, self->tour);
+
+    // Warning if file cost differs significantly from computed cost
+    if (fabs(self->cost - loaded_cost) > EPSILON) {
+        if_verbose(VERBOSE_INFO, 
+            "[Warn] Load: Recalculated cost (%.6f) differs from file cost (%.6f)\n", 
+            self->cost, loaded_cost);
+    }
+
+    pthread_mutex_unlock(&self->mutex);
+
+    if_verbose(VERBOSE_INFO, "Solution loaded from '%s' (Cost: %.6f)\n", path, self->cost);
+    return 0;
 }
