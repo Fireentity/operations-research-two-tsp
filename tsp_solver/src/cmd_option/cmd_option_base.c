@@ -13,13 +13,17 @@ static const OptionMeta options_registry[] = {
     {"--plot-path", "-p", "Output directory for plots", "general", "plots_path", OPT_STRING, offsetof(CmdOptions, plots_path)},
 
     // TSP INSTANCE
-    {"--mode", "-m", "Input mode (0=Random, 1=File)", "tsp", "mode", OPT_TSP_MODE, offsetof(CmdOptions, tsp.mode)},
-    {"--file", "-f", "Input .tsp file path", "tsp", "file", OPT_STRING, offsetof(CmdOptions, tsp.input_file)},
-    {"--nodes", "-n", "Number of nodes (Random mode)", "tsp", "nodes", OPT_UINT, offsetof(CmdOptions, tsp.number_of_nodes)},
-    {"--seed", "-s", "Random seed", "tsp", "seed", OPT_INT, offsetof(CmdOptions, tsp.seed)},
-    {"--x-square", NULL, "Generation area X origin", "tsp", "x-square", OPT_INT, offsetof(CmdOptions, tsp.generation_area.x_square)},
-    {"--y-square", NULL, "Generation area Y origin", "tsp", "y-square", OPT_INT, offsetof(CmdOptions, tsp.generation_area.y_square)},
-    {"--square-side", NULL, "Generation area side length", "tsp", "square-side", OPT_UINT, offsetof(CmdOptions, tsp.generation_area.square_side)},
+    {"--mode", "-m", "Input mode (0=Random, 1=File)", "tsp_inst", "mode", OPT_TSP_MODE, offsetof(CmdOptions, inst.mode)},
+    {"--file", "-f", "Input .tsp file path", "tsp_inst", "file", OPT_STRING, offsetof(CmdOptions, inst.input_file)},
+    {"--nodes", "-n", "Number of nodes (Random mode)", "tsp_inst", "nodes", OPT_UINT, offsetof(CmdOptions, inst.number_of_nodes)},
+    {"--seed", "-s", "Random seed", "tsp_inst", "seed", OPT_INT, offsetof(CmdOptions, inst.seed)},
+    {"--x-square", NULL, "Generation area X origin", "tsp_inst", "x-square", OPT_INT, offsetof(CmdOptions, inst.generation_area.x_square)},
+    {"--y-square", NULL, "Generation area Y origin", "tsp_inst", "y-square", OPT_INT, offsetof(CmdOptions, inst.generation_area.y_square)},
+    {"--square-side", NULL, "Generation area side length", "tsp_inst", "square-side", OPT_UINT, offsetof(CmdOptions, inst.generation_area.square_side)},
+
+    // TSP SOLUTION
+    {"--sol-load-file", "-slf", "Input .tspsol file path", "tsp_sol", "load", OPT_STRING, offsetof(CmdOptions, sol.load_file)},
+    {"--sol-save-file", "-ssf", "Output .tspsol file path", "tsp_sol", "save", OPT_STRING, offsetof(CmdOptions, sol.save_file)},
 
     // NEAREST NEIGHBOR
     {"--nn", NULL, "Enable Nearest Neighbor", "nn", "enabled", OPT_BOOL, offsetof(CmdOptions, nn_params.enable)},
@@ -88,7 +92,7 @@ size_t cmd_options_get_metadata_count(void) {
 
 /* Default sets intentionally provide stable baseline configuration. */
 
-static void set_tsp_defaults(TspInstanceOptions *opt) {
+static void set_tsp_inst_defaults(TspInstanceOptions *opt) {
     opt->mode = TSP_INPUT_MODE_RANDOM;
     opt->number_of_nodes = 100;
     opt->seed = 0;
@@ -97,7 +101,10 @@ static void set_tsp_defaults(TspInstanceOptions *opt) {
     opt->generation_area.y_square = 0;
     opt->generation_area.square_side = 1000;
 }
-
+static void set_tsp_sol_defaults(TspSolutionOptions *opt) {
+    opt->load_file=NULL;
+    opt->save_file=NULL;
+}
 static void set_nn_defaults(NNOptions *opt) {
     opt->enable = false;
     opt->plot_file = strdup("NN-plot.png");
@@ -160,7 +167,8 @@ CmdOptions *cmd_options_create_defaults(void) {
     opt->config_file = NULL;
     opt->plots_path = NULL;
 
-    set_tsp_defaults(&opt->tsp);
+    set_tsp_inst_defaults(&opt->inst);
+    set_tsp_sol_defaults(&opt->sol);
     set_nn_defaults(&opt->nn_params);
     set_vns_defaults(&opt->vns_params);
     set_tabu_defaults(&opt->tabu_params);
@@ -179,7 +187,7 @@ void cmd_options_destroy(CmdOptions *opt) {
     /* Freeing all dynamically allocated strings avoids leaks on reloads. */
     free(opt->config_file);
     free(opt->plots_path);
-    free(opt->tsp.input_file);
+    free(opt->inst.input_file);
 
     free(opt->nn_params.plot_file);
     free(opt->nn_params.cost_file);
