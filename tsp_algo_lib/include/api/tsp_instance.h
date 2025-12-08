@@ -2,16 +2,7 @@
 #define TSP_INSTANCE_H
 #include <stddef.h>
 
-/* Error codes for instance loading */
-typedef enum {
-    TSP_OK = 0,
-    TSP_ERR_FILE_OPEN,
-    TSP_ERR_PARSE_HEADER, // Dimension or format error
-    TSP_ERR_PARSE_NODES, // Error reading node coordinates
-    TSP_ERR_MEMORY,
-    TSP_ERR_INVALID_EXT,
-    TSP_ERR_UNKNOWN_FORMAT
-} TspError;
+#include "tsp_error.h"
 
 /**
  * @brief Defines the area used for generating a random TSP instance.
@@ -25,7 +16,7 @@ typedef struct {
 /**
  * @brief Represents a node with x and y coordinates.
  */
-typedef struct {
+typedef struct Node {
     double x;
     double y;
 } Node;
@@ -78,9 +69,5 @@ const Node *tsp_instance_get_nodes(const TspInstance *instance);
  */
 const double *tsp_instance_get_cost_matrix(const TspInstance *instance);
 
-/**
- * @brief Helper to get a string representation of the error.
- */
-const char *tsp_error_to_string(TspError err);
 
 #endif // TSP_INSTANCE_H

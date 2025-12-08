@@ -25,8 +25,8 @@ static TspInstance *instance_create_from_nodes(Node *nodes, const size_t n) {
 
     return inst;
 }
-TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const TspGenerationArea area) {
 
+TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const TspGenerationArea area) {
     Node *nodes = malloc(number_of_nodes * sizeof(Node));
     check_alloc(nodes);
 
@@ -46,10 +46,12 @@ TspInstance *tsp_instance_create(const Node *nodes, const int number_of_nodes) {
 }
 
 TspError tsp_instance_load_from_file(TspInstance **out_instance, const char *path) {
+    *out_instance = NULL;
     Node *nodes = NULL;
     int n = 0;
 
-    const TspError err = tsp_parser_load_instance(path, &nodes, &n);
+    const TspParserStatus status = tsp_parser_load_instance(path, &nodes, &n);
+    const TspError err = tsp_error_from_parser_status(status);
     if (err != TSP_OK) return err;
 
     *out_instance = instance_create_from_nodes(nodes, n);
@@ -58,8 +60,8 @@ TspError tsp_instance_load_from_file(TspInstance **out_instance, const char *pat
 
 void tsp_instance_destroy(TspInstance *instance) {
     if (!instance) return;
-    free(instance->nodes);
-    free(instance->edge_cost_array);
+    if (instance->nodes) free(instance->nodes);
+    if (instance->edge_cost_array) free(instance->edge_cost_array);
     free(instance);
 }
 
@@ -73,17 +75,4 @@ const Node *tsp_instance_get_nodes(const TspInstance *instance) {
 
 const double *tsp_instance_get_cost_matrix(const TspInstance *instance) {
     return instance ? instance->edge_cost_array : NULL;
-}
-
-const char *tsp_error_to_string(const TspError err) {
-    switch (err) {
-        case TSP_OK: return "Success";
-        case TSP_ERR_FILE_OPEN: return "Unable to open file";
-        case TSP_ERR_PARSE_HEADER: return "Malformed TSPLIB header";
-        case TSP_ERR_PARSE_NODES: return "Invalid node coordinates";
-        case TSP_ERR_MEMORY: return "Memory allocation failed";
-        case TSP_ERR_INVALID_EXT: return "Unsupported file extension";
-        case TSP_ERR_UNKNOWN_FORMAT: return "Unknown format";
-        default: return "Unknown error";
-    }
 }
