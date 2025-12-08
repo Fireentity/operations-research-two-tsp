@@ -1,29 +1,47 @@
 #include "tsp_parser.h"
-#include "tsp_parser_tsplib.h"
-#include "c_util.h"
-
+#include "tsp_parser_instance.h"
+#include "tsp_parser_solution.h"
 #include <string.h>
+#include <strings.h>
 
 typedef struct {
     const char *ext;
-    TspParserFn fn;
-} ParserRegistryEntry;
+    int (*fn)(const char*, Node**, int*);
+} InstEntry;
 
-/* Register parsers here */
-static ParserRegistryEntry parser_registry[] = {
-    {".tsp", tsp_parse_tsplib},
-    /* future formats: { ".csv", tsp_parse_csv }, */
+typedef struct {
+    const char *ext;
+    int (*fn)(const char*, int, int*, double*);
+} SolEntry;
+
+static const InstEntry inst_registry[] = {
+    {".tsp", parse_instance_tsplib},
     {NULL, NULL}
 };
 
-TspError tsp_parse_by_extension(const char *path, Node **out_nodes, int *out_n) {
+static const SolEntry sol_registry[] = {
+    {".tspsol", parse_solution_v1},
+    {".sol",    parse_solution_v1},
+    {NULL, NULL}
+};
+
+static const char* get_ext(const char *path) {
     const char *ext = strrchr(path, '.');
-    if (!ext) return TSP_ERR_INVALID_EXT;
+    return ext ? ext : "";
+}
 
-    for (int i = 0; parser_registry[i].ext != NULL; i++) {
-        if (strcasecmp(ext, parser_registry[i].ext) == 0)
-            return parser_registry[i].fn(path, out_nodes, out_n);
-    }
+int tsp_parser_load_instance(const char *path, Node **out_nodes, int *out_n) {
+    const char *ext = get_ext(path);
+    for (int i = 0; inst_registry[i].ext; i++)
+        if (strcasecmp(ext, inst_registry[i].ext) == 0)
+            return inst_registry[i].fn(path, out_nodes, out_n);
+    return PARSE_ERR_EXT;
+}
 
-    return TSP_ERR_UNKNOWN_FORMAT;
+int tsp_parser_load_solution(const char *path, int n, int *tour_buf, double *out_cost) {
+    const char *ext = get_ext(path);
+    for (int i = 0; sol_registry[i].ext; i++)
+        if (strcasecmp(ext, sol_registry[i].ext) == 0)
+            return sol_registry[i].fn(path, n, tour_buf, out_cost);
+    return PARSE_ERR_EXT;
 }
