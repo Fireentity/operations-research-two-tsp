@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 static int validate_tour_integrity(const int *tour, int n) {
+    if (n <= 0 || n > INT_MAX) return PARSE_ERR_INV;
     uint8_t *seen = calloc(n, sizeof(uint8_t));
     if (!seen) return PARSE_ERR_MEMORY;
 
@@ -22,7 +23,7 @@ static int validate_tour_integrity(const int *tour, int n) {
     return err == 0 ? PARSE_OK : PARSE_ERR_INV;
 }
 
-int parse_solution_v1(const char *path, int n_expected, int *tour_buf, double *out_cost) {
+TspParserStatus parse_solution_v1(const char *path, int n_expected, int *tour_buf, double *out_cost) {
     FILE *f = fopen(path, "r");
     if (!f) return PARSE_ERR_OPEN;
 
