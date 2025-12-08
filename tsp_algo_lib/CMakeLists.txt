@@ -18,6 +18,7 @@ set(TSP_ALGO_SOURCES
         src/api/tsp_algorithm.c
         src/utility/tsp_math.c
         src/utility/tsp_tour.c
+        src/utility/tsp_error.c
         src/utility/feasibility_result.c
         src/utility/time_limiter.c
         src/utility/cost_recorder.c
