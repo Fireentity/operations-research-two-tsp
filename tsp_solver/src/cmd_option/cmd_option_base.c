@@ -80,6 +80,19 @@ static const OptionMeta options_registry[] = {
     {"--ga-grasp-prob", NULL, "Init GRASP probability", "genetic", "grasp_prob", OPT_UDOUBLE, offsetof(CmdOptions, genetic_params.init_grasp_prob)},
     {"--ga-grasp-perc", NULL, "Init GRASP percentage", "genetic", "grasp_percent", OPT_UINT, offsetof(CmdOptions, genetic_params.init_grasp_percent)},
 
+    // BENDERS DECOMPOSITION
+    {"--benders", NULL, "Enable Benders Decomposition", "benders", "enabled", OPT_BOOL, offsetof(CmdOptions, benders_params.enable)},
+    {"--benders-seconds", NULL, "Time limit for Benders", "benders", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, benders_params.time_limit)},
+    {"--benders-iter", NULL, "Max iterations for Benders", "benders", "max_iterations", OPT_UINT, offsetof(CmdOptions, benders_params.max_iterations)},
+    {"--benders-plot", NULL, "Benders plot filename", "benders", "plot_file", OPT_STRING, offsetof(CmdOptions, benders_params.plot_file)},
+    {"--benders-cost", NULL, "Benders cost filename", "benders", "cost_file", OPT_STRING, offsetof(CmdOptions, benders_params.cost_file)},
+
+    // BRANCH AND CUT
+    {"--bc", NULL, "Enable Branch and Cut", "bc", "enabled", OPT_BOOL, offsetof(CmdOptions, bc_params.enable)},
+    {"--bc-seconds", NULL, "Time limit for Branch and Cut", "bc", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, bc_params.time_limit)},
+    {"--bc-threads", NULL, "Number of threads (0=auto)", "bc", "threads", OPT_UINT, offsetof(CmdOptions, bc_params.num_threads)},
+    {"--bc-plot", NULL, "Branch and Cut plot filename", "bc", "plot_file", OPT_STRING, offsetof(CmdOptions, bc_params.plot_file)},
+    {"--bc-cost", NULL, "Branch and Cut cost filename", "bc", "cost_file", OPT_STRING, offsetof(CmdOptions, bc_params.cost_file)},
 };
 
 const OptionMeta* cmd_options_get_metadata(void) {
@@ -159,6 +172,21 @@ static void set_genetic_defaults(GeneticOptions *opt) {
     opt->init_grasp_percent = 90;
 }
 
+static void set_benders_defaults(BendersOptions *opt) {
+    opt->enable = false;
+    opt->max_iterations = 200;
+    opt->plot_file = strdup("Benders-plot.png");
+    opt->cost_file = strdup("Benders-costs.png");
+}
+
+static void set_bc_defaults(BranchCutOptions *opt) {
+    opt->enable = false;
+    opt->time_limit = 60.0;
+    opt->num_threads = 0; // 0 let CPLEX/Solver decide
+    opt->plot_file = strdup("BC-plot.png");
+    opt->cost_file = strdup("BC-costs.png");
+}
+
 CmdOptions *cmd_options_create_defaults(void) {
     CmdOptions *opt = calloc(1, sizeof(CmdOptions));
     check_alloc(opt);
@@ -175,6 +203,8 @@ CmdOptions *cmd_options_create_defaults(void) {
     set_grasp_defaults(&opt->grasp_params);
     set_em_defaults(&opt->em_params);
     set_genetic_defaults(&opt->genetic_params);
+    set_benders_defaults(&opt->benders_params);
+    set_bc_defaults(&opt->bc_params);
 
     if_verbose(VERBOSE_DEBUG, "Options initialized with defaults\n");
 
@@ -184,10 +214,12 @@ CmdOptions *cmd_options_create_defaults(void) {
 void cmd_options_destroy(CmdOptions *opt) {
     if (!opt) return;
 
-    /* Freeing all dynamically allocated strings avoids leaks on reloads. */
     free(opt->config_file);
     free(opt->plots_path);
     free(opt->inst.input_file);
+
+    free(opt->sol.load_file);
+    free(opt->sol.save_file);
 
     free(opt->nn_params.plot_file);
     free(opt->nn_params.cost_file);
@@ -200,6 +232,18 @@ void cmd_options_destroy(CmdOptions *opt) {
 
     free(opt->grasp_params.plot_file);
     free(opt->grasp_params.cost_file);
+
+    free(opt->em_params.plot_file);
+    free(opt->em_params.cost_file);
+
+    free(opt->genetic_params.plot_file);
+    free(opt->genetic_params.cost_file);
+
+    free(opt->benders_params.plot_file);
+    free(opt->benders_params.cost_file);
+
+    free(opt->bc_params.plot_file);
+    free(opt->bc_params.cost_file);
 
     free(opt);
 

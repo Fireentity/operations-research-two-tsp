@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Validation rejects configurations that would lead to undefined solver behavior. */
+// Validation rejects configurations that would lead to undefined solver behavior.
 static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
 
-    /* TSP instance rules ensure consistent instance creation. */
+    // TSP instance validation
     if (opt->inst.mode == TSP_INPUT_MODE_FILE) {
         if (!opt->inst.input_file || strlen(opt->inst.input_file) == 0) {
             if_verbose(VERBOSE_INFO, "[Config Error] Mode FILE requires a valid --file.\n");
@@ -26,7 +26,7 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    /* NN validation: negative duration makes the algorithm unusable. */
+    // NN validation
     if (opt->nn_params.enable) {
         if (opt->nn_params.time_limit < 0.0) {
             if_verbose(VERBOSE_INFO, "[Config Error] NN: time limit cannot be negative.\n");
@@ -34,7 +34,7 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    /* VNS validation ensures meaningful search parameters. */
+    // VNS validation
     if (opt->vns_params.enable) {
         if (opt->vns_params.min_k < 2 || opt->vns_params.max_k < 2) {
             if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k and max_k must be >= 2.\n");
@@ -54,7 +54,7 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    /* Tabu validation ensures stable tabu tenure logic. */
+    //Tabu validation
     if (opt->tabu_params.enable) {
         if (opt->tabu_params.min_tenure == 0 || opt->tabu_params.max_tenure == 0 || opt->tabu_params.min_tenure > opt->
             tabu_params.max_tenure) {
@@ -71,7 +71,7 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    /* GRASP validation ensures proper construction parameters. */
+    // GRASP validation
     if (opt->grasp_params.enable) {
         if (opt->grasp_params.rcl_size < 1) {
             if_verbose(VERBOSE_INFO, "[Config Error] GRASP: RCL size must be >= 1.\n");
@@ -91,7 +91,7 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    /* Extra Mileage validation. */
+    // Extra Mileage validation
     if (opt->em_params.enable) {
         if (opt->em_params.time_limit < 0.0) {
             if_verbose(VERBOSE_INFO, "[Config Error] EM: time limit cannot be negative.\n");
@@ -99,7 +99,7 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    /* Genetic Algorithm validation */
+    // Genetic Algorithm validation
     if (opt->genetic_params.enable) {
         if (opt->genetic_params.population_size < 2) {
             if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Population size must be at least 2.\n");
@@ -131,9 +131,29 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
+    // Benders Decomposition validation
+    if (opt->benders_params.enable) {
+        if (opt->benders_params.time_limit < 0.0) {
+             if_verbose(VERBOSE_INFO, "[Config Error] Benders: time limit cannot be negative.\n");
+             return WRONG_VALUE_TYPE;
+        }
+        if (opt->benders_params.max_iterations == 0) {
+             if_verbose(VERBOSE_INFO, "[Config Error] Benders: max iterations must be > 0.\n");
+             return WRONG_VALUE_TYPE;
+        }
+    }
+
+    // Branch & Cut validation
+    if (opt->bc_params.enable) {
+        if (opt->bc_params.time_limit < 0.0) {
+             if_verbose(VERBOSE_INFO, "[Config Error] Branch & Cut: time limit cannot be negative.\n");
+             return WRONG_VALUE_TYPE;
+        }
+    }
+
     /* Warn if no metaheuristic is active; execution will be short-lived. */
     if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable &&
-        !opt->em_params.enable && !opt->genetic_params.enable) {
+        !opt->em_params.enable && !opt->genetic_params.enable && !opt->benders_params.enable && !opt->bc_params.enable) {
         if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled.\n");
     }
 

@@ -12,6 +12,8 @@
 #include <linux/limits.h>
 #include <string.h>
 
+#include "benders_loop.h"
+#include "branch_and_cut.h"
 #include "extra_mileage.h"
 #include "genetic.h"
 
@@ -141,6 +143,28 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         TspAlgorithm algo = genetic_create(cfg);
 
         BUILD_PATHS(options->genetic_params.plot_file, options->genetic_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+    // --- BENDERS DECOMPOSITION ---
+    if (options->benders_params.enable) {
+        BendersConfig cfg = {
+            .time_limit = options->benders_params.time_limit,
+            .max_iterations = (int) options->benders_params.max_iterations
+        };
+        TspAlgorithm algo = benders_create(cfg);
+        BUILD_PATHS(options->benders_params.plot_file, options->benders_params.cost_file);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+    }
+
+    // --- BRANCH AND CUT ---
+    if (options->bc_params.enable) {
+        BranchCutConfig cfg = {
+            .time_limit = options->bc_params.time_limit,
+            .num_threads = (int) options->bc_params.num_threads
+        };
+        TspAlgorithm algo = branch_and_cut_create(cfg);
+        BUILD_PATHS(options->bc_params.plot_file, options->bc_params.cost_file);
         execute_and_report(&algo, instance, full_plot_path, full_costs_path);
     }
 

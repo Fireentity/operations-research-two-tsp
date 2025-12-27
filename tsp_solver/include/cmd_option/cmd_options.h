@@ -90,6 +90,22 @@ typedef struct {
 } GeneticOptions;
 
 typedef struct {
+    bool enable;
+    char *plot_file;
+    char *cost_file;
+    double time_limit;
+    unsigned int max_iterations;
+} BendersOptions;
+
+typedef struct {
+    bool enable;
+    char *plot_file;
+    char *cost_file;
+    double time_limit;
+    unsigned int num_threads;
+} BranchCutOptions;
+
+typedef struct {
     char *config_file;
     char *plots_path;
     bool help;
@@ -103,6 +119,8 @@ typedef struct {
     GraspOptions grasp_params;
     EMOptions em_params;
     GeneticOptions genetic_params;
+    BendersOptions benders_params;
+    BranchCutOptions bc_params;
 } CmdOptions;
 
 CmdOptions *cmd_options_create_defaults(void);
