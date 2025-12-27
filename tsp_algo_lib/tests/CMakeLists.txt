@@ -13,6 +13,8 @@ set(TEST_SOURCES
         src/parser_test.c
         src/local_search_test.c
         src/utility_test.c
+        src/exact_test.c
+        src/subtour_separator_test.c
 )
 
 add_executable(tsp_alg_tests src/main.c ${TEST_SOURCES})

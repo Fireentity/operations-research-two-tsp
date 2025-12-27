@@ -1,9 +1,12 @@
 project(tsp_algo_lib)
 
-# Set compile options for tsp_algo_lib
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+set(TSP_EXACT_SOURCES
+        src/exact/cplex_solver_wrapper.c
+        src/exact/subtour_separator.c
+        src/exact/benders_loop.c
+        src/exact/branch_and_cut.c
+)
 
-# Define the sources for tsp_algo_lib
 set(TSP_ALGO_SOURCES
         src/algorithm/grasp.c
         src/algorithm/nearest_neighbor.c
@@ -25,12 +28,11 @@ set(TSP_ALGO_SOURCES
         src/parser/tsp_parser.c
         src/parser/instance/tsp_parser_tsplib.c
         src/parser/solution/tsp_parser_sol_v1.c
+        ${TSP_EXACT_SOURCES}
 )
 
-# Create a library for tsp_algo_lib
 add_library(tsp_algo_lib ${TSP_ALGO_SOURCES})
 
-# Include directories for tsp_algo_lib
 target_include_directories(tsp_algo_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms
         ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms/common
@@ -39,6 +41,11 @@ target_include_directories(tsp_algo_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/parser/solution
         ${CMAKE_CURRENT_SOURCE_DIR}/include/parser/instance
         ${CMAKE_CURRENT_SOURCE_DIR}/include/utility
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/exact
 )
-# Link tsp_algo_lib with common
+
 target_link_libraries(tsp_algo_lib PRIVATE common)
+
+if(CPLEX_FOUND)
+    target_link_libraries(tsp_algo_lib PRIVATE CPLEX::CPLEX)
+endif()

@@ -1,25 +1,37 @@
 cmake_minimum_required(VERSION 3.16.1)
-project(operations-research-two-tsp C)
+project(operations-research-two-tsp LANGUAGES C)
+
 set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
 
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
+add_compile_definitions(_POSIX_C_SOURCE=200809L)
 
-option(DISABLE_VERBOSE "Disable verbose mode" OFF)
-if(DISABLE_VERBOSE)
-    message(STATUS "Verbose mode disabled")
-    add_compile_definitions(DISABLE_VERBOSE)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+include(ProjectOptions)
+
+add_compile_options(
+        $<$<CONFIG:Debug>:-g>
+        $<$<CONFIG:Debug>:-Wall>
+        $<$<CONFIG:Debug>:-Wextra>
+        $<$<CONFIG:Release>:-O3>
+)
+
+find_package(CPLEX QUIET)
+
+if(CPLEX_FOUND)
+    add_compile_definitions(ENABLE_CPLEX)
+    message(STATUS "[CPLEX] Found. Exact algorithms enabled.")
 else()
-    message(STATUS "Verbose mode enabled (default)")
+    message(WARNING "[CPLEX] Not found. Exact algorithms disabled.")
 endif()
 
-# Enable testing
 enable_testing()
 
-# Add subdirectories for each module
+add_subdirectory(common)
 add_subdirectory(cflaglib)
 add_subdirectory(cflaglib/tests)
 add_subdirectory(tsp_algo_lib)
 add_subdirectory(tsp_algo_lib/tests)
 add_subdirectory(tsp_solver)
-add_subdirectory(common)
