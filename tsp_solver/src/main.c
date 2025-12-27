@@ -9,7 +9,7 @@
 /**
  * @brief Configures the global services based on command line options.
  */
-static void setup_global(const CmdOptions *options) {
+static void setup_global_services(const CmdOptions *options) {
 #ifndef DISABLE_VERBOSE
     logger_set_verbosity(options->verbosity);
 #endif
@@ -63,7 +63,7 @@ int main(const int argc, const char *argv[]) {
     }
 
     // Setup Logging
-    setup_global(options);
+    setup_global_services(options);
     print_configuration(options);
 
     // Create/Load Instance

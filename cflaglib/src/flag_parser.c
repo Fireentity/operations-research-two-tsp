@@ -391,79 +391,67 @@ const ParsingResult *flag_parser_validate(const FlagParser *parser) {
  * @param parser The initialized flag parser containing the definitions.
  */
 void flag_parser_print_help(const FlagParser *parser) {
-    const int INDENT = 2; // Spaces before the flag (e.g., "  --help")
-    const int PADDING = 2; // Spaces between the longest flag and its description
+    const int INDENT = 2;
+    const int PADDING = 2;
 
-    // Find the maximum width of the flag column
-    size_t max_flag_width = 0;
+    size_t max_short_len = 0;
     for (size_t i = 0; i < parser->definition_count; i++) {
         const FlagDefinition *def = parser->definitions[i];
-        size_t current_width = INDENT;
-
         if (def->short_name) {
-            // e.g., "-s, " (length of short_name + 2 chars ", ")
-            current_width += strlen(def->short_name) + 2;
-        } else {
-            // No short name; add padding to align with flags that do
-            current_width += 4; // "    "
-        }
-        current_width += strlen(def->name); // e.g., "--verbosity"
-
-        if (current_width > max_flag_width) {
-            max_flag_width = current_width;
+            size_t len = strlen(def->short_name);
+            if (len > max_short_len)
+                max_short_len = len;
         }
     }
 
-    // Calculate the exact column where the description text will start
-    const int desc_start_col = (int) max_flag_width + PADDING;
+    size_t short_col_width = max_short_len ? max_short_len + 2 : 0;
 
-    // --- Pass 2: Print the formatted output ---
+    size_t max_flag_width = 0;
+    for (size_t i = 0; i < parser->definition_count; i++) {
+        const FlagDefinition *def = parser->definitions[i];
+        size_t w = INDENT + short_col_width + strlen(def->name);
+        if (w > max_flag_width)
+            max_flag_width = w;
+    }
+
+    int desc_col = (int)max_flag_width + PADDING;
+
     printf("Usage: [program] [options]\n\nOptions:\n");
 
     for (size_t i = 0; i < parser->definition_count; i++) {
         const FlagDefinition *def = parser->definitions[i];
+        char flag_str[512];
+        char short_part[64] = "";
 
-        // Build the flag string (e.g., "  -s, --short" or "      --long")
-        char flag_str[256]; // Buffer for the complete flag text
-        char short_name_str[5] = "    "; // 4 spaces default alignment
+        if (def->short_name)
+            snprintf(short_part, sizeof(short_part), "%s, ", def->short_name);
 
-        if (def->short_name) {
-            snprintf(short_name_str, 5, "%s, ", def->short_name);
-        }
-
-        snprintf(flag_str, sizeof(flag_str), "  %s%s",
-                 short_name_str,
+        snprintf(flag_str, sizeof(flag_str),
+                 "%*s%-*s%s",
+                 INDENT, "",
+                 (int)short_col_width, short_part,
                  def->name);
 
-        // Print the flag column, right-padded to the calculated width.
-        printf("%-*s", desc_start_col, flag_str);
+        printf("%-*s", desc_col, flag_str);
 
-        // Print the description, handling multi-line strings
         const char *desc = def->description ? def->description : "";
-        const char *line_start = desc;
-        const char *line_end;
-        bool first_line = true;
+        const char *p = desc;
+        const char *nl;
+        int first = 1;
 
-        while ((line_end = strchr(line_start, '\n')) != NULL) {
-            if (!first_line) {
-                // Not the first line, so print indentation
-                printf("%*s", desc_start_col, "");
-            }
-            // Print the line-up to (but not including) the '\n'
-            printf("%.*s\n", (int) (line_end - line_start), line_start);
-            line_start = line_end + 1; // Advance to the start of the next line
-            first_line = false;
+        while ((nl = strchr(p, '\n')) != NULL) {
+            if (!first)
+                printf("%*s", desc_col, "");
+            printf("%.*s\n", (int)(nl - p), p);
+            p = nl + 1;
+            first = 0;
         }
 
-        // Print the last line (or the only line if no '\n' was found)
-        if (*line_start) {
-            if (!first_line) {
-                // Indent if this isn't the first line
-                printf("%*s", desc_start_col, "");
-            }
-            printf("%s\n", line_start);
-        } else if (first_line) {
-            // If the description was empty (""), just print a final newline
+        if (*p) {
+            if (!first)
+                printf("%*s", desc_col, "");
+            printf("%s\n", p);
+        } else if (first) {
             printf("\n");
         }
     }

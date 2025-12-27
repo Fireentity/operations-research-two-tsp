@@ -15,7 +15,6 @@ CMakeCache.txt
 Makefile
 cmake_install.cmake
 build
-*.cmake
 *.cbp
 
 # Build output files
@@ -34,5 +33,4 @@ build
 *.DS_Store
 Thumbs.db
 
-# Config file
 plots

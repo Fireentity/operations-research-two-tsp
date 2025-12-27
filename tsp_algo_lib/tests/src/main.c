@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "em_test.h"
+#include "exact_test.h"
 #include "genetic_test.h"
 #include "grasp_test.h"
 #include "vns_test.h"
@@ -12,8 +14,10 @@
 #include "parser_test.h"
 #include "utility_test.h"
 #include "random.h"
+#include "subtour_separator_test.h"
 
 int main(void) {
+    setvbuf(stdout, NULL, _IOLBF, 0);
     printf("=== TSP Algorithm Tests Start ===\n\n");
     global_random_init(10);
 
@@ -28,6 +32,9 @@ int main(void) {
     run_genetic_tests();
     run_n_opt_tests();
     run_grasp_nn_helpers_tests();
+    printf("=== TSP Cplex Tests Start ===\n\n");
+    run_subtour_separator_tests();
+    run_exact_tests();
 
     printf("\n=== All Tests Passed Successfully ===\n");
     return 0;
