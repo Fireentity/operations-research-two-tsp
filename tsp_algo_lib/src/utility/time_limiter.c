@@ -21,3 +21,11 @@ bool time_limiter_is_over(const TimeLimiter *limiter) {
     const double elapsed = second() - limiter->start_time;
     return elapsed > limiter->limit_seconds;
 }
+
+double time_limiter_get_remaining(const TimeLimiter *limiter) {
+    const double now = second();
+    const double elapsed = now - limiter->start_time;
+    const double remaining = limiter->limit_seconds - elapsed;
+
+    return remaining > 0.0 ? remaining : 0.0;
+}
