@@ -2,6 +2,7 @@
 #define BRANCH_AND_CUT_H
 
 #include "tsp_algorithm.h"
+// TODO check if it respects time
 
 typedef struct {
     double time_limit;

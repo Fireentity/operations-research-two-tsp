@@ -1,4 +1,4 @@
-#include "branch_and_cut.h"
+#include "../../include/algorithms/branch_and_cut.h"
 #include "cplex_solver_wrapper.h"
 #include "logger.h"
 #include "c_util.h"

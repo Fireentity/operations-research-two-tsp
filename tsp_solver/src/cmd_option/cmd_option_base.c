@@ -101,6 +101,15 @@ static const OptionMeta options_registry[] = {
     {"--hf-heuristic", NULL, "Heuristic (nn, em, vns, tabu, grasp)", "hf", "heuristic", OPT_STRING, offsetof(CmdOptions, hf_params.heuristic_name)},
     {"--hf-plot", NULL, "HF plot filename", "hf", "plot_file", OPT_STRING, offsetof(CmdOptions, hf_params.plot_file)},
     {"--hf-cost", NULL, "HF cost filename", "hf", "cost_file", OPT_STRING, offsetof(CmdOptions, hf_params.cost_file)},
+
+    // LOCAL BRANCHING (MATHEURISTIC)
+    {"--lb", NULL, "Enable Local Branching", "lb", "enabled", OPT_BOOL, offsetof(CmdOptions, lb_params.enable)},
+    {"--lb-seconds", NULL, "Time limit for LB", "lb", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, lb_params.time_limit)},
+    {"--lb-k", NULL, "Neighborhood size k", "lb", "k", OPT_INT, offsetof(CmdOptions, lb_params.k)},
+    {"--lb-ratio", NULL, "Heuristic ratio", "lb", "ratio", OPT_UDOUBLE, offsetof(CmdOptions, lb_params.heuristic_ratio)},
+    {"--lb-heuristic", NULL, "Heuristic", "lb", "heuristic", OPT_STRING, offsetof(CmdOptions, lb_params.heuristic_name)},
+    {"--lb-plot", NULL, "LB plot", "lb", "plot_file", OPT_STRING, offsetof(CmdOptions, lb_params.plot_file)},
+    {"--lb-cost", NULL, "LB cost", "lb", "cost_file", OPT_STRING, offsetof(CmdOptions, lb_params.cost_file)},
 };
 
 const OptionMeta* cmd_options_get_metadata(void) {
@@ -203,6 +212,16 @@ static void set_hf_defaults(HardFixingOptions *opt) {
     opt->heuristic_name = strdup("vns");
 }
 
+static void set_lb_defaults(LocalBranchingOptions *opt) {
+    opt->enable = false;
+    opt->k = 20;
+    opt->time_limit = 60.0;
+    opt->heuristic_ratio = 0.2;
+    opt->plot_file = strdup("LB-plot.png");
+    opt->cost_file = strdup("LB-costs.png");
+    opt->heuristic_name = strdup("vns");
+}
+
 CmdOptions *cmd_options_create_defaults(void) {
     CmdOptions *opt = calloc(1, sizeof(CmdOptions));
     check_alloc(opt);
@@ -222,6 +241,7 @@ CmdOptions *cmd_options_create_defaults(void) {
     set_benders_defaults(&opt->benders_params);
     set_bc_defaults(&opt->bc_params);
     set_hf_defaults(&opt->hf_params);
+    set_lb_defaults(&opt->lb_params);
 
     if_verbose(VERBOSE_DEBUG, "Options initialized with defaults\n");
 
@@ -265,6 +285,10 @@ void cmd_options_destroy(CmdOptions *opt) {
     free(opt->hf_params.plot_file);
     free(opt->hf_params.cost_file);
     free(opt->hf_params.heuristic_name);
+
+    free(opt->lb_params.plot_file);
+    free(opt->lb_params.cost_file);
+    free(opt->lb_params.heuristic_name);
 
     free(opt);
 

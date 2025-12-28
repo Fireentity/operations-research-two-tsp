@@ -3,9 +3,11 @@ project(tsp_algo_lib)
 set(TSP_EXACT_SOURCES
         src/algorithm/exact/cplex_solver_wrapper.c
         src/algorithm/exact/subtour_separator.c
+        src/algorithm/exact/matheuristic_utils.c
         src/algorithm/benders_loop.c
         src/algorithm/branch_and_cut.c
         src/algorithm/hard_fixing.c
+        src/algorithm/local_branching.c
 )
 
 set(TSP_ALGO_SOURCES

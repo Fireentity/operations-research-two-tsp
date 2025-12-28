@@ -1,6 +1,6 @@
 #include "exact_test.h"
-#include "benders_loop.h"
-#include "branch_and_cut.h"
+#include "../../include/algorithms/benders_loop.h"
+#include "../../include/algorithms/branch_and_cut.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
 #include "cost_recorder.h"
@@ -11,6 +11,7 @@
 #define EPSILON_TEST 1e-4
 
 void test_benders_small_random() {
+    //TODO make tests better
 #ifdef ENABLE_CPLEX
     printf("  [Exact] Testing Benders on small random instance (10 nodes)...\n");
     TspGenerationArea area = {0, 0, 100};

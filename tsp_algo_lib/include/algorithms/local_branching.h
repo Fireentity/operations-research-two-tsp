@@ -1,20 +1,19 @@
-#ifndef HARD_FIXING_H
-#define HARD_FIXING_H
+#ifndef LOCAL_BRANCHING_H
+#define LOCAL_BRANCHING_H
 
 #include "tsp_algorithm.h"
 #include <stdint.h>
-
 #include "heuristic_types.h"
 
 typedef struct {
     double time_limit;
-    double fixing_rate;
+    int k;
     double heuristic_time_ratio;
     HeuristicType heuristic_type;
     uint64_t seed;
     void *heuristic_args; // Optional heuristic-specific configuration (NULL uses defaults)
-} HardFixingConfig;
+} LocalBranchingConfig;
 
-TspAlgorithm hard_fixing_create(HardFixingConfig config);
+TspAlgorithm local_branching_create(LocalBranchingConfig config);
 
 #endif

@@ -3,6 +3,7 @@
 
 #include "tsp_algorithm.h"
 
+// TODO check if it respects time
 typedef struct {
     double time_limit;
     int max_iterations;

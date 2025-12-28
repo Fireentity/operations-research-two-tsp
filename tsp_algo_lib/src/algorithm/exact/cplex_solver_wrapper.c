@@ -39,6 +39,7 @@ struct CplexSolverContext {
     CPXLPptr lp;
     int num_cols;
     double *x_star;
+    void *callback_data;
 };
 
 CplexSolverContext *cplex_solver_create(const TspInstance *inst) {
@@ -63,7 +64,7 @@ CplexSolverContext *cplex_solver_create(const TspInstance *inst) {
     ctx->num_cols = n * (n - 1) / 2;
     ctx->x_star = calloc(ctx->num_cols, sizeof(double));
     check_alloc(ctx->x_star);
-
+    ctx->callback_data = NULL;
     CPXsetintparam(ctx->env, CPX_PARAM_SCRIND, CPX_OFF);
     return ctx;
 }
@@ -72,6 +73,10 @@ void cplex_solver_destroy(CplexSolverContext *ctx) {
     if (!ctx) return;
     if (ctx->lp) CPXfreeprob(ctx->env, &ctx->lp);
     if (ctx->env) CPXcloseCPLEX(&ctx->env);
+    if (ctx->callback_data) {
+        free(ctx->callback_data);
+        ctx->callback_data = NULL;
+    }
     free(ctx->x_star);
     free(ctx);
 }
@@ -120,8 +125,37 @@ int cplex_solver_build_base_model(CplexSolverContext *ctx, const TspInstance *in
     return status;
 }
 
+int cplex_solver_add_local_branching_constraint(CplexSolverContext *ctx, int num_nodes, const int *tour, int k) {
+    int nzcnt = num_nodes;
+    int *indices = malloc(nzcnt * sizeof(int));
+    double *values = malloc(nzcnt * sizeof(double));
+    check_alloc(indices);
+    check_alloc(values);
+
+    for (int i = 0; i < num_nodes; i++) {
+        int u = tour[i];
+        int v = tour[i + 1];
+        indices[i] = xpos(u, v, num_nodes);
+        values[i] = 1.0;
+    }
+
+    double rhs = num_nodes - k;
+    char sense = 'G';
+    int matbeg = 0;
+    char *name = "LOCAL_BRANCHING";
+
+    int status = CPXaddrows(ctx->env, ctx->lp, 0, 1, nzcnt, &rhs, &sense, &matbeg, indices, values, NULL, &name);
+
+    free(indices);
+    free(values);
+    return status;
+}
+
 int cplex_solver_fix_edge(CplexSolverContext *ctx, int u, int v, double value, int num_nodes) {
     int index = xpos(u, v, num_nodes);
+    if (index < 0 || index >= ctx->num_cols) {
+        return -1;
+    }
     char lu = 'B';
     double bd = value;
     return CPXchgbds(ctx->env, ctx->lp, 1, &index, &lu, &bd);
@@ -198,7 +232,7 @@ int cplex_solver_install_sec_callback(CplexSolverContext *ctx, const TspInstance
     check_alloc(cb);
     cb->inst = inst;
     cb->num_cols = ctx->num_cols;
-
+    ctx->callback_data = cb;
     return CPXcallbacksetfunc(ctx->env, ctx->lp, CPX_CALLBACKCONTEXT_CANDIDATE, lazy_sec_callback, cb);
 }
 

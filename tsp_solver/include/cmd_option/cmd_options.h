@@ -116,6 +116,16 @@ typedef struct {
 } HardFixingOptions;
 
 typedef struct {
+    bool enable;
+    char *plot_file;
+    char *cost_file;
+    double time_limit;
+    int k;
+    double heuristic_ratio;
+    char *heuristic_name;
+} LocalBranchingOptions;
+
+typedef struct {
     char *config_file;
     char *plots_path;
     bool help;
@@ -132,6 +142,7 @@ typedef struct {
     BendersOptions benders_params;
     BranchCutOptions bc_params;
     HardFixingOptions hf_params;
+    LocalBranchingOptions lb_params;
 } CmdOptions;
 
 CmdOptions *cmd_options_create_defaults(void);
