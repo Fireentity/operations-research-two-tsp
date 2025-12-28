@@ -6,33 +6,6 @@
 #include "time_limiter.h"
 #include <stdlib.h>
 
-#ifdef ENABLE_CPLEX
-#include <ilcplex/cplex.h>
-#endif
-
-static void reconstruct_tour(int n, const double *x, int *tour) {
-    int *vis = calloc(n, sizeof(int));
-    check_alloc(vis);
-
-    tour[0] = 0;
-    vis[0] = 1;
-    int cur = 0;
-
-    for (int k = 1; k < n; k++) {
-        for (int j = 0; j < n; j++) {
-            if (!vis[j] && x[xpos(cur, j, n)] > 0.5) {
-                tour[k] = j;
-                vis[j] = 1;
-                cur = j;
-                break;
-            }
-        }
-    }
-
-    tour[n] = tour[0];
-    free(vis);
-}
-
 static void run_benders(const TspInstance *inst,
                         TspSolution *sol,
                         const void *cfg_void,
@@ -49,8 +22,6 @@ static void run_benders(const TspInstance *inst,
         return;
     }
 
-    CPXENVptr env = cplex_solver_get_env(ctx);
-
     TimeLimiter timer = time_limiter_create(cfg->time_limit);
     time_limiter_start(&timer);
 
@@ -59,28 +30,24 @@ static void run_benders(const TspInstance *inst,
     for (int it = 0; it < cfg->max_iterations; it++) {
         double remaining = time_limiter_get_remaining(&timer);
         if (remaining <= 0.0) {
-            if_verbose(VERBOSE_INFO,
-                       "Benders: time limit reached at iter %d\n", it);
+            if_verbose(VERBOSE_INFO, "Benders: time limit reached at iter %d\n", it);
             break;
         }
 
-        CPXsetdblparam(env, CPX_PARAM_TILIM, remaining);
+        cplex_solver_set_time_limit(ctx, remaining);
 
         if (cplex_solver_optimize(ctx) != 0) {
-            if_verbose(VERBOSE_DEBUG,
-                       "Benders: optimization failed at iter %d\n", it);
+            if_verbose(VERBOSE_DEBUG, "Benders: optimization failed at iter %d\n", it);
             break;
         }
 
         if (!cplex_solver_has_solution(ctx)) {
-            if_verbose(VERBOSE_INFO,
-                       "Benders: no integer solution at iter %d\n", it);
+            if_verbose(VERBOSE_INFO, "Benders: no integer solution at iter %d\n", it);
             break;
         }
 
         double cost = 0.0;
-        if (cplex_solver_extract_solution(ctx, &cost) != 0)
-            break;
+        if (cplex_solver_extract_solution(ctx, &cost) != 0) break;
 
         const double *x = cplex_solver_get_x(ctx);
         find_connected_components(cc, n, x);
@@ -89,21 +56,18 @@ static void run_benders(const TspInstance *inst,
             int *tour = malloc((n + 1) * sizeof(int));
             check_alloc(tour);
 
-            reconstruct_tour(n, x, tour);
+            cplex_solver_reconstruct_tour(n, x, tour);
+
             tsp_solution_update_if_better(sol, tour, cost);
             cost_recorder_add(rec, cost);
 
-            if_verbose(VERBOSE_INFO,
-                       "Benders: optimal solution found at iter %d (Cost: %.2f)\n",
-                       it, cost);
+            if_verbose(VERBOSE_INFO, "Benders: optimal solution found at iter %d (Cost: %.2f)\n", it, cost);
 
             free(tour);
             break;
         }
 
-        if_verbose(VERBOSE_DEBUG,
-                   "Benders: iter %d, %d subtours found\n",
-                   it, cc->num_components);
+        if_verbose(VERBOSE_DEBUG, "Benders: iter %d, %d subtours found\n", it, cc->num_components);
 
         for (int c = 1; c <= cc->num_components; c++) {
             int sz = 0;
@@ -122,10 +86,7 @@ static void run_benders(const TspInstance *inst,
     connected_components_destroy(cc);
     cplex_solver_destroy(ctx);
 #else
-    (void)inst;
-    (void)sol;
-    (void)cfg_void;
-    (void)rec;
+    (void)inst; (void)sol; (void)cfg_void; (void)rec;
     if_verbose(VERBOSE_INFO, "[ERROR] CPLEX not enabled\n");
 #endif
 }
