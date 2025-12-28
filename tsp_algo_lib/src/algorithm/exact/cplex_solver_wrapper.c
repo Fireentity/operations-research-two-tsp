@@ -4,7 +4,6 @@
 #include "c_util.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
 
 int xpos(int i, int j, int num_nodes) {
     if (i == j) return -1;
@@ -138,7 +137,8 @@ typedef struct {
 } CallbackCtx;
 
 static int CPXPUBLIC lazy_sec_callback(CPXCALLBACKCONTEXTptr context, CPXLONG contextid, void *userhandle) {
-    CallbackCtx *cb_ctx = (CallbackCtx *) userhandle;
+    (void) contextid;
+    CallbackCtx *cb_ctx = userhandle;
     int n = tsp_instance_get_num_nodes(cb_ctx->inst);
 
     double *x_star = malloc(cb_ctx->num_cols * sizeof(double));
@@ -157,6 +157,7 @@ static int CPXPUBLIC lazy_sec_callback(CPXCALLBACKCONTEXTptr context, CPXLONG co
         for (int c = 1; c <= cc->num_components; c++) {
             int comp_size = 0;
             int *nodes = malloc(n * sizeof(int));
+            check_alloc(nodes);
             for (int i = 0; i < n; i++) {
                 if (cc->component_of_node[i] == c) nodes[comp_size++] = i;
             }
@@ -164,6 +165,8 @@ static int CPXPUBLIC lazy_sec_callback(CPXCALLBACKCONTEXTptr context, CPXLONG co
             int max_edges = comp_size * (comp_size - 1) / 2;
             int *ind = malloc(max_edges * sizeof(int));
             double *val = malloc(max_edges * sizeof(double));
+            check_alloc(ind);
+            check_alloc(val);
             int nnz = 0;
 
             for (int i = 0; i < comp_size; i++) {
@@ -230,6 +233,8 @@ int cplex_solver_add_sec(CplexSolverContext *ctx, const TspInstance *inst, const
     int max_edges = comp_size * (comp_size - 1) / 2;
     int *ind = malloc(max_edges * sizeof(int));
     double *val = malloc(max_edges * sizeof(double));
+    check_alloc(ind);
+    check_alloc(val);
     int nnz = 0;
 
     for (int i = 0; i < comp_size; i++) {
