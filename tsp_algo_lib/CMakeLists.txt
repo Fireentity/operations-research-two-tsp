@@ -1,21 +1,26 @@
 project(tsp_algo_lib)
 
 set(TSP_EXACT_SOURCES
-        src/exact/cplex_solver_wrapper.c
-        src/exact/subtour_separator.c
-        src/exact/benders_loop.c
-        src/exact/branch_and_cut.c
+        src/algorithm/exact/cplex_solver_wrapper.c
+        src/algorithm/exact/subtour_separator.c
+        src/algorithm/benders_loop.c
+        src/algorithm/branch_and_cut.c
+        src/algorithm/hard_fixing.c
 )
 
 set(TSP_ALGO_SOURCES
+        src/algorithm/exact/cplex_solver_wrapper.c
+        src/algorithm/exact/subtour_separator.c
+        src/algorithm/benders_loop.c
+        src/algorithm/branch_and_cut.c
         src/algorithm/grasp.c
         src/algorithm/nearest_neighbor.c
         src/algorithm/tabu_search.c
         src/algorithm/variable_neighborhood_search.c
         src/algorithm/extra_mileage.c
         src/algorithm/genetic.c
-        src/algorithm/common/constructive.c
-        src/algorithm/common/local_search.c
+        src/algorithm/heuristic/constructive.c
+        src/algorithm/heuristic/local_search.c
         src/api/tsp_instance.c
         src/api/tsp_solution.c
         src/api/tsp_algorithm.c
@@ -35,13 +40,13 @@ add_library(tsp_algo_lib ${TSP_ALGO_SOURCES})
 
 target_include_directories(tsp_algo_lib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms/common
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms/heuristic
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/algorithms/exact
         ${CMAKE_CURRENT_SOURCE_DIR}/include/api
         ${CMAKE_CURRENT_SOURCE_DIR}/include/parser
         ${CMAKE_CURRENT_SOURCE_DIR}/include/parser/solution
         ${CMAKE_CURRENT_SOURCE_DIR}/include/parser/instance
         ${CMAKE_CURRENT_SOURCE_DIR}/include/utility
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/exact
 )
 
 target_link_libraries(tsp_algo_lib PRIVATE common)

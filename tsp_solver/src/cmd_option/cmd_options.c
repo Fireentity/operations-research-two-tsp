@@ -5,11 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Validation rejects configurations that would lead to undefined solver behavior.
 static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
 
-    // TSP instance validation
     if (opt->inst.mode == TSP_INPUT_MODE_FILE) {
         if (!opt->inst.input_file || strlen(opt->inst.input_file) == 0) {
             if_verbose(VERBOSE_INFO, "[Config Error] Mode FILE requires a valid --file.\n");
@@ -26,7 +24,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    // NN validation
     if (opt->nn_params.enable) {
         if (opt->nn_params.time_limit < 0.0) {
             if_verbose(VERBOSE_INFO, "[Config Error] NN: time limit cannot be negative.\n");
@@ -34,7 +31,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    // VNS validation
     if (opt->vns_params.enable) {
         if (opt->vns_params.min_k < 2 || opt->vns_params.max_k < 2) {
             if_verbose(VERBOSE_INFO, "[Config Error] VNS: min_k and max_k must be >= 2.\n");
@@ -54,7 +50,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    //Tabu validation
     if (opt->tabu_params.enable) {
         if (opt->tabu_params.min_tenure == 0 || opt->tabu_params.max_tenure == 0 || opt->tabu_params.min_tenure > opt->
             tabu_params.max_tenure) {
@@ -71,7 +66,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    // GRASP validation
     if (opt->grasp_params.enable) {
         if (opt->grasp_params.rcl_size < 1) {
             if_verbose(VERBOSE_INFO, "[Config Error] GRASP: RCL size must be >= 1.\n");
@@ -91,7 +85,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    // Extra Mileage validation
     if (opt->em_params.enable) {
         if (opt->em_params.time_limit < 0.0) {
             if_verbose(VERBOSE_INFO, "[Config Error] EM: time limit cannot be negative.\n");
@@ -99,7 +92,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    // Genetic Algorithm validation
     if (opt->genetic_params.enable) {
         if (opt->genetic_params.population_size < 2) {
             if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Population size must be at least 2.\n");
@@ -131,7 +123,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    // Benders Decomposition validation
     if (opt->benders_params.enable) {
         if (opt->benders_params.time_limit < 0.0) {
              if_verbose(VERBOSE_INFO, "[Config Error] Benders: time limit cannot be negative.\n");
@@ -143,7 +134,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    // Branch & Cut validation
     if (opt->bc_params.enable) {
         if (opt->bc_params.time_limit < 0.0) {
              if_verbose(VERBOSE_INFO, "[Config Error] Branch & Cut: time limit cannot be negative.\n");
@@ -151,9 +141,20 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
     }
 
-    /* Warn if no metaheuristic is active; execution will be short-lived. */
+    if (opt->hf_params.enable) {
+        if (opt->hf_params.time_limit < 0.0) {
+             if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: time limit cannot be negative.\n");
+             return WRONG_VALUE_TYPE;
+        }
+        if (opt->hf_params.fixing_rate < 0.0 || opt->hf_params.fixing_rate > 1.0) {
+             if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: fixing rate must be in [0, 1].\n");
+             return WRONG_VALUE_TYPE;
+        }
+    }
+
     if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable &&
-        !opt->em_params.enable && !opt->genetic_params.enable && !opt->benders_params.enable && !opt->bc_params.enable) {
+        !opt->em_params.enable && !opt->genetic_params.enable && !opt->benders_params.enable && !opt->bc_params.enable &&
+        !opt->hf_params.enable) {
         if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled.\n");
     }
 
@@ -161,7 +162,6 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
     return SUCCESS;
 }
 
-/* merge_ini_into_options copies values where CLI has not overridden them. */
 static void copy_option_value(OptionType type, void *dst, const void *src) {
     switch (type) {
         case OPT_INT:
@@ -203,7 +203,6 @@ static void merge_ini_into_options(CmdOptions *final,
     for (size_t i = 0; i < count; i++) {
         const OptionMeta *m = &meta[i];
 
-        /* CLI takes priority; INI applies only to non-overridden fields. */
         if (!flag_parser_is_visited(cli, m->cli_long)) {
             void *dst = fb + m->offset;
             const void *src = ib + m->offset;
@@ -231,7 +230,6 @@ const ParsingResult *cmd_options_load(CmdOptions *options,
         return res;
     }
 
-    /* INI file extends defaults and is overridden by CLI. */
     if (options->config_file) {
         if_verbose(VERBOSE_DEBUG, "Loading configuration file: %s\n", options->config_file);
 
@@ -303,6 +301,13 @@ void print_configuration(const CmdOptions *options) {
                "  mutation rate:     %.3f\n"
                "  cut ratio MIN-MAX: %d-%d\n"
                "  time limit:        %.3f\n"
+               "\n"
+               "Hard Fixing:         %s\n"
+               "  plot:              %s\n"
+               "  cost:              %s\n"
+               "  time limit:        %.3f\n"
+               "  fixing rate:       %.3f\n"
+               "  heuristic:         %s\n"
                "--------------\n",
                (options->inst.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
                options->inst.input_file ? options->inst.input_file : "(none)",
@@ -358,6 +363,13 @@ void print_configuration(const CmdOptions *options) {
                options->genetic_params.mutation_rate,
                options->genetic_params.crossover_cut_min_ratio,
                options->genetic_params.crossover_cut_max_ratio,
-               options->genetic_params.time_limit
+               options->genetic_params.time_limit,
+
+               options->hf_params.enable ? "ENABLED" : "DISABLED",
+               options->hf_params.plot_file ? options->hf_params.plot_file : "(none)",
+               options->hf_params.cost_file ? options->hf_params.cost_file : "(none)",
+               options->hf_params.time_limit,
+               options->hf_params.fixing_rate,
+               options->hf_params.heuristic_name ? options->hf_params.heuristic_name : "(none)"
     );
 }

@@ -6,7 +6,6 @@
 #include <string.h>
 #include <stddef.h>
 
-/* Registry defining all CLI/INI mappings.*/
 static const OptionMeta options_registry[] = {
     // GENERAL
     {"--verbosity", "-v", "Verbosity level (0-3)", "general", "verbosity", OPT_UINT, offsetof(CmdOptions, verbosity)},
@@ -93,6 +92,15 @@ static const OptionMeta options_registry[] = {
     {"--bc-threads", NULL, "Number of threads (0=auto)", "bc", "threads", OPT_UINT, offsetof(CmdOptions, bc_params.num_threads)},
     {"--bc-plot", NULL, "Branch and Cut plot filename", "bc", "plot_file", OPT_STRING, offsetof(CmdOptions, bc_params.plot_file)},
     {"--bc-cost", NULL, "Branch and Cut cost filename", "bc", "cost_file", OPT_STRING, offsetof(CmdOptions, bc_params.cost_file)},
+
+    // HARD FIXING (MATHEURISTIC)
+    {"--hf", NULL, "Enable Hard Fixing", "hf", "enabled", OPT_BOOL, offsetof(CmdOptions, hf_params.enable)},
+    {"--hf-seconds", NULL, "Time limit for Hard Fixing", "hf", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, hf_params.time_limit)},
+    {"--hf-rate", NULL, "Fixing rate (0.0-1.0)", "hf", "rate", OPT_UDOUBLE, offsetof(CmdOptions, hf_params.fixing_rate)},
+    {"--hf-ratio", NULL, "Heuristic time ratio (0.0-1.0)", "hf", "ratio", OPT_UDOUBLE, offsetof(CmdOptions, hf_params.heuristic_ratio)},
+    {"--hf-heuristic", NULL, "Heuristic (nn, em, vns, tabu, grasp)", "hf", "heuristic", OPT_STRING, offsetof(CmdOptions, hf_params.heuristic_name)},
+    {"--hf-plot", NULL, "HF plot filename", "hf", "plot_file", OPT_STRING, offsetof(CmdOptions, hf_params.plot_file)},
+    {"--hf-cost", NULL, "HF cost filename", "hf", "cost_file", OPT_STRING, offsetof(CmdOptions, hf_params.cost_file)},
 };
 
 const OptionMeta* cmd_options_get_metadata(void) {
@@ -102,8 +110,6 @@ const OptionMeta* cmd_options_get_metadata(void) {
 size_t cmd_options_get_metadata_count(void) {
     return sizeof(options_registry) / sizeof(options_registry[0]);
 }
-
-/* Default sets intentionally provide stable baseline configuration. */
 
 static void set_tsp_inst_defaults(TspInstanceOptions *opt) {
     opt->mode = TSP_INPUT_MODE_RANDOM;
@@ -159,10 +165,10 @@ static void set_em_defaults(EMOptions *opt) {
 
 static void set_genetic_defaults(GeneticOptions *opt) {
     opt->enable = false;
-    opt->population_size = 1000;    // Recommended size
-    opt->elite_count = 1;           // Preserve the champion
-    opt->mutation_rate = 0.1;       // ~10% mutation rate
-    opt->crossover_cut_min_ratio = 25; // Cut point not too close to head/tail
+    opt->population_size = 1000;
+    opt->elite_count = 1;
+    opt->mutation_rate = 0.1;
+    opt->crossover_cut_min_ratio = 25;
     opt->crossover_cut_max_ratio = 75;
     opt->plot_file = strdup("GA-plot.png");
     opt->cost_file = strdup("GA-costs.png");
@@ -182,9 +188,19 @@ static void set_benders_defaults(BendersOptions *opt) {
 static void set_bc_defaults(BranchCutOptions *opt) {
     opt->enable = false;
     opt->time_limit = 60.0;
-    opt->num_threads = 0; // 0 let CPLEX/Solver decide
+    opt->num_threads = 0;
     opt->plot_file = strdup("BC-plot.png");
     opt->cost_file = strdup("BC-costs.png");
+}
+
+static void set_hf_defaults(HardFixingOptions *opt) {
+    opt->enable = false;
+    opt->fixing_rate = 0.9;
+    opt->heuristic_ratio = 0.2;
+    opt->time_limit = 60.0;
+    opt->plot_file = strdup("HF-plot.png");
+    opt->cost_file = strdup("HF-costs.png");
+    opt->heuristic_name = strdup("vns");
 }
 
 CmdOptions *cmd_options_create_defaults(void) {
@@ -205,6 +221,7 @@ CmdOptions *cmd_options_create_defaults(void) {
     set_genetic_defaults(&opt->genetic_params);
     set_benders_defaults(&opt->benders_params);
     set_bc_defaults(&opt->bc_params);
+    set_hf_defaults(&opt->hf_params);
 
     if_verbose(VERBOSE_DEBUG, "Options initialized with defaults\n");
 
@@ -244,6 +261,10 @@ void cmd_options_destroy(CmdOptions *opt) {
 
     free(opt->bc_params.plot_file);
     free(opt->bc_params.cost_file);
+
+    free(opt->hf_params.plot_file);
+    free(opt->hf_params.cost_file);
+    free(opt->hf_params.heuristic_name);
 
     free(opt);
 

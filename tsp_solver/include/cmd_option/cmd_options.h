@@ -106,6 +106,16 @@ typedef struct {
 } BranchCutOptions;
 
 typedef struct {
+    bool enable;
+    char *plot_file;
+    char *cost_file;
+    double time_limit;
+    double fixing_rate;
+    double heuristic_ratio;
+    char *heuristic_name;
+} HardFixingOptions;
+
+typedef struct {
     char *config_file;
     char *plots_path;
     bool help;
@@ -121,6 +131,7 @@ typedef struct {
     GeneticOptions genetic_params;
     BendersOptions benders_params;
     BranchCutOptions bc_params;
+    HardFixingOptions hf_params;
 } CmdOptions;
 
 CmdOptions *cmd_options_create_defaults(void);
@@ -129,9 +140,6 @@ void cmd_options_destroy(CmdOptions *options);
 
 const ParsingResult *cmd_options_load(CmdOptions *options, int argc, const char **argv);
 
-/**
- * @brief Prints the current configuration to the log if verbosity allows.
- */
 void print_configuration(const CmdOptions *options);
 
 #endif // CMD_OPTIONS_H

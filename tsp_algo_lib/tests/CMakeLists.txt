@@ -15,6 +15,7 @@ set(TEST_SOURCES
         src/utility_test.c
         src/exact_test.c
         src/subtour_separator_test.c
+        src/hard_fixing_test.c
 )
 
 add_executable(tsp_alg_tests src/main.c ${TEST_SOURCES})

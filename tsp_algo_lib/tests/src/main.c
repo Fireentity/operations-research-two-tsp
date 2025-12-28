@@ -8,6 +8,7 @@
 #include "vns_test.h"
 #include "n_opt_test.h"
 #include "grasp_nn_helpers_test.h"
+#include "hard_fixing_test.h"
 #include "local_search_test.h"
 #include "ts_test.h"
 #include "nn_test.h"
@@ -35,7 +36,7 @@ int main(void) {
     printf("=== TSP Cplex Tests Start ===\n\n");
     run_subtour_separator_tests();
     run_exact_tests();
-
+    run_hard_fixing_tests();
     printf("\n=== All Tests Passed Successfully ===\n");
     return 0;
 }
