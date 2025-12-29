@@ -42,9 +42,7 @@ static void run_tabu(const TspInstance *instance,
     /* Using 2-opt first gives Tabu a stronger starting point */
     current_cost += two_opt(current_tour, n, costs, timer);
 
-    int *best_tour = tsp_malloc((n + 1) * sizeof(int));
-
-    memcpy(best_tour, current_tour, (n + 1) * sizeof(int));
+    int *best_tour = memdup(current_tour, (n + 1) * sizeof(int));
     double best_cost = current_cost;
 
     int *tabu_matrix = tsp_calloc(n * n, sizeof(int));
@@ -138,6 +136,14 @@ static void run_tabu(const TspInstance *instance,
     tsp_free(current_tour);
 }
 
+static void *tabu_clone_config(const void *config, uint64_t seed_offset) {
+    const TabuConfig *src = config;
+    TabuConfig *dest = tsp_malloc(sizeof(TabuConfig));
+    *dest = *src;
+    dest->seed += seed_offset;
+    return dest;
+}
+
 static void free_tabu_config(void *config) {
     tsp_free(config);
 }
@@ -151,6 +157,7 @@ TspAlgorithm tabu_create(const TabuConfig config) {
         .name = "Tabu Search",
         .config = cfg_copy,
         .run = run_tabu,
-        .free_config = free_tabu_config
+        .free_config = free_tabu_config,
+        .clone_config = tabu_clone_config,
     };
 }

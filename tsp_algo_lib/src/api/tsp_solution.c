@@ -91,11 +91,9 @@ FeasibilityResult tsp_solution_check_feasibility(TspSolution *self) {
     if_verbose(VERBOSE_DEBUG, "  Solution: Checking feasibility...\n");
 
     const int n = tsp_instance_get_num_nodes(self->instance);
-    int *tour_copy = tsp_malloc((n + 1) * sizeof(int));
-
 
     pthread_mutex_lock(&self->mutex);
-    memcpy(tour_copy, self->tour, (n + 1) * sizeof(int));
+    int *tour_copy = memdup(self->tour, (n + 1) * sizeof(int));
     const double cost_copy = self->cost;
     pthread_mutex_unlock(&self->mutex);
 

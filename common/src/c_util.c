@@ -4,7 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h> // Recommended for thread safety in Phase 6
-
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 void check_popen(FILE *gp) {
     if (!gp) {
@@ -158,6 +162,19 @@ void tsp_dump_memory_leaks(void) {
         fprintf(stderr, "[MEM] Total leaked: %zu bytes\n\n", g_total_allocated);
     }
     pthread_mutex_unlock(&g_mem_mutex);
+}
+
+long get_max_threads(void) {
+#if defined(_WIN32)
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    return (long) info.dwNumberOfProcessors;
+#elif defined(_SC_NPROCESSORS_ONLN)
+    long n = sysconf(_SC_NPROCESSORS_ONLN);
+    return n > 0 ? n : 1;
+#else
+    return 1;
+#endif
 }
 
 #endif

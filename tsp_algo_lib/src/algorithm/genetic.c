@@ -300,6 +300,14 @@ static void run_genetic(const TspInstance *instance,
     population_free(&next_pop);
 }
 
+static void *genetic_clone_config(const void *config, uint64_t seed_offset) {
+    const GeneticConfig *src = config;
+    GeneticConfig *dest = tsp_malloc(sizeof(GeneticConfig));
+    *dest = *src;
+    dest->seed += seed_offset;
+    return dest;
+}
+
 static void free_genetic_config(void *config) {
     tsp_free(config);
 }
@@ -313,6 +321,7 @@ TspAlgorithm genetic_create(GeneticConfig config) {
         .name = "Genetic Algorithm",
         .config = cfg_copy,
         .run = run_genetic,
-        .free_config = free_genetic_config
+        .free_config = free_genetic_config,
+        .clone_config = genetic_clone_config
     };
 }

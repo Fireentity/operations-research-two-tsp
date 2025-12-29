@@ -39,9 +39,8 @@ TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const TspG
 }
 
 TspInstance *tsp_instance_create(const Node *nodes, const int number_of_nodes) {
-    Node *copy = tsp_malloc(number_of_nodes * sizeof(Node));
 
-    memcpy(copy, nodes, number_of_nodes * sizeof(Node));
+    Node *copy = memdup(nodes, number_of_nodes * sizeof(Node));
     return instance_create_from_nodes(copy, number_of_nodes);
 }
 

@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "random.h"
 
 //If TSP_DEBUG is defined, we use the tracking wrappers, else we map directly to standard functions for zero overhead.
@@ -61,6 +60,7 @@ static inline void *tsp_realloc(void *ptr, size_t size) {
 #define tsp_dump_memory_leaks() ((void)0)
 
 #endif
+long get_max_threads(void);
 
 void check_popen(FILE *gp);
 

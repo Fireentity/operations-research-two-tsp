@@ -130,7 +130,7 @@ typedef struct {
     char *plots_path;
     bool help;
     unsigned int verbosity;
-
+    unsigned int num_threads;
     TspInstanceOptions inst;
     TspSolutionOptions sol;
     NNOptions nn_params;

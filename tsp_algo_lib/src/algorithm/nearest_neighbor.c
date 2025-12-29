@@ -69,6 +69,14 @@ static void free_nn_config(void *config) {
     tsp_free(config);
 }
 
+static void *nn_clone_config(const void *config, uint64_t seed_offset) {
+    const NNConfig *src = config;
+    NNConfig *dest = tsp_malloc(sizeof(NNConfig));
+    *dest = *src;
+    dest->seed += seed_offset;
+    return dest;
+}
+
 TspAlgorithm nn_create(const NNConfig config) {
     NNConfig *cpy = tsp_malloc(sizeof(NNConfig));
 
@@ -78,6 +86,7 @@ TspAlgorithm nn_create(const NNConfig config) {
         .name = "Nearest Neighbor",
         .config = cpy,
         .run = run_nn,
-        .free_config = free_nn_config
+        .free_config = free_nn_config,
+        .clone_config = nn_clone_config
     };
 }

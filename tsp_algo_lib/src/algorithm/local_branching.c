@@ -94,6 +94,7 @@ TspAlgorithm local_branching_create(LocalBranchingConfig config) {
         .name = "Local Branching Matheuristic",
         .run = run_local_branching,
         .config = c,
-        .free_config = free_lb_config
+        .free_config = free_lb_config,
+        .clone_config = NULL // TODO
     };
 }

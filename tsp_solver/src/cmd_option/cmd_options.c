@@ -10,6 +10,17 @@
 static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
 
+    if (opt->num_threads < 1) {
+        if_verbose(VERBOSE_INFO, "[Config Error] Thread count must be >= 1.\n");
+        return WRONG_VALUE_TYPE;
+    }
+
+    if (opt->num_threads > (unsigned int)get_max_threads()) {
+        if_verbose(VERBOSE_INFO,
+            "[Config Warning] Thread count (%u) is greater than system cores (%ld). Performance may degrade.\n",
+            opt->num_threads, get_max_threads());
+    }
+
     if (opt->inst.mode == TSP_INPUT_MODE_FILE) {
         if (!opt->inst.input_file || strlen(opt->inst.input_file) == 0) {
             if_verbose(VERBOSE_INFO, "[Config Error] Mode FILE requires a valid --file.\n");
@@ -257,6 +268,7 @@ void print_configuration(const CmdOptions *options) {
                "Input file:          %s\n"
                "Config file:         %s\n"
                "Verbosity:           %u\n"
+               "Nr of Threads:       %u\n"
                "Plot path:           %s\n"
                "Nodes:               %u\n"
                "Seed:                %d\n"
@@ -316,6 +328,7 @@ void print_configuration(const CmdOptions *options) {
                options->inst.input_file ? options->inst.input_file : "(none)",
                options->config_file ? options->config_file : "(none)",
                options->verbosity,
+               options->num_threads,
                options->plots_path ? options->plots_path : "./",
                options->inst.number_of_nodes,
                options->inst.seed,

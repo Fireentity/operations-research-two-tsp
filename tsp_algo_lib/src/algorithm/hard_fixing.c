@@ -90,6 +90,7 @@ static void run_hard_fixing(const TspInstance *inst,
 #endif
 }
 
+
 TspAlgorithm hard_fixing_create(HardFixingConfig config) {
     HardFixingConfig *c = tsp_malloc(sizeof(HardFixingConfig));
 
@@ -98,6 +99,7 @@ TspAlgorithm hard_fixing_create(HardFixingConfig config) {
         .name = "Hard Fixing Matheuristic",
         .run = run_hard_fixing,
         .config = c,
-        .free_config = free_hf_config
+        .free_config = free_hf_config,
+        .clone_config = NULL // TODO
     };
 }

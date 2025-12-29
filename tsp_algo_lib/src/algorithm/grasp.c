@@ -85,9 +85,18 @@ static void run_grasp(const TspInstance *instance,
     tsp_free(current_tour);
 }
 
+static void *grasp_clone_config(const void *config, uint64_t seed_offset) {
+    const GraspConfig *src = config;
+    GraspConfig *dest = tsp_malloc(sizeof(GraspConfig));
+    *dest = *src;
+    dest->seed += seed_offset;
+    return dest;
+}
+
 static void free_grasp_config(void *config) {
     tsp_free(config);
 }
+
 
 TspAlgorithm grasp_create(GraspConfig config) {
     GraspConfig *cfg_copy = tsp_malloc(sizeof(GraspConfig));
@@ -98,6 +107,7 @@ TspAlgorithm grasp_create(GraspConfig config) {
         .name = "GRASP",
         .config = cfg_copy,
         .run = run_grasp,
-        .free_config = free_grasp_config
+        .free_config = free_grasp_config,
+        .clone_config = grasp_clone_config
     };
 }

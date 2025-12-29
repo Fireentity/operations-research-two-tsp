@@ -10,6 +10,7 @@ static const OptionMeta options_registry[] = {
     // GENERAL
     {"--verbosity", "-v", "Verbosity level (0-3)", "general", "verbosity", OPT_UINT, offsetof(CmdOptions, verbosity)},
     {"--plot-path", "-p", "Output directory for plots", "general", "plots_path", OPT_STRING, offsetof(CmdOptions, plots_path)},
+    {"--threads", "-t", "Number of threads (default 1)", "general", "threads", OPT_UINT, offsetof(CmdOptions, num_threads)},
 
     // TSP INSTANCE
     {"--mode", "-m", "Input mode (0=Random, 1=File)", "tsp_inst", "mode", OPT_TSP_MODE, offsetof(CmdOptions, inst.mode)},
@@ -231,6 +232,7 @@ CmdOptions *cmd_options_create_defaults(void) {
     opt->verbosity = 1;
     opt->config_file = NULL;
     opt->plots_path = NULL;
+    opt->num_threads = 1;
 
     set_tsp_inst_defaults(&opt->inst);
     set_tsp_sol_defaults(&opt->sol);

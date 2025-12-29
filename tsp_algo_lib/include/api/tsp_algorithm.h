@@ -1,6 +1,8 @@
 #ifndef TSP_ALGORITHM_H
 #define TSP_ALGORITHM_H
 
+#include <stdint.h>
+
 #include "cost_recorder.h"
 #include "tsp_instance.h"
 #include "tsp_solution.h"
@@ -24,6 +26,7 @@ typedef struct {
     TspSolverFn run;
 
     void (*free_config)(void *);
+    void *(*clone_config)(const void *config, uint64_t seed_offset);
 } TspAlgorithm;
 
 /**

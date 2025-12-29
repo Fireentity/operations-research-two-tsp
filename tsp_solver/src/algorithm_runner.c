@@ -13,6 +13,7 @@
 #include <string.h>
 #include <strings.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "benders_loop.h"
 #include "branch_and_cut.h"
@@ -22,18 +23,75 @@
 #include "local_branching.h"
 #include "heuristic_types.h"
 
+typedef struct {
+    TspSolverFn run_fn;
+    const TspInstance *instance;
+    TspSolution *solution;
+    void *local_config;
+    void (*free_config)(void*);
+    int thread_id;
+} WorkerArgs;
+
+static void *worker_thread_func(void *arg) {
+    WorkerArgs *w = arg;
+    w->run_fn(w->instance, w->solution, w->local_config, NULL);
+    if (w->free_config && w->local_config) {
+        w->free_config(w->local_config);
+    }
+    return NULL;
+}
+
+static void execute_parallel(const TspAlgorithm *algo,
+                             const TspInstance *instance,
+                             TspSolution *solution,
+                             int num_threads) {
+
+    pthread_t *threads = tsp_malloc(num_threads * sizeof(pthread_t));
+    WorkerArgs *args = tsp_malloc(num_threads * sizeof(WorkerArgs));
+
+    if_verbose(VERBOSE_INFO, ">>> Starting Parallel Execution: %s with %d threads\n", algo->name, num_threads);
+
+    for (int i = 0; i < num_threads; i++) {
+        args[i].run_fn = algo->run;
+        args[i].instance = instance;
+        args[i].solution = solution;
+        args[i].free_config = algo->free_config;
+        args[i].thread_id = i;
+        args[i].local_config = algo->clone_config(algo->config, 1);
+
+        if (pthread_create(&threads[i], NULL, worker_thread_func, &args[i]) != 0) {
+            fprintf(stderr, "Error creating thread %d\n", i);
+        }
+    }
+
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    tsp_free(threads);
+    tsp_free(args);
+}
+
 static void execute_and_report(const TspAlgorithm *algo,
                                const TspInstance *instance,
                                const char *plot_file,
-                               const char *costs_file) {
+                               const char *costs_file,
+                               unsigned int num_threads) {
     CostRecorder *recorder = cost_recorder_create(RECORDER_INITIAL_CAPACITY);
     TspSolution *solution = tsp_solution_create(instance);
 
-    tsp_algorithm_run(algo, instance, solution, recorder);
+    if (num_threads > 1 && algo->clone_config != NULL) {
+        execute_parallel(algo, instance, solution, num_threads);
+        cost_recorder_add(recorder, tsp_solution_get_cost(solution));
+    } else {
+        if (num_threads > 1) {
+            if_verbose(VERBOSE_INFO, "[WARN] Algorithm %s does not support multi-threading. Running sequentially.\n", algo->name);
+        }
+        tsp_algorithm_run(algo, instance, solution, recorder);
+    }
 
     const int n = tsp_instance_get_num_nodes(instance);
     int *tour_buffer = tsp_malloc((n + 1) * sizeof(int));
-
 
     tsp_solution_get_tour(solution, tour_buffer);
     const double cost = tsp_solution_get_cost(solution);
@@ -66,7 +124,6 @@ static void *create_heuristic_config(HeuristicType type, const CmdOptions *optio
     switch (type) {
         case VNS: {
             VNSConfig *vns = tsp_malloc(sizeof(VNSConfig));
-
             *vns = (VNSConfig){
                 .min_k = (int) options->vns_params.min_k,
                 .max_k = (int) options->vns_params.max_k,
@@ -78,7 +135,6 @@ static void *create_heuristic_config(HeuristicType type, const CmdOptions *optio
         }
         case TABU: {
             TabuConfig *tabu = tsp_malloc(sizeof(TabuConfig));
-
             *tabu = (TabuConfig){
                 .min_tenure = (int) options->tabu_params.min_tenure,
                 .max_tenure = (int) options->tabu_params.max_tenure,
@@ -89,7 +145,6 @@ static void *create_heuristic_config(HeuristicType type, const CmdOptions *optio
         }
         case GRASP: {
             GraspConfig *grasp = tsp_malloc(sizeof(GraspConfig));
-
             *grasp = (GraspConfig){
                 .rcl_size = (int) options->grasp_params.rcl_size,
                 .probability = options->grasp_params.probability,
@@ -100,7 +155,6 @@ static void *create_heuristic_config(HeuristicType type, const CmdOptions *optio
         }
         case GENETIC: {
             GeneticConfig *ga = tsp_malloc(sizeof(GeneticConfig));
-
             *ga = (GeneticConfig){
                 .population_size = (int) options->genetic_params.population_size,
                 .elite_count = (int) options->genetic_params.elite_count,
@@ -125,6 +179,7 @@ static void *create_heuristic_config(HeuristicType type, const CmdOptions *optio
 void run_selected_algorithms(const TspInstance *instance, const CmdOptions *options) {
     char full_plot_path[PATH_MAX];
     char full_costs_path[PATH_MAX];
+    unsigned int threads = options->num_threads;
 
 #define BUILD_PATHS(plot_fname, cost_fname) \
         if (options->plots_path && strlen(options->plots_path) > 0) { \
@@ -142,7 +197,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = nn_create(cfg);
         BUILD_PATHS(options->nn_params.plot_file, options->nn_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->vns_params.enable) {
@@ -156,7 +211,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = vns_create(cfg);
         BUILD_PATHS(options->vns_params.plot_file, options->vns_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->tabu_params.enable) {
@@ -169,7 +224,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = tabu_create(cfg);
         BUILD_PATHS(options->tabu_params.plot_file, options->tabu_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->grasp_params.enable) {
@@ -182,7 +237,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = grasp_create(cfg);
         BUILD_PATHS(options->grasp_params.plot_file, options->grasp_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->em_params.enable) {
@@ -192,7 +247,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = em_create(cfg);
         BUILD_PATHS(options->em_params.plot_file, options->em_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->genetic_params.enable) {
@@ -212,7 +267,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
         TspAlgorithm algo = genetic_create(cfg);
         BUILD_PATHS(options->genetic_params.plot_file, options->genetic_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->benders_params.enable) {
@@ -222,7 +277,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = benders_create(cfg);
         BUILD_PATHS(options->benders_params.plot_file, options->benders_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->bc_params.enable) {
@@ -232,7 +287,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = branch_and_cut_create(cfg);
         BUILD_PATHS(options->bc_params.plot_file, options->bc_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->hf_params.enable) {
@@ -249,7 +304,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
         TspAlgorithm algo = hard_fixing_create(cfg);
         BUILD_PATHS(options->hf_params.plot_file, options->hf_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
     if (options->lb_params.enable) {
@@ -266,7 +321,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
         TspAlgorithm algo = local_branching_create(cfg);
         BUILD_PATHS(options->lb_params.plot_file, options->lb_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
     }
 
 #undef BUILD_PATHS

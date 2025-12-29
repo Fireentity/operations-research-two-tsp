@@ -72,6 +72,7 @@ TspAlgorithm branch_and_cut_create(BranchCutConfig cfg) {
         .name = "Branch and Cut",
         .run = run_bc,
         .config = c,
-        .free_config = free_bc_config
+        .free_config = free_bc_config,
+        .clone_config = NULL
     };
 }

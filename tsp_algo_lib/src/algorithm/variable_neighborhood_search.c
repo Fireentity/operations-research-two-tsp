@@ -69,12 +69,10 @@ static void run_vns(const TspInstance *instance,
     tsp_solution_get_tour(solution, current_tour);
     double current_cost = tsp_solution_get_cost(solution);
 
-    /* Initial descent strengthens the starting point */
+    // Initial descent strengthens the starting point
     current_cost += two_opt(current_tour, n, costs, timer);
 
-    int *best_tour = tsp_malloc((n + 1) * sizeof(int));
-
-    memcpy(best_tour, current_tour, (n + 1) * sizeof(int));
+    int *best_tour = memdup(current_tour, (n + 1) * sizeof(int));
     double best_cost = current_cost;
 
     int current_k = cfg->min_k;
@@ -121,6 +119,14 @@ static void run_vns(const TspInstance *instance,
     tsp_free(current_tour);
 }
 
+static void *vns_clone_config(const void *config, uint64_t seed_offset) {
+    const VNSConfig *src = config;
+    VNSConfig *dest = tsp_malloc(sizeof(VNSConfig));
+    *dest = *src;
+    dest->seed += seed_offset;
+    return dest;
+}
+
 static void free_vns_config(void *config) {
     tsp_free(config);
 }
@@ -134,6 +140,7 @@ TspAlgorithm vns_create(const VNSConfig config) {
         .name = "VNS",
         .config = cfg_copy,
         .run = run_vns,
-        .free_config = free_vns_config
+        .free_config = free_vns_config,
+        .clone_config = vns_clone_config,
     };
 }

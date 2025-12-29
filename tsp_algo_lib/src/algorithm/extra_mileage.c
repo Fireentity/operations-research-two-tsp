@@ -38,7 +38,13 @@ static void run_em(const TspInstance *instance,
 
     tsp_free(tour);
 }
-
+static void *em_clone_config(const void *config, uint64_t seed_offset) {
+    const EMConfig *src = config;
+    EMConfig *dest = tsp_malloc(sizeof(EMConfig));
+    *dest = *src;
+    dest->seed += seed_offset;
+    return dest;
+}
 static void free_em_config(void *config) {
     tsp_free(config);
 }
@@ -52,6 +58,7 @@ TspAlgorithm em_create(EMConfig config) {
         .name = "Extra Mileage",
         .config = cfg_copy,
         .run = run_em,
-        .free_config = free_em_config
+        .free_config = free_em_config,
+        .clone_config = em_clone_config
     };
 }

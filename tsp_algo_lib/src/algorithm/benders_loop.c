@@ -95,6 +95,7 @@ static void free_benders_config(void *cfg) {
     tsp_free(cfg);
 }
 
+
 TspAlgorithm benders_create(BendersConfig cfg) {
     BendersConfig *c = tsp_malloc(sizeof(BendersConfig));
 
@@ -104,6 +105,7 @@ TspAlgorithm benders_create(BendersConfig cfg) {
         .name = "Benders Decomposition",
         .run = run_benders,
         .config = c,
-        .free_config = free_benders_config
+        .free_config = free_benders_config,
+        .clone_config = NULL
     };
 }
