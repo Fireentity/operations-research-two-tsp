@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "c_util.h"
+#include "tsp_instance.h"
 
 TspParserStatus parse_instance_tsplib(const char *path, Node **out_nodes, int *out_n) {
     FILE *f = fopen(path, "r");

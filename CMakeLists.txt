@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16.1)
 project(operations-research-two-tsp LANGUAGES C)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
@@ -14,7 +14,6 @@ include(ProjectOptions)
 add_compile_options(
         -Wall
         -Wextra
-        -Wpedantic
         $<$<CONFIG:Debug>:-g>
         $<$<CONFIG:Release>:-O3>
 )

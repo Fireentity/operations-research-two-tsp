@@ -43,7 +43,6 @@ static void run_grasp(const TspInstance *instance,
     while (!time_limiter_is_over(&timer) && iter < n && stagnation_counter < cfg->max_stagnation) {
         const int start_node = starting_nodes[iter];
 
-        // 1. Constructive Phase: RCL Greedy
         const int res = grasp_nearest_neighbor_tour(
             start_node,
             current_tour,
@@ -56,8 +55,7 @@ static void run_grasp(const TspInstance *instance,
         );
 
         if (res == 0) {
-            // 2. Local Search Phase: 2-Opt
-            // two_opt returns negative delta (improvement), so we add it to reduce cost
+            // Local Search Phase: 2-Opt
             current_cost += two_opt(current_tour, n, costs, timer);
 
             cost_recorder_add(recorder, current_cost);

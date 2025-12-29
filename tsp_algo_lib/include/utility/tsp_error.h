@@ -1,7 +1,6 @@
 #ifndef TSP_TSP_ERROR_H
 #define TSP_TSP_ERROR_H
 
-typedef enum TspParserStatus TspParserStatus;
 
 /* Error codes for instance loading */
 typedef enum {
@@ -19,6 +18,5 @@ typedef enum {
  */
 const char *tsp_error_to_string(TspError err);
 
-TspError tsp_error_from_parser_status(TspParserStatus st);
 
 #endif //TSP_TSP_ERROR_H

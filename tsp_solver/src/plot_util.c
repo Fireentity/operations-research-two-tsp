@@ -23,7 +23,7 @@ static Bounds calculate_bounds(const double *x, const double *y, const size_t le
     }
     b.min_x = b.max_x = x[0];
     b.min_y = b.max_y = y[0];
-    for (int i = 1; i < length; i++) {
+    for (size_t i = 1; i < length; i++) {
         if (x[i] < b.min_x) b.min_x = x[i];
         if (x[i] > b.max_x) b.max_x = x[i];
         if (y[i] < b.min_y) b.min_y = y[i];
@@ -91,7 +91,7 @@ void plot_costs_evolution(const double *costs, const size_t length, const char *
 
     double *time = tsp_malloc(sizeof(double) * length);
 
-    for (int i = 0; i < length; i++)
+    for (size_t i = 0; i < length; i++)
         time[i] = (double) i;
 
     const Bounds bounds = calculate_bounds(time, costs, length);
@@ -104,17 +104,17 @@ void plot_costs_evolution(const double *costs, const size_t length, const char *
     double *cum_min = tsp_malloc(sizeof(double) * length);
 
     cum_min[0] = costs[0];
-    for (int i = 1; i < length; i++)
+    for (size_t i = 1; i < length; i++)
         cum_min[i] = costs[i] < cum_min[i - 1] ? costs[i] : cum_min[i - 1];
 
     fprintf(gp, "plot '-' with linespoints lw 2 pt 7 notitle, '-' with lines lw 2 lc rgb 'red' title 'Best so far'\n");
 
-    for (int i = 0; i < length; i++)
-        fprintf(gp, "%d %lf\n", i, costs[i]);
+    for (size_t i = 0; i < length; i++)
+        fprintf(gp, "%lu %lf\n", i, costs[i]);
     fprintf(gp, "e\n");
 
-    for (int i = 0; i < length; i++)
-        fprintf(gp, "%d %lf\n", i, cum_min[i]);
+    for (size_t i = 0; i < length; i++)
+        fprintf(gp, "%lu %lf\n", i, cum_min[i]);
     fprintf(gp, "e\n");
 
     fflush(gp);

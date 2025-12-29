@@ -30,7 +30,7 @@ TspInstance *tsp_instance_create_random(const size_t number_of_nodes, const TspG
     Node *nodes = tsp_malloc(number_of_nodes * sizeof(Node));
 
 
-    for (int i = 0; i < number_of_nodes; i++) {
+    for (size_t i = 0; i < number_of_nodes; i++) {
         nodes[i].x = area.x_square + global_random_double() * area.square_side;
         nodes[i].y = area.y_square + global_random_double() * area.square_side;
     }

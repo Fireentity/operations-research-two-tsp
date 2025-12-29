@@ -23,13 +23,9 @@ static void run_em(const TspInstance *instance,
 
     double cost = 0.0;
 
-    // 1. Construct
     if (extra_mileage_tour(tour, n, costs, &cost) == 0) {
         cost_recorder_add(recorder, cost);
 
-        // 2. Improve (2-Opt)
-        // Note: Extra Mileage is deterministic, so we run it once.
-        // 2-Opt is added for consistency with other algos in the lib.
         double improvement = two_opt(tour, n, costs, timer);
         cost += improvement;
 

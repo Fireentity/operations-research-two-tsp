@@ -47,3 +47,24 @@ TspParserStatus tsp_parser_load_solution(const char *path, int n, int *tour_buf,
             return sol_registry[i].fn(path, n, tour_buf, out_cost);
     return PARSE_ERR_EXT;
 }
+
+TspError tsp_error_from_parser_status(const TspParserStatus st) {
+    switch (st) {
+        case PARSE_OK:
+            return TSP_OK;
+        case PARSE_ERR_OPEN:
+            return TSP_ERR_FILE_OPEN;
+        case PARSE_ERR_FORMAT:
+        case PARSE_ERR_DIM:
+            return TSP_ERR_PARSE_HEADER;
+        case PARSE_ERR_INV:
+            return TSP_ERR_PARSE_NODES;
+        case PARSE_ERR_MEMORY:
+            return TSP_ERR_MEMORY;
+        case PARSE_ERR_EXT:
+            return TSP_ERR_INVALID_EXT;
+        case PARSE_ERR_OVERFLOW:
+        default:
+            return TSP_ERR_UNKNOWN_FORMAT;
+    }
+}

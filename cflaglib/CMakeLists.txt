@@ -18,4 +18,3 @@ target_include_directories(cflaglib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Link with common library
 target_link_libraries(cflaglib PUBLIC common m)
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")

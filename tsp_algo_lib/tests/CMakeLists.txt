@@ -20,9 +20,8 @@ set(TEST_SOURCES
 )
 
 add_executable(tsp_alg_tests src/main.c ${TEST_SOURCES})
-
 target_include_directories(tsp_alg_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(tsp_alg_tests PRIVATE tsp_algo_lib cflaglib common m)
-
+target_compile_options(tsp_alg_tests PRIVATE -UNDEBUG)
 add_test(NAME tsp_alg_lib_tests COMMAND $<TARGET_FILE:tsp_alg_tests>)
