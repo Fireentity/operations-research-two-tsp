@@ -4,7 +4,6 @@
 #include "logger.h"
 #include <stdlib.h>
 #include <string.h>
-
 #include "c_util.h"
 
 static const ParsingResult *validate_options(const CmdOptions *opt) {
@@ -15,10 +14,10 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         return WRONG_VALUE_TYPE;
     }
 
-    if (opt->num_threads > (unsigned int)get_max_threads()) {
+    if (opt->num_threads > (unsigned int) get_max_threads()) {
         if_verbose(VERBOSE_INFO,
-            "[Config Warning] Thread count (%u) is greater than system cores (%ld). Performance may degrade.\n",
-            opt->num_threads, get_max_threads());
+                   "[Config Warning] Thread count (%u) is greater than system cores (%ld). Performance may degrade.\n",
+                   opt->num_threads, get_max_threads());
     }
 
     if (opt->inst.mode == TSP_INPUT_MODE_FILE) {

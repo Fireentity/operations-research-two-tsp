@@ -3,7 +3,7 @@
 #include "variable_neighborhood_search.h"
 #include "tabu_search.h"
 #include "grasp.h"
-#include "../include/plot_util.h"
+#include "plot_util.h"
 #include "c_util.h"
 #include "logger.h"
 #include "constants.h"
@@ -12,7 +12,6 @@
 #include <linux/limits.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
 #include <pthread.h>
 
 #include "benders_loop.h"
@@ -29,7 +28,7 @@ typedef struct {
     TspSolution *solution;
     void *local_config;
     void (*free_config)(void*);
-    int thread_id;
+    unsigned int thread_id;
 } WorkerArgs;
 
 static void *worker_thread_func(void *arg) {
@@ -44,14 +43,14 @@ static void *worker_thread_func(void *arg) {
 static void execute_parallel(const TspAlgorithm *algo,
                              const TspInstance *instance,
                              TspSolution *solution,
-                             int num_threads) {
+                             unsigned int num_threads) {
 
     pthread_t *threads = tsp_malloc(num_threads * sizeof(pthread_t));
     WorkerArgs *args = tsp_malloc(num_threads * sizeof(WorkerArgs));
 
     if_verbose(VERBOSE_INFO, ">>> Starting Parallel Execution: %s with %d threads\n", algo->name, num_threads);
 
-    for (int i = 0; i < num_threads; i++) {
+    for (size_t i = 0; i < num_threads; i++) {
         args[i].run_fn = algo->run;
         args[i].instance = instance;
         args[i].solution = solution;
@@ -60,11 +59,11 @@ static void execute_parallel(const TspAlgorithm *algo,
         args[i].local_config = algo->clone_config(algo->config, 1);
 
         if (pthread_create(&threads[i], NULL, worker_thread_func, &args[i]) != 0) {
-            fprintf(stderr, "Error creating thread %d\n", i);
+            fprintf(stderr, "Error creating thread %ld\n", i);
         }
     }
 
-    for (int i = 0; i < num_threads; i++) {
+    for (size_t i = 0; i < num_threads; i++) {
         pthread_join(threads[i], NULL);
     }
 

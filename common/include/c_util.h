@@ -60,7 +60,8 @@ static inline void *tsp_realloc(void *ptr, size_t size) {
 #define tsp_dump_memory_leaks() ((void)0)
 
 #endif
-long get_max_threads(void);
+
+long get_max_threads();
 
 void check_popen(FILE *gp);
 

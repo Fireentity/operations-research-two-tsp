@@ -10,6 +10,19 @@
 #include <unistd.h>
 #endif
 
+long get_max_threads() {
+#if defined(_WIN32)
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    return (long) info.dwNumberOfProcessors;
+#elif defined(_SC_NPROCESSORS_ONLN)
+    long n = sysconf(_SC_NPROCESSORS_ONLN);
+    return n > 0 ? n : 1;
+#else
+    return 1;
+#endif
+}
+
 void check_popen(FILE *gp) {
     if (!gp) {
         perror("popen error");
@@ -164,17 +177,6 @@ void tsp_dump_memory_leaks(void) {
     pthread_mutex_unlock(&g_mem_mutex);
 }
 
-long get_max_threads(void) {
-#if defined(_WIN32)
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
-    return (long) info.dwNumberOfProcessors;
-#elif defined(_SC_NPROCESSORS_ONLN)
-    long n = sysconf(_SC_NPROCESSORS_ONLN);
-    return n > 0 ? n : 1;
-#else
-    return 1;
-#endif
-}
+
 
 #endif
