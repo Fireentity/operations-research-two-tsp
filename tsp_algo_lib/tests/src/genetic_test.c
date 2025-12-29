@@ -19,9 +19,9 @@ void run_genetic_tests(void) {
 
     GeneticConfig config = {
         .time_limit = TIME_LIMIT,
-        .population_size = 100,       // Moderate population for testing
-        .elite_count = 2,             // Keep top 2
-        .mutation_rate = 0.1,         // 10% mutation chance
+        .population_size = 100, // Moderate population for testing
+        .elite_count = 2, // Keep top 2
+        .mutation_rate = 0.1, // 10% mutation chance
         .crossover_cut_min_ratio = 25,
         .crossover_cut_max_ratio = 75,
         .init_grasp_rcl_size = 5,
@@ -30,7 +30,7 @@ void run_genetic_tests(void) {
         .tournament_size = 5,
         .seed = 12345
     };
-    
+
     TspAlgorithm ga = genetic_create(config);
 
     tsp_algorithm_run(&ga, instance, solution, recorder);
@@ -40,7 +40,7 @@ void run_genetic_tests(void) {
         printf("[Genetic] Feasibility check failed: %s\n", feasibility_result_to_string(feasibility));
     }
     assert(feasibility == FEASIBLE);
-    
+
     double cost = tsp_solution_get_cost(solution);
     assert(cost > 0.0);
 

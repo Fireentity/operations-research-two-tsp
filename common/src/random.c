@@ -3,16 +3,16 @@
 
 // LCG constants
 static const uint64_t MULTIPLIER = 6364136223846793005ULL;
-static const uint64_t INCREMENT  = 1442695040888963407ULL;
+static const uint64_t INCREMENT = 1442695040888963407ULL;
 
 // Hidden singleton instance
-static RandomState g_global_rng = { .state = 0 };
+static RandomState g_global_rng = {.state = 0};
 
 // Internal helper
 static uint32_t next_u32(RandomState *rng) {
     const uint64_t x = rng->state;
     rng->state = x * MULTIPLIER + INCREMENT;
-    return (uint32_t)(rng->state >> 32);
+    return (uint32_t) (rng->state >> 32);
 }
 
 // Thread-safe API
@@ -22,13 +22,17 @@ void random_init(RandomState *rng, const uint64_t seed) {
 }
 
 int random_int(RandomState *rng, int min, int max) {
-    if (min > max) { const int t = min; min = max; max = t; }
-    const uint32_t range = (uint32_t)(max - min + 1);
-    return min + (int)(next_u32(rng) % range);
+    if (min > max) {
+        const int t = min;
+        min = max;
+        max = t;
+    }
+    const uint32_t range = (uint32_t) (max - min + 1);
+    return min + (int) (next_u32(rng) % range);
 }
 
 double random_double(RandomState *rng) {
-    return (double)next_u32(rng) / 4294967296.0; // Divide by 2^32
+    return (double) next_u32(rng) / 4294967296.0; // Divide by 2^32
 }
 
 // Singleton API

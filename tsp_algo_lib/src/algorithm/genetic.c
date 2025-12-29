@@ -14,8 +14,8 @@
 typedef struct {
     int *genes;
     double *costs;
-    int n;          // Number of nodes
-    int stride;     // Actual size in memory (n + 1) to include closing node
+    int n; // Number of nodes
+    int stride; // Actual size in memory (n + 1) to include closing node
     int pop_size;
 } Population;
 
@@ -23,16 +23,14 @@ static void population_alloc(Population *pop, const int size, const int n) {
     pop->n = n;
     pop->stride = n + 1; // Extra space for closing node
     pop->pop_size = size;
-    // Use calloc for safety (initializes to 0)
-    pop->genes = calloc(size * pop->stride, sizeof(int));
-    pop->costs = calloc(size, sizeof(double));
-    check_alloc(pop->genes);
-    check_alloc(pop->costs);
+    // Use tsp_calloc for safety (initializes to 0)
+    pop->genes = tsp_calloc(size * pop->stride, sizeof(int));
+    pop->costs = tsp_calloc(size, sizeof(double));
 }
 
 static void population_free(const Population *pop) {
-    free(pop->genes);
-    free(pop->costs);
+    tsp_free(pop->genes);
+    tsp_free(pop->costs);
 }
 
 static void population_copy_individual(const Population *dest, int dest_idx,
@@ -50,22 +48,22 @@ static void population_swap(Population *pop, int idx1, int idx2) {
     pop->costs[idx1] = pop->costs[idx2];
     pop->costs[idx2] = temp_cost;
 
-    int *temp_genes = malloc(pop->stride * sizeof(int));
-    check_alloc(temp_genes);
+    int *temp_genes = tsp_malloc(pop->stride * sizeof(int));
+
 
     memcpy(temp_genes, &pop->genes[idx1 * pop->stride], pop->stride * sizeof(int));
     memcpy(&pop->genes[idx1 * pop->stride], &pop->genes[idx2 * pop->stride], pop->stride * sizeof(int));
     memcpy(&pop->genes[idx2 * pop->stride], temp_genes, pop->stride * sizeof(int));
 
-    free(temp_genes);
+    tsp_free(temp_genes);
 }
 
 static void repair_child(int *child, int n, const double *costs) {
-    int *visited = calloc(n, sizeof(int));
-    check_alloc(visited);
+    int *visited = tsp_calloc(n, sizeof(int));
 
-    int *temp_tour = malloc(n * sizeof(int));
-    check_alloc(temp_tour);
+
+    int *temp_tour = tsp_malloc(n * sizeof(int));
+
 
     int current_len = 0;
 
@@ -81,8 +79,8 @@ static void repair_child(int *child, int n, const double *costs) {
     }
 
     // Phase 2: Identify missing nodes
-    int *missing = malloc(n * sizeof(int));
-    check_alloc(missing);
+    int *missing = tsp_malloc(n * sizeof(int));
+
 
     int missing_count = 0;
     for (int i = 0; i < n; i++) {
@@ -127,9 +125,9 @@ static void repair_child(int *child, int n, const double *costs) {
     // Crucial: Explicitly close the tour
     child[n] = child[0];
 
-    free(missing);
-    free(temp_tour);
-    free(visited);
+    tsp_free(missing);
+    tsp_free(temp_tour);
+    tsp_free(visited);
 }
 
 static void crossover_operator(const int *parent1, const int *parent2,
@@ -303,12 +301,12 @@ static void run_genetic(const TspInstance *instance,
 }
 
 static void free_genetic_config(void *config) {
-    free(config);
+    tsp_free(config);
 }
 
 TspAlgorithm genetic_create(GeneticConfig config) {
-    GeneticConfig *cfg_copy = malloc(sizeof(GeneticConfig));
-    check_alloc(cfg_copy);
+    GeneticConfig *cfg_copy = tsp_malloc(sizeof(GeneticConfig));
+
     *cfg_copy = config;
 
     return (TspAlgorithm){

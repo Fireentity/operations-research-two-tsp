@@ -12,8 +12,8 @@ int xpos(int i, int j, int num_nodes) {
 }
 
 void cplex_solver_reconstruct_tour(int n, const double *x, int *tour) {
-    int *vis = calloc(n, sizeof(int));
-    check_alloc(vis);
+    int *vis = tsp_calloc(n, sizeof(int));
+
     tour[0] = 0;
     vis[0] = 1;
     int cur = 0;
@@ -28,7 +28,7 @@ void cplex_solver_reconstruct_tour(int n, const double *x, int *tour) {
         }
     }
     tour[n] = tour[0];
-    free(vis);
+    tsp_free(vis);
 }
 
 #ifdef ENABLE_CPLEX
@@ -44,26 +44,26 @@ struct CplexSolverContext {
 
 CplexSolverContext *cplex_solver_create(const TspInstance *inst) {
     int status = 0;
-    CplexSolverContext *ctx = malloc(sizeof *ctx);
-    check_alloc(ctx);
+    CplexSolverContext *ctx = tsp_malloc(sizeof *ctx);
+
 
     ctx->env = CPXopenCPLEX(&status);
     if (status) {
-        free(ctx);
+        tsp_free(ctx);
         return NULL;
     }
 
     ctx->lp = CPXcreateprob(ctx->env, &status, "TSP_Model");
     if (status) {
         CPXcloseCPLEX(&ctx->env);
-        free(ctx);
+        tsp_free(ctx);
         return NULL;
     }
 
     int n = tsp_instance_get_num_nodes(inst);
     ctx->num_cols = n * (n - 1) / 2;
-    ctx->x_star = calloc(ctx->num_cols, sizeof(double));
-    check_alloc(ctx->x_star);
+    ctx->x_star = tsp_calloc(ctx->num_cols, sizeof(double));
+
     ctx->callback_data = NULL;
     CPXsetintparam(ctx->env, CPX_PARAM_SCRIND, CPX_OFF);
     return ctx;
@@ -74,11 +74,11 @@ void cplex_solver_destroy(CplexSolverContext *ctx) {
     if (ctx->lp) CPXfreeprob(ctx->env, &ctx->lp);
     if (ctx->env) CPXcloseCPLEX(&ctx->env);
     if (ctx->callback_data) {
-        free(ctx->callback_data);
+        tsp_free(ctx->callback_data);
         ctx->callback_data = NULL;
     }
-    free(ctx->x_star);
-    free(ctx);
+    tsp_free(ctx->x_star);
+    tsp_free(ctx);
 }
 
 int cplex_solver_build_base_model(CplexSolverContext *ctx, const TspInstance *inst) {
@@ -102,10 +102,9 @@ int cplex_solver_build_base_model(CplexSolverContext *ctx, const TspInstance *in
 
     double rhs = 2.0;
     char sense = 'E';
-    int *indices = malloc(n * sizeof(int));
-    double *values = malloc(n * sizeof(double));
-    check_alloc(indices);
-    check_alloc(values);
+    int *indices = tsp_malloc(n * sizeof(int));
+    double *values = tsp_malloc(n * sizeof(double));
+
 
     for (int h = 0; h < n; h++) {
         int nnz = 0;
@@ -120,17 +119,16 @@ int cplex_solver_build_base_model(CplexSolverContext *ctx, const TspInstance *in
         if (status) break;
     }
 
-    free(indices);
-    free(values);
+    tsp_free(indices);
+    tsp_free(values);
     return status;
 }
 
 int cplex_solver_add_local_branching_constraint(CplexSolverContext *ctx, int num_nodes, const int *tour, int k) {
     int nzcnt = num_nodes;
-    int *indices = malloc(nzcnt * sizeof(int));
-    double *values = malloc(nzcnt * sizeof(double));
-    check_alloc(indices);
-    check_alloc(values);
+    int *indices = tsp_malloc(nzcnt * sizeof(int));
+    double *values = tsp_malloc(nzcnt * sizeof(double));
+
 
     for (int i = 0; i < num_nodes; i++) {
         int u = tour[i];
@@ -146,8 +144,8 @@ int cplex_solver_add_local_branching_constraint(CplexSolverContext *ctx, int num
 
     int status = CPXaddrows(ctx->env, ctx->lp, 0, 1, nzcnt, &rhs, &sense, &matbeg, indices, values, NULL, &name);
 
-    free(indices);
-    free(values);
+    tsp_free(indices);
+    tsp_free(values);
     return status;
 }
 
@@ -175,12 +173,12 @@ static int CPXPUBLIC lazy_sec_callback(CPXCALLBACKCONTEXTptr context, CPXLONG co
     CallbackCtx *cb_ctx = userhandle;
     int n = tsp_instance_get_num_nodes(cb_ctx->inst);
 
-    double *x_star = malloc(cb_ctx->num_cols * sizeof(double));
-    check_alloc(x_star);
+    double *x_star = tsp_malloc(cb_ctx->num_cols * sizeof(double));
+
     double objval;
     int status = CPXcallbackgetcandidatepoint(context, x_star, 0, cb_ctx->num_cols - 1, &objval);
     if (status) {
-        free(x_star);
+        tsp_free(x_star);
         return status;
     }
 
@@ -190,17 +188,17 @@ static int CPXPUBLIC lazy_sec_callback(CPXCALLBACKCONTEXTptr context, CPXLONG co
     if (cc->num_components > 1) {
         for (int c = 1; c <= cc->num_components; c++) {
             int comp_size = 0;
-            int *nodes = malloc(n * sizeof(int));
-            check_alloc(nodes);
+            int *nodes = tsp_malloc(n * sizeof(int));
+
             for (int i = 0; i < n; i++) {
                 if (cc->component_of_node[i] == c) nodes[comp_size++] = i;
             }
 
             int max_edges = comp_size * (comp_size - 1) / 2;
-            int *ind = malloc(max_edges * sizeof(int));
-            double *val = malloc(max_edges * sizeof(double));
-            check_alloc(ind);
-            check_alloc(val);
+            int *ind = tsp_malloc(max_edges * sizeof(int));
+            double *val = tsp_malloc(max_edges * sizeof(double));
+
+
             int nnz = 0;
 
             for (int i = 0; i < comp_size; i++) {
@@ -217,19 +215,19 @@ static int CPXPUBLIC lazy_sec_callback(CPXCALLBACKCONTEXTptr context, CPXLONG co
 
             CPXcallbackrejectcandidate(context, 1, nnz, &rhs, &sense, &matbeg, ind, val);
 
-            free(nodes);
-            free(ind);
-            free(val);
+            tsp_free(nodes);
+            tsp_free(ind);
+            tsp_free(val);
         }
     }
     connected_components_destroy(cc);
-    free(x_star);
+    tsp_free(x_star);
     return 0;
 }
 
 int cplex_solver_install_sec_callback(CplexSolverContext *ctx, const TspInstance *inst) {
-    CallbackCtx *cb = malloc(sizeof(CallbackCtx));
-    check_alloc(cb);
+    CallbackCtx *cb = tsp_malloc(sizeof(CallbackCtx));
+
     cb->inst = inst;
     cb->num_cols = ctx->num_cols;
     ctx->callback_data = cb;
@@ -265,10 +263,10 @@ int cplex_solver_get_num_cols(const CplexSolverContext *ctx) {
 int cplex_solver_add_sec(CplexSolverContext *ctx, const TspInstance *inst, const int *nodes, int comp_size) {
     int n = tsp_instance_get_num_nodes(inst);
     int max_edges = comp_size * (comp_size - 1) / 2;
-    int *ind = malloc(max_edges * sizeof(int));
-    double *val = malloc(max_edges * sizeof(double));
-    check_alloc(ind);
-    check_alloc(val);
+    int *ind = tsp_malloc(max_edges * sizeof(int));
+    double *val = tsp_malloc(max_edges * sizeof(double));
+
+
     int nnz = 0;
 
     for (int i = 0; i < comp_size; i++) {
@@ -283,18 +281,17 @@ int cplex_solver_add_sec(CplexSolverContext *ctx, const TspInstance *inst, const
     int matbeg = 0;
     char *name = "SEC";
     int status = CPXaddrows(ctx->env, ctx->lp, 0, 1, nnz, &rhs, &sense, &matbeg, ind, val, NULL, &name);
-    free(ind);
-    free(val);
+    tsp_free(ind);
+    tsp_free(val);
     return status;
 }
 
 int cplex_solver_add_mip_start(CplexSolverContext *ctx, int num_nodes, const int *tour) {
     int nzcnt = num_nodes;
 
-    int *indices = malloc(nzcnt * sizeof(int));
-    double *values = malloc(nzcnt * sizeof(double));
-    check_alloc(indices);
-    check_alloc(values);
+    int *indices = tsp_malloc(nzcnt * sizeof(int));
+    double *values = tsp_malloc(nzcnt * sizeof(double));
+
 
     for (int i = 0; i < num_nodes; i++) {
         int u = tour[i];
@@ -317,8 +314,8 @@ int cplex_solver_add_mip_start(CplexSolverContext *ctx, int num_nodes, const int
         if_verbose(VERBOSE_INFO, "[CPLEX Warn] Failed to add MIP start, status: %d\n", status);
     }
 
-    free(indices);
-    free(values);
+    tsp_free(indices);
+    tsp_free(values);
     return status;
 }
 

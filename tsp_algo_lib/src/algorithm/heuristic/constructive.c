@@ -95,10 +95,9 @@ int grasp_nearest_neighbor_tour(const int starting_node,
                "\tGRASP-NN: start=%d, RCL=%d, prob=%.3f\n",
                starting_node, rcl_size, probability);
 
-    int *rcl_nodes = malloc(rcl_size * sizeof(int));
-    double *rcl_costs = malloc(rcl_size * sizeof(double));
-    check_alloc(rcl_nodes);
-    check_alloc(rcl_costs);
+    int *rcl_nodes = tsp_malloc(rcl_size * sizeof(int));
+    double *rcl_costs = tsp_malloc(rcl_size * sizeof(double));
+
 
     for (int i = 0; i < number_of_nodes; i++)
         tour[i] = i;
@@ -144,8 +143,8 @@ int grasp_nearest_neighbor_tour(const int starting_node,
         if (candidates_found == 0) {
             if_verbose(VERBOSE_INFO,
                        "[ERROR] GRASP-NN: empty RCL at step %d\n", i);
-            free(rcl_nodes);
-            free(rcl_costs);
+            tsp_free(rcl_nodes);
+            tsp_free(rcl_costs);
             return -1;
         }
 
@@ -172,8 +171,8 @@ int grasp_nearest_neighbor_tour(const int starting_node,
 
     if_verbose(VERBOSE_DEBUG, "\tGRASP-NN: tour complete, cost=%.6f\n", total_cost);
 
-    free(rcl_nodes);
-    free(rcl_costs);
+    tsp_free(rcl_nodes);
+    tsp_free(rcl_costs);
     return 0;
 }
 
@@ -267,8 +266,8 @@ int extra_mileage_tour(int *tour,
                "\tExtra-Mileage: diameter nodes = (%d,%d), dist=%.6f\n",
                node_a, node_b, max_dist);
 
-    int *visited = calloc(n, sizeof(int));
-    check_alloc(visited);
+    int *visited = tsp_calloc(n, sizeof(int));
+
 
     tour[0] = node_a;
     tour[1] = node_b;
@@ -276,7 +275,7 @@ int extra_mileage_tour(int *tour,
     visited[node_b] = 1;
 
     if (extra_mileage_complete_tour(tour, 2, n, costs, visited) != 0) {
-        free(visited);
+        tsp_free(visited);
         return -1;
     }
 
@@ -285,6 +284,6 @@ int extra_mileage_tour(int *tour,
     if_verbose(VERBOSE_DEBUG,
                "\tExtra-Mileage: tour completed, cost=%.6f\n", *cost);
 
-    free(visited);
+    tsp_free(visited);
     return 0;
 }

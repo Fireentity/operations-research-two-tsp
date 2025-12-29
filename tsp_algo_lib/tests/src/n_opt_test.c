@@ -41,7 +41,7 @@ void test_square_reverse_segment(void) {
     const int expected_tour[] = {0, 2, 1, 3, 0};
     assert(int_arrays_equal(tour, expected_tour, 5));
 
-    free(costs);
+    tsp_free(costs);
 }
 
 void test_hexagon_reverse_segment(void) {
@@ -68,7 +68,7 @@ void test_hexagon_reverse_segment(void) {
     const int expected_tour[] = {0, 1, 2, 5, 4, 3, 0};
     assert(int_arrays_equal(tour, expected_tour, 7));
 
-    free(costs);
+    tsp_free(costs);
 }
 
 void run_n_opt_tests(void) {

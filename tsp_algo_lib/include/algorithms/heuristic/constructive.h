@@ -43,9 +43,9 @@ int extra_mileage_tour(int *tour,
  * @param visited Array of size n (1 if node is in partial tour, 0 otherwise).
  */
 int extra_mileage_complete_tour(int *tour,
-                                 int current_count,
-                                 int n,
-                                 const double *costs,
-                                 int *visited);
+                                int current_count,
+                                int n,
+                                const double *costs,
+                                int *visited);
 
 #endif //CONSTRUCTIVE_H

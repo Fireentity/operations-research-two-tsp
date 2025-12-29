@@ -13,27 +13,27 @@ typedef struct {
 } AdjacencyList;
 
 ConnectedComponents *connected_components_create(int num_nodes) {
-    ConnectedComponents *cc = malloc(sizeof(ConnectedComponents));
-    check_alloc(cc);
-    cc->component_of_node = malloc(num_nodes * sizeof(int));
-    cc->nodes_in_component = malloc(num_nodes * sizeof(int)); // Helper counter
-    check_alloc(cc->component_of_node);
-    check_alloc(cc->nodes_in_component);
+    ConnectedComponents *cc = tsp_malloc(sizeof(ConnectedComponents));
+
+    cc->component_of_node = tsp_malloc(num_nodes * sizeof(int));
+    cc->nodes_in_component = tsp_malloc(num_nodes * sizeof(int)); // Helper counter
+
+
     return cc;
 }
 
 void connected_components_destroy(ConnectedComponents *cc) {
     if (!cc) return;
-    free(cc->component_of_node);
-    free(cc->nodes_in_component);
-    free(cc);
+    tsp_free(cc->component_of_node);
+    tsp_free(cc->nodes_in_component);
+    tsp_free(cc);
 }
 
 // Iterative DFS to mark connected components
 static void dfs(int start_node, int comp_id, int *comp_array, const AdjacencyList *adj) {
     // Stack size is conservative (num edges)
-    int *stack = malloc((adj->edge_count + 100) * sizeof(int));
-    check_alloc(stack);
+    int *stack = tsp_malloc((adj->edge_count + 100) * sizeof(int));
+
     int top = 0;
 
     stack[top++] = start_node;
@@ -51,27 +51,25 @@ static void dfs(int start_node, int comp_id, int *comp_array, const AdjacencyLis
             }
         }
     }
-    free(stack);
+    tsp_free(stack);
 }
 
 void find_connected_components(ConnectedComponents *cc, int num_nodes, const double *x_star) {
-    // 1. Reset state
+    // Reset state
     cc->num_components = 0;
     for (int i = 0; i < num_nodes; i++) {
         cc->component_of_node[i] = -1;
         cc->nodes_in_component[i] = 0; // Not strictly used for logic but good for debugging
     }
 
-    // 2. Build temporary Adjacency List from x_star solution
+    // Build temporary Adjacency List from x_star solution
     // We assume x_star contains edges (val > 0.5)
     // Max directed edges for a tour is 2*N
     int max_edges = num_nodes * 4;
-    int *adj_head = malloc(num_nodes * sizeof(int));
-    int *adj_next = malloc(max_edges * sizeof(int));
-    int *adj_to = malloc(max_edges * sizeof(int));
-    check_alloc(adj_head);
-    check_alloc(adj_next);
-    check_alloc(adj_to);
+    int *adj_head = tsp_malloc(num_nodes * sizeof(int));
+    int *adj_next = tsp_malloc(max_edges * sizeof(int));
+    int *adj_to = tsp_malloc(max_edges * sizeof(int));
+
 
     // Initialize list heads to -1 (end of list)
     memset(adj_head, -1, num_nodes * sizeof(int));
@@ -99,7 +97,7 @@ void find_connected_components(ConnectedComponents *cc, int num_nodes, const dou
 
     AdjacencyList adj = {.head = adj_head, .next = adj_next, .to = adj_to, .edge_count = edge_idx};
 
-    // 3. Run DFS on unvisited nodes to find components
+    // Run DFS on unvisited nodes to find components
     for (int i = 0; i < num_nodes; i++) {
         if (cc->component_of_node[i] == -1) {
             cc->num_components++;
@@ -107,8 +105,8 @@ void find_connected_components(ConnectedComponents *cc, int num_nodes, const dou
         }
     }
 
-    // 4. Cleanup
-    free(adj_head);
-    free(adj_next);
-    free(adj_to);
+    // Cleanup
+    tsp_free(adj_head);
+    tsp_free(adj_next);
+    tsp_free(adj_to);
 }

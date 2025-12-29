@@ -11,11 +11,10 @@
 #include "random.h"
 #include "tsp_tour.h"
 
-static int get_random_tenure(RandomState* rng, const int min, const int max) {
+static int get_random_tenure(RandomState *rng, const int min, const int max) {
     if (min >= max) return min;
     return random_int(rng, min, max);
 }
-
 
 
 static void run_tabu(const TspInstance *instance,
@@ -35,21 +34,21 @@ static void run_tabu(const TspInstance *instance,
     TimeLimiter timer = time_limiter_create(cfg->time_limit);
     time_limiter_start(&timer);
 
-    int *current_tour = malloc((n + 1) * sizeof(int));
-    check_alloc(current_tour);
+    int *current_tour = tsp_malloc((n + 1) * sizeof(int));
+
     tsp_solution_get_tour(solution, current_tour);
     double current_cost = tsp_solution_get_cost(solution);
 
     /* Using 2-opt first gives Tabu a stronger starting point */
     current_cost += two_opt(current_tour, n, costs, timer);
 
-    int *best_tour = malloc((n + 1) * sizeof(int));
-    check_alloc(best_tour);
+    int *best_tour = tsp_malloc((n + 1) * sizeof(int));
+
     memcpy(best_tour, current_tour, (n + 1) * sizeof(int));
     double best_cost = current_cost;
 
-    int *tabu_matrix = calloc(n * n, sizeof(int));
-    check_alloc(tabu_matrix);
+    int *tabu_matrix = tsp_calloc(n * n, sizeof(int));
+
 
     int no_improv = 0;
     int iteration = 0;
@@ -104,7 +103,7 @@ static void run_tabu(const TspInstance *instance,
         int node_b = current_tour[best_j];
         int node_d = current_tour[(best_j + 1) % n];
 
-        int tenure = get_random_tenure(&rng,cfg->min_tenure, cfg->max_tenure);
+        int tenure = get_random_tenure(&rng, cfg->min_tenure, cfg->max_tenure);
 
         tabu_matrix[node_a * n + node_c] = iteration + tenure;
         tabu_matrix[node_c * n + node_a] = iteration + tenure;
@@ -134,18 +133,18 @@ static void run_tabu(const TspInstance *instance,
     }
     tsp_solution_update_if_better(solution, best_tour, best_cost);
 
-    free(tabu_matrix);
-    free(best_tour);
-    free(current_tour);
+    tsp_free(tabu_matrix);
+    tsp_free(best_tour);
+    tsp_free(current_tour);
 }
 
 static void free_tabu_config(void *config) {
-    free(config);
+    tsp_free(config);
 }
 
 TspAlgorithm tabu_create(const TabuConfig config) {
-    TabuConfig *cfg_copy = malloc(sizeof(TabuConfig));
-    check_alloc(cfg_copy);
+    TabuConfig *cfg_copy = tsp_malloc(sizeof(TabuConfig));
+
     *cfg_copy = config;
 
     return (TspAlgorithm){

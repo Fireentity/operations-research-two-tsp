@@ -18,6 +18,7 @@ typedef enum {
  * @brief Helper to get a string representation of the error.
  */
 const char *tsp_error_to_string(TspError err);
+
 TspError tsp_error_from_parser_status(TspParserStatus st);
 
 #endif //TSP_TSP_ERROR_H

@@ -5,14 +5,6 @@
 #include <stdlib.h>
 #include <pthread.h> // Recommended for thread safety in Phase 6
 
-/* --- EXISTING UTILITIES --- */
-
-void check_alloc(const void *ptr) {
-    if (!ptr) {
-        perror("Memory allocation error");
-        exit(EXIT_FAILURE);
-    }
-}
 
 void check_popen(FILE *gp) {
     if (!gp) {
@@ -29,8 +21,7 @@ void check_pclose(const int status) {
 }
 
 void *memdup(const void *obj, const size_t size) {
-    void *ptr = malloc(size);
-    check_alloc(ptr);
+    void *ptr = tsp_malloc(size);
     memcpy(ptr, obj, size);
     return ptr;
 }
@@ -62,21 +53,21 @@ void str_trim(char *s) {
 #if defined(TSP_DEBUG) || defined(DEBUG)
 
 typedef struct AllocationRecord {
-    void* ptr;
+    void *ptr;
     size_t size;
-    const char* file;
+    const char *file;
     int line;
-    struct AllocationRecord* next;
+    struct AllocationRecord *next;
 } AllocationRecord;
 
-static AllocationRecord* g_head = NULL;
+static AllocationRecord *g_head = NULL;
 static pthread_mutex_t g_mem_mutex = PTHREAD_MUTEX_INITIALIZER;
 static size_t g_total_allocated = 0;
 
-static void track_add(void* ptr, size_t size, const char* file, int line) {
-    AllocationRecord* rec = malloc(sizeof(AllocationRecord));
+static void track_add(void *ptr, size_t size, const char *file, int line) {
+    AllocationRecord *rec = malloc(sizeof(AllocationRecord));
     // We use raw malloc here to avoid infinite recursion!
-    if(!rec) {
+    if (!rec) {
         fprintf(stderr, "[MEM] Critical: Failed to allocate tracker node\n");
         exit(EXIT_FAILURE);
     }
@@ -92,12 +83,12 @@ static void track_add(void* ptr, size_t size, const char* file, int line) {
     pthread_mutex_unlock(&g_mem_mutex);
 }
 
-static void track_remove(void* ptr) {
+static void track_remove(void *ptr) {
     pthread_mutex_lock(&g_mem_mutex);
-    AllocationRecord* curr = g_head;
-    AllocationRecord* prev = NULL;
+    AllocationRecord *curr = g_head;
+    AllocationRecord *prev = NULL;
 
-    while(curr) {
+    while (curr) {
         if (curr->ptr == ptr) {
             if (prev) prev->next = curr->next;
             else g_head = curr->next;
@@ -115,8 +106,8 @@ static void track_remove(void* ptr) {
     // Optional: Print a warning.
 }
 
-void* _tsp_malloc_dbg(size_t size, const char* file, int line) {
-    void* ptr = malloc(size);
+void *_tsp_malloc_dbg(size_t size, const char *file, int line) {
+    void *ptr = malloc(size);
     if (!ptr && size > 0) {
         fprintf(stderr, "[MEM] Malloc failed at %s:%d\n", file, line);
         exit(EXIT_FAILURE);
@@ -125,9 +116,9 @@ void* _tsp_malloc_dbg(size_t size, const char* file, int line) {
     return ptr;
 }
 
-void* _tsp_calloc_dbg(size_t num, size_t size, const char* file, int line) {
-    void* ptr = calloc(num, size);
-    if (!ptr && (num*size) > 0) {
+void *_tsp_calloc_dbg(size_t num, size_t size, const char *file, int line) {
+    void *ptr = calloc(num, size);
+    if (!ptr && (num * size) > 0) {
         fprintf(stderr, "[MEM] Calloc failed at %s:%d\n", file, line);
         exit(EXIT_FAILURE);
     }
@@ -135,9 +126,9 @@ void* _tsp_calloc_dbg(size_t num, size_t size, const char* file, int line) {
     return ptr;
 }
 
-void* _tsp_realloc_dbg(void* ptr, size_t size, const char* file, int line) {
+void *_tsp_realloc_dbg(void *ptr, size_t size, const char *file, int line) {
     if (ptr) track_remove(ptr);
-    void* new_ptr = realloc(ptr, size);
+    void *new_ptr = realloc(ptr, size);
     if (!new_ptr && size > 0) {
         fprintf(stderr, "[MEM] Realloc failed at %s:%d\n", file, line);
         exit(EXIT_FAILURE);
@@ -146,7 +137,7 @@ void* _tsp_realloc_dbg(void* ptr, size_t size, const char* file, int line) {
     return new_ptr;
 }
 
-void _tsp_free_dbg(void* ptr) {
+void _tsp_free_dbg(void *ptr) {
     if (!ptr) return;
     track_remove(ptr);
     free(ptr);
@@ -158,8 +149,8 @@ void tsp_dump_memory_leaks(void) {
         fprintf(stderr, "\n[MEM] No memory leaks detected. Great job!\n");
     } else {
         fprintf(stderr, "\n[MEM] !!! MEMORY LEAKS DETECTED !!!\n");
-        AllocationRecord* curr = g_head;
-        while(curr) {
+        AllocationRecord *curr = g_head;
+        while (curr) {
             fprintf(stderr, " - Leak %zu bytes at %p (Allocated: %s:%d)\n",
                     curr->size, curr->ptr, curr->file, curr->line);
             curr = curr->next;

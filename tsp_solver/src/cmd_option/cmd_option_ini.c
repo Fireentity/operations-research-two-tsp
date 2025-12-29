@@ -6,13 +6,15 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "c_util.h"
+
 typedef struct {
     CmdOptions *opt;
 } IniContext;
 
 /* Strings from INI override defaults, so existing ones must be released first. */
 static void handle_string(const char *value, char **dest) {
-    free(*dest);
+    tsp_free(*dest);
     *dest = NULL;
     parse_string(value, dest);
 }

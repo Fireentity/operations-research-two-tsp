@@ -46,7 +46,7 @@ static void test_solution_save_load(void) {
     printf("\t[Parser] Testing Solution Save/Load...\n");
     const char *filename = "test_sol_rw.sol";
 
-    Node nodes[] = {{0,0}, {10,0}, {10,10}, {0,10}};
+    Node nodes[] = {{0, 0}, {10, 0}, {10, 10}, {0, 10}};
     TspInstance *inst = tsp_instance_create(nodes, 4);
 
     int custom_tour[] = {0, 2, 1, 3, 0};
@@ -66,7 +66,7 @@ static void test_solution_save_load(void) {
     int tour_buf[5];
     tsp_solution_get_tour(sol_loaded, tour_buf);
 
-    for(int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++) {
         assert(tour_buf[i] == custom_tour[i]);
     }
 
@@ -111,7 +111,7 @@ static void test_solution_validation_errors(void) {
     printf("\t[Parser] Testing Solution Validation Errors...\n");
     const char *sol_file = "test_bad_sol.sol";
 
-    Node nodes[] = {{0,0}, {1,1}, {2,2}};
+    Node nodes[] = {{0, 0}, {1, 1}, {2, 2}};
     TspInstance *inst = tsp_instance_create(nodes, 3);
     TspSolution *sol = tsp_solution_create(inst);
 

@@ -25,14 +25,14 @@ static void run_nn(const TspInstance *instance,
     TimeLimiter timer = time_limiter_create(cfg->time_limit);
     time_limiter_start(&timer);
 
-    int *tour = malloc((n + 1) * sizeof(int));
-    check_alloc(tour);
+    int *tour = tsp_malloc((n + 1) * sizeof(int));
 
-    int *visited = malloc(n * sizeof(int));
-    check_alloc(visited);
 
-    int *starts = malloc(n * sizeof(int));
-    check_alloc(starts);
+    int *visited = tsp_malloc(n * sizeof(int));
+
+
+    int *starts = tsp_malloc(n * sizeof(int));
+
 
     for (int i = 0; i < n; i++) starts[i] = i;
     shuffle_int_array(starts, n, &rng);
@@ -60,18 +60,18 @@ static void run_nn(const TspInstance *instance,
     if (time_limiter_is_over(&timer))
         if_verbose(VERBOSE_INFO, "\tNN: time is over\n");
 
-    free(starts);
-    free(visited);
-    free(tour);
+    tsp_free(starts);
+    tsp_free(visited);
+    tsp_free(tour);
 }
 
 static void free_nn_config(void *config) {
-    free(config);
+    tsp_free(config);
 }
 
 TspAlgorithm nn_create(const NNConfig config) {
-    NNConfig *cpy = malloc(sizeof(NNConfig));
-    check_alloc(cpy);
+    NNConfig *cpy = tsp_malloc(sizeof(NNConfig));
+
     *cpy = config;
 
     return (TspAlgorithm){

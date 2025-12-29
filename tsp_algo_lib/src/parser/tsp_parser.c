@@ -6,12 +6,14 @@
 
 typedef struct {
     const char *ext;
-    int (*fn)(const char*, Node**, int*);
+
+    int (*fn)(const char *, Node **, int *);
 } InstEntry;
 
 typedef struct {
     const char *ext;
-    int (*fn)(const char*, int, int*, double*);
+
+    int (*fn)(const char *, int, int *, double *);
 } SolEntry;
 
 static const InstEntry inst_registry[] = {
@@ -21,11 +23,11 @@ static const InstEntry inst_registry[] = {
 
 static const SolEntry sol_registry[] = {
     {".tspsol", parse_solution_v1},
-    {".sol",    parse_solution_v1},
+    {".sol", parse_solution_v1},
     {NULL, NULL}
 };
 
-static const char* get_ext(const char *path) {
+static const char *get_ext(const char *path) {
     const char *ext = strrchr(path, '.');
     return ext ? ext : "";
 }
@@ -45,4 +47,3 @@ TspParserStatus tsp_parser_load_solution(const char *path, int n, int *tour_buf,
             return sol_registry[i].fn(path, n, tour_buf, out_cost);
     return PARSE_ERR_EXT;
 }
-

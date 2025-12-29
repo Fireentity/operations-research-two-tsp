@@ -14,6 +14,7 @@ const char *tsp_error_to_string(const TspError err) {
         default: return "Unknown error";
     }
 }
+
 TspError tsp_error_from_parser_status(const TspParserStatus st) {
     switch (st) {
         case PARSE_OK:

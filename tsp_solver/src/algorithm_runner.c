@@ -32,8 +32,8 @@ static void execute_and_report(const TspAlgorithm *algo,
     tsp_algorithm_run(algo, instance, solution, recorder);
 
     const int n = tsp_instance_get_num_nodes(instance);
-    int *tour_buffer = malloc((n + 1) * sizeof(int));
-    check_alloc(tour_buffer);
+    int *tour_buffer = tsp_malloc((n + 1) * sizeof(int));
+
 
     tsp_solution_get_tour(solution, tour_buffer);
     const double cost = tsp_solution_get_cost(solution);
@@ -43,7 +43,7 @@ static void execute_and_report(const TspAlgorithm *algo,
 
     if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algo->name, cost);
 
-    free(tour_buffer);
+    tsp_free(tour_buffer);
     cost_recorder_destroy(recorder);
     tsp_solution_destroy(solution);
     tsp_algorithm_destroy((TspAlgorithm *) algo);
@@ -62,51 +62,51 @@ static HeuristicType parse_warm_start_heuristic(const char *name) {
     return VNS;
 }
 
-static void* create_heuristic_config(HeuristicType type, const CmdOptions *options) {
+static void *create_heuristic_config(HeuristicType type, const CmdOptions *options) {
     switch (type) {
         case VNS: {
-            VNSConfig *vns = malloc(sizeof(VNSConfig));
-            check_alloc(vns);
+            VNSConfig *vns = tsp_malloc(sizeof(VNSConfig));
+
             *vns = (VNSConfig){
-                .min_k = (int)options->vns_params.min_k,
-                .max_k = (int)options->vns_params.max_k,
-                .kick_repetition = (int)options->vns_params.kick_repetitions,
-                .max_stagnation = (int)options->vns_params.max_stagnation,
+                .min_k = (int) options->vns_params.min_k,
+                .max_k = (int) options->vns_params.max_k,
+                .kick_repetition = (int) options->vns_params.kick_repetitions,
+                .max_stagnation = (int) options->vns_params.max_stagnation,
                 .seed = options->inst.seed
             };
             return vns;
         }
         case TABU: {
-            TabuConfig *tabu = malloc(sizeof(TabuConfig));
-            check_alloc(tabu);
+            TabuConfig *tabu = tsp_malloc(sizeof(TabuConfig));
+
             *tabu = (TabuConfig){
-                .min_tenure = (int)options->tabu_params.min_tenure,
-                .max_tenure = (int)options->tabu_params.max_tenure,
-                .max_stagnation = (int)options->tabu_params.max_stagnation,
+                .min_tenure = (int) options->tabu_params.min_tenure,
+                .max_tenure = (int) options->tabu_params.max_tenure,
+                .max_stagnation = (int) options->tabu_params.max_stagnation,
                 .seed = options->inst.seed
             };
             return tabu;
         }
         case GRASP: {
-            GraspConfig *grasp = malloc(sizeof(GraspConfig));
-            check_alloc(grasp);
+            GraspConfig *grasp = tsp_malloc(sizeof(GraspConfig));
+
             *grasp = (GraspConfig){
-                .rcl_size = (int)options->grasp_params.rcl_size,
+                .rcl_size = (int) options->grasp_params.rcl_size,
                 .probability = options->grasp_params.probability,
-                .max_stagnation = (int)options->grasp_params.max_stagnation,
+                .max_stagnation = (int) options->grasp_params.max_stagnation,
                 .seed = options->inst.seed
             };
             return grasp;
         }
         case GENETIC: {
-            GeneticConfig *ga = malloc(sizeof(GeneticConfig));
-            check_alloc(ga);
+            GeneticConfig *ga = tsp_malloc(sizeof(GeneticConfig));
+
             *ga = (GeneticConfig){
-                .population_size = (int)options->genetic_params.population_size,
-                .elite_count = (int)options->genetic_params.elite_count,
+                .population_size = (int) options->genetic_params.population_size,
+                .elite_count = (int) options->genetic_params.elite_count,
                 .mutation_rate = options->genetic_params.mutation_rate,
-                .crossover_cut_min_ratio = (int)options->genetic_params.crossover_cut_min_ratio,
-                .crossover_cut_max_ratio = (int)options->genetic_params.crossover_cut_max_ratio,
+                .crossover_cut_min_ratio = (int) options->genetic_params.crossover_cut_min_ratio,
+                .crossover_cut_max_ratio = (int) options->genetic_params.crossover_cut_max_ratio,
                 .tournament_size = options->genetic_params.tournament_size,
                 .init_grasp_rcl_size = options->genetic_params.init_grasp_rcl_size,
                 .init_grasp_prob = options->genetic_params.init_grasp_prob,

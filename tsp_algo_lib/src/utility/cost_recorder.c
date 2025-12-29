@@ -12,11 +12,11 @@ struct CostRecorder {
 CostRecorder *cost_recorder_create(size_t initial_capacity) {
     if (initial_capacity == 0) initial_capacity = 1024;
 
-    CostRecorder *r = malloc(sizeof(CostRecorder));
-    check_alloc(r);
+    CostRecorder *r = tsp_malloc(sizeof(CostRecorder));
 
-    r->data = malloc(initial_capacity * sizeof(double));
-    check_alloc(r->data);
+
+    r->data = tsp_malloc(initial_capacity * sizeof(double));
+
 
     r->count = 0;
     r->capacity = initial_capacity;
@@ -28,8 +28,8 @@ CostRecorder *cost_recorder_create(size_t initial_capacity) {
 void cost_recorder_destroy(CostRecorder *r) {
     if (!r) return;
 
-    free(r->data);
-    free(r);
+    tsp_free(r->data);
+    tsp_free(r);
 }
 
 void cost_recorder_add(CostRecorder *r, const double cost) {
@@ -37,8 +37,8 @@ void cost_recorder_add(CostRecorder *r, const double cost) {
 
     if (r->count == r->capacity) {
         const size_t new_cap = r->capacity * 2;
-        double *tmp = realloc(r->data, new_cap * sizeof(double));
-        check_alloc(tmp);
+        double *tmp = tsp_realloc(r->data, new_cap * sizeof(double));
+
         r->data = tmp;
         r->capacity = new_cap;
     }

@@ -7,8 +7,10 @@
 #include "genetic.h"
 #include <stdlib.h>
 
+#include "c_util.h"
+
 void matheuristic_free_args(void *heuristic_args) {
-    free(heuristic_args);
+    tsp_free(heuristic_args);
 }
 
 void matheuristic_run_warm_start(const WarmStartParams *params,

@@ -26,5 +26,4 @@ double calculate_tour_cost(const int *tour, int number_of_nodes, const double *e
 double *init_edge_cost_array(const Node *nodes, int number_of_nodes);
 
 
-
 #endif //MATH_UTIL_H

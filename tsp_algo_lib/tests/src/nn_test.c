@@ -14,7 +14,7 @@
 static void test_nn_tiny_instance(void) {
     printf("\t[NN] Testing Tiny Instance (N=2)...\n");
 
-    Node nodes[] = {{0,0}, {10,0}};
+    Node nodes[] = {{0, 0}, {10, 0}};
     TspInstance *inst = tsp_instance_create(nodes, 2);
     TspSolution *sol = tsp_solution_create(inst);
     CostRecorder *rec = cost_recorder_create(10);

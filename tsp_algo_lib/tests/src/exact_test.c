@@ -19,7 +19,7 @@ void test_benders_small_random() {
     TspSolution *sol = tsp_solution_create(inst);
     CostRecorder *rec = cost_recorder_create(10);
 
-    BendersConfig cfg = { .max_iterations = 100, .time_limit = 10.0 };
+    BendersConfig cfg = {.max_iterations = 100, .time_limit = 10.0};
     TspAlgorithm algo = benders_create(cfg);
 
     tsp_algorithm_run(&algo, inst, sol, rec);

@@ -15,10 +15,10 @@ static inline int read_next_token(FILE *f, char *buf, size_t sz) {
     if (c == EOF) return -1;
 
     size_t i = 0;
-    if (i < sz - 1) buf[i++] = (char)c;
+    if (i < sz - 1) buf[i++] = (char) c;
 
     while ((c = fgetc(f)) != EOF && !isspace((unsigned char)c)) {
-        if (i < sz - 1) buf[i++] = (char)c;
+        if (i < sz - 1) buf[i++] = (char) c;
     }
     buf[i] = '\0';
     return 0;
@@ -33,7 +33,7 @@ static inline int parse_int(const char *s, int *out) {
     while (*end && isspace((unsigned char)*end)) end++;
     if (*end != '\0') return -1;
 
-    *out = (int)v;
+    *out = (int) v;
     return 0;
 }
 

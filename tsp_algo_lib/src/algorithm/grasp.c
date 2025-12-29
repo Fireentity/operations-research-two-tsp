@@ -22,15 +22,15 @@ static void run_grasp(const TspInstance *instance,
     TimeLimiter timer = time_limiter_create(cfg->time_limit);
     time_limiter_start(&timer);
 
-    int *current_tour = malloc((n + 1) * sizeof(int));
-    check_alloc(current_tour);
+    int *current_tour = tsp_malloc((n + 1) * sizeof(int));
+
 
     // Get initial solution state (if any)
     tsp_solution_get_tour(solution, current_tour);
 
     // Prepare starting nodes for multi-start
-    int *starting_nodes = malloc(n * sizeof(int));
-    check_alloc(starting_nodes);
+    int *starting_nodes = tsp_malloc(n * sizeof(int));
+
     for (int i = 0; i < n; i++) starting_nodes[i] = i;
     shuffle_int_array(starting_nodes, n, &rng);
 
@@ -83,17 +83,17 @@ static void run_grasp(const TspInstance *instance,
     if_verbose(VERBOSE_DEBUG, "GRASP: Finished after %d iterations.\n", iter);
 
     // Cleanup
-    free(starting_nodes);
-    free(current_tour);
+    tsp_free(starting_nodes);
+    tsp_free(current_tour);
 }
 
 static void free_grasp_config(void *config) {
-    free(config);
+    tsp_free(config);
 }
 
 TspAlgorithm grasp_create(GraspConfig config) {
-    GraspConfig *cfg_copy = malloc(sizeof(GraspConfig));
-    check_alloc(cfg_copy);
+    GraspConfig *cfg_copy = tsp_malloc(sizeof(GraspConfig));
+
     *cfg_copy = config;
 
     return (TspAlgorithm){

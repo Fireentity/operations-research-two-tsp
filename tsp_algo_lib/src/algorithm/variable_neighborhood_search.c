@@ -13,8 +13,8 @@
 static double vns_kick(int *tour, int n, const double *costs, int k_opt, RandomState *rng) {
     if (k_opt > n) k_opt = n;
 
-    int *edges = malloc(k_opt * sizeof(int));
-    check_alloc(edges);
+    int *edges = tsp_malloc(k_opt * sizeof(int));
+
 
     const int low = 0;
 
@@ -42,7 +42,7 @@ static double vns_kick(int *tour, int n, const double *costs, int k_opt, RandomS
     const double delta = compute_n_opt_cost(k_opt, tour, edges, costs, n);
     compute_n_opt_move(k_opt, tour, edges, n);
 
-    free(edges);
+    tsp_free(edges);
     return delta;
 }
 
@@ -64,16 +64,16 @@ static void run_vns(const TspInstance *instance,
     TimeLimiter timer = time_limiter_create(cfg->time_limit);
     time_limiter_start(&timer);
 
-    int *current_tour = malloc((n + 1) * sizeof(int));
-    check_alloc(current_tour);
+    int *current_tour = tsp_malloc((n + 1) * sizeof(int));
+
     tsp_solution_get_tour(solution, current_tour);
     double current_cost = tsp_solution_get_cost(solution);
 
     /* Initial descent strengthens the starting point */
     current_cost += two_opt(current_tour, n, costs, timer);
 
-    int *best_tour = malloc((n + 1) * sizeof(int));
-    check_alloc(best_tour);
+    int *best_tour = tsp_malloc((n + 1) * sizeof(int));
+
     memcpy(best_tour, current_tour, (n + 1) * sizeof(int));
     double best_cost = current_cost;
 
@@ -117,17 +117,17 @@ static void run_vns(const TspInstance *instance,
 
     tsp_solution_update_if_better(solution, best_tour, best_cost);
 
-    free(best_tour);
-    free(current_tour);
+    tsp_free(best_tour);
+    tsp_free(current_tour);
 }
 
 static void free_vns_config(void *config) {
-    free(config);
+    tsp_free(config);
 }
 
 TspAlgorithm vns_create(const VNSConfig config) {
-    VNSConfig *cfg_copy = malloc(sizeof(VNSConfig));
-    check_alloc(cfg_copy);
+    VNSConfig *cfg_copy = tsp_malloc(sizeof(VNSConfig));
+
     *cfg_copy = config;
 
     return (TspAlgorithm){

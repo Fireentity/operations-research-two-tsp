@@ -11,54 +11,65 @@
 
 #if defined(TSP_DEBUG) || defined(DEBUG)
 
-    #define tsp_malloc(size)       _tsp_malloc_dbg(size, __FILE__, __LINE__)
-    #define tsp_calloc(num, size)  _tsp_calloc_dbg(num, size, __FILE__, __LINE__)
-    #define tsp_realloc(ptr, size) _tsp_realloc_dbg(ptr, size, __FILE__, __LINE__)
-    #define tsp_free(ptr)          _tsp_free_dbg(ptr)
+#define tsp_malloc(size)       _tsp_malloc_dbg(size, __FILE__, __LINE__)
+#define tsp_calloc(num, size)  _tsp_calloc_dbg(num, size, __FILE__, __LINE__)
+#define tsp_realloc(ptr, size) _tsp_realloc_dbg(ptr, size, __FILE__, __LINE__)
+#define tsp_free(ptr)          _tsp_free_dbg(ptr)
 
-    /* Internal debug functions - Do not call directly */
-    void* _tsp_malloc_dbg(size_t size, const char* file, int line);
-    void* _tsp_calloc_dbg(size_t num, size_t size, const char* file, int line);
-    void* _tsp_realloc_dbg(void* ptr, size_t size, const char* file, int line);
-    void  _tsp_free_dbg(void* ptr);
+/* Internal debug functions - Do not call directly */
+void *_tsp_malloc_dbg(size_t size, const char *file, int line);
+void *_tsp_calloc_dbg(size_t num, size_t size, const char *file, int line);
+void *_tsp_realloc_dbg(void *ptr, size_t size, const char *file, int line);
+void _tsp_free_dbg(void *ptr);
 
-    /**
-     * @brief Prints a report of currently allocated memory (leaks).
-     */
-    void tsp_dump_memory_leaks(void);
+/**
+ * @brief Prints a report of currently allocated memory (leaks).
+ */
+void tsp_dump_memory_leaks(void);
 
 #else
 
-    /* Release Mode: Direct mapping with error checking */
-    static inline void* tsp_malloc(size_t size) {
-        void* ptr = malloc(size);
-        if (!ptr && size > 0) { perror("malloc failed"); exit(EXIT_FAILURE); }
-        return ptr;
+/* Release Mode: Direct mapping with error checking */
+static inline void *tsp_malloc(size_t size) {
+    void *ptr = malloc(size);
+    if (!ptr && size > 0) {
+        perror("malloc failed");
+        exit(EXIT_FAILURE);
     }
+    return ptr;
+}
 
-    static inline void* tsp_calloc(size_t num, size_t size) {
-        void* ptr = calloc(num, size);
-        if (!ptr && (num * size) > 0) { perror("calloc failed"); exit(EXIT_FAILURE); }
-        return ptr;
+static inline void *tsp_calloc(size_t num, size_t size) {
+    void *ptr = calloc(num, size);
+    if (!ptr && (num * size) > 0) {
+        perror("calloc failed");
+        exit(EXIT_FAILURE);
     }
+    return ptr;
+}
 
-    static inline void* tsp_realloc(void* ptr, size_t size) {
-        void* new_ptr = realloc(ptr, size);
-        if (!new_ptr && size > 0) { perror("realloc failed"); exit(EXIT_FAILURE); }
-        return new_ptr;
+static inline void *tsp_realloc(void *ptr, size_t size) {
+    void *new_ptr = realloc(ptr, size);
+    if (!new_ptr && size > 0) {
+        perror("realloc failed");
+        exit(EXIT_FAILURE);
     }
+    return new_ptr;
+}
 
-    #define tsp_free(ptr) free(ptr)
-    #define tsp_dump_memory_leaks() ((void)0)
+#define tsp_free(ptr) free(ptr)
+#define tsp_dump_memory_leaks() ((void)0)
 
 #endif
 
-/* Existing utilities */
-void check_alloc(const void *ptr); // Can be deprecated in favor of tsp_malloc
 void check_popen(FILE *gp);
+
 void check_pclose(int status);
+
 void *memdup(const void *obj, size_t size);
+
 void join_path(char *out, const char *dir, const char *file, size_t maxlen);
+
 void str_trim(char *s);
 
 /* array equality macros */

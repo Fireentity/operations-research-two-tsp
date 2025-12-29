@@ -34,12 +34,12 @@ typedef struct {
 } OptionMeta;
 
 /* Returns pointer to the complete metadata registry. */
-const OptionMeta* cmd_options_get_metadata(void);
+const OptionMeta *cmd_options_get_metadata(void);
 
 /* Returns number of metadata entries. */
 size_t cmd_options_get_metadata_count(void);
 
-FlagParser *cmd_options_build_cli_parser(CmdOptions * opt);
+FlagParser *cmd_options_build_cli_parser(CmdOptions *opt);
 
 void cmd_options_parse_ini_file(CmdOptions *dest, const char *filename);
 

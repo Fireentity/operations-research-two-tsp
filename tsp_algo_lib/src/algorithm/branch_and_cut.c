@@ -36,15 +36,15 @@ static void run_bc(const TspInstance *inst,
         cplex_solver_extract_solution(ctx, &cost);
 
         int n = tsp_instance_get_num_nodes(inst);
-        int *tour = malloc((n + 1) * sizeof(int));
-        check_alloc(tour);
+        int *tour = tsp_malloc((n + 1) * sizeof(int));
+
 
         const double *x = cplex_solver_get_x(ctx);
         cplex_solver_reconstruct_tour(n, x, tour);
 
         tsp_solution_update_if_better(sol, tour, cost);
 
-        free(tour);
+        tsp_free(tour);
     }
 
     cplex_solver_destroy(ctx);
@@ -53,17 +53,20 @@ static void run_bc(const TspInstance *inst,
 #else
 
 static void run_bc(const TspInstance *i, TspSolution *s, const void *c, CostRecorder *r) {
-    (void)i; (void)s; (void)c; (void)r;
+    (void) i;
+    (void) s;
+    (void) c;
+    (void) r;
     if_verbose(VERBOSE_INFO, "[ERROR] Branch & Cut unavailable (no CPLEX)\n");
 }
 
 #endif
 
-static void free_bc_config(void *cfg) { free(cfg); }
+static void free_bc_config(void *cfg) { tsp_free(cfg); }
 
 TspAlgorithm branch_and_cut_create(BranchCutConfig cfg) {
-    BranchCutConfig *c = malloc(sizeof(BranchCutConfig));
-    check_alloc(c);
+    BranchCutConfig *c = tsp_malloc(sizeof(BranchCutConfig));
+
     *c = cfg;
     return (TspAlgorithm){
         .name = "Branch and Cut",

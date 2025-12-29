@@ -16,5 +16,6 @@ typedef enum TspParserStatus {
 
 
 TspParserStatus tsp_parser_load_instance(const char *path, Node **out_nodes, int *out_n);
+
 TspParserStatus tsp_parser_load_solution(const char *path, int n, int *tour_buf, double *out_cost);
 #endif

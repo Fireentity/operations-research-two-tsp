@@ -53,8 +53,8 @@ static void run_benders(const TspInstance *inst,
         find_connected_components(cc, n, x);
 
         if (cc->num_components == 1) {
-            int *tour = malloc((n + 1) * sizeof(int));
-            check_alloc(tour);
+            int *tour = tsp_malloc((n + 1) * sizeof(int));
+
 
             cplex_solver_reconstruct_tour(n, x, tour);
 
@@ -63,7 +63,7 @@ static void run_benders(const TspInstance *inst,
 
             if_verbose(VERBOSE_INFO, "Benders: optimal solution found at iter %d (Cost: %.2f)\n", it, cost);
 
-            free(tour);
+            tsp_free(tour);
             break;
         }
 
@@ -71,33 +71,33 @@ static void run_benders(const TspInstance *inst,
 
         for (int c = 1; c <= cc->num_components; c++) {
             int sz = 0;
-            int *nodes = malloc(n * sizeof(int));
-            check_alloc(nodes);
+            int *nodes = tsp_malloc(n * sizeof(int));
+
 
             for (int i = 0; i < n; i++)
                 if (cc->component_of_node[i] == c)
                     nodes[sz++] = i;
 
             cplex_solver_add_sec(ctx, inst, nodes, sz);
-            free(nodes);
+            tsp_free(nodes);
         }
     }
 
     connected_components_destroy(cc);
     cplex_solver_destroy(ctx);
 #else
-    (void)inst; (void)sol; (void)cfg_void; (void)rec;
+    (void) inst; (void) sol; (void) cfg_void; (void) rec;
     if_verbose(VERBOSE_INFO, "[ERROR] CPLEX not enabled\n");
 #endif
 }
 
 static void free_benders_config(void *cfg) {
-    free(cfg);
+    tsp_free(cfg);
 }
 
 TspAlgorithm benders_create(BendersConfig cfg) {
-    BendersConfig *c = malloc(sizeof(BendersConfig));
-    check_alloc(c);
+    BendersConfig *c = tsp_malloc(sizeof(BendersConfig));
+
     *c = cfg;
 
     return (TspAlgorithm){

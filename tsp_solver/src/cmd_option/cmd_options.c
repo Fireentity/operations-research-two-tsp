@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "c_util.h"
+
 static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
 
@@ -97,7 +99,7 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
             if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Population size must be at least 2.\n");
             return WRONG_VALUE_TYPE;
         }
-        if (opt->genetic_params.elite_count < 0 || opt->genetic_params.elite_count >= opt->genetic_params.population_size) {
+        if (opt->genetic_params.elite_count >= opt->genetic_params.population_size) {
             if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Elite count must be >= 0 and < population size.\n");
             return WRONG_VALUE_TYPE;
         }
@@ -105,11 +107,11 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
             if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Mutation rate must be in [0, 1].\n");
             return WRONG_VALUE_TYPE;
         }
-        if (opt->genetic_params.crossover_cut_min_ratio < 0 || opt->genetic_params.crossover_cut_min_ratio > 100) {
+        if (opt->genetic_params.crossover_cut_min_ratio > 100) {
             if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Crossover cut min ratio must be in [0, 100].\n");
             return WRONG_VALUE_TYPE;
         }
-        if (opt->genetic_params.crossover_cut_max_ratio < 0 || opt->genetic_params.crossover_cut_max_ratio > 100) {
+        if (opt->genetic_params.crossover_cut_max_ratio > 100) {
             if_verbose(VERBOSE_INFO, "[Config Error] Genetic: Crossover cut max ratio must be in [0, 100].\n");
             return WRONG_VALUE_TYPE;
         }
@@ -125,35 +127,36 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
 
     if (opt->benders_params.enable) {
         if (opt->benders_params.time_limit < 0.0) {
-             if_verbose(VERBOSE_INFO, "[Config Error] Benders: time limit cannot be negative.\n");
-             return WRONG_VALUE_TYPE;
+            if_verbose(VERBOSE_INFO, "[Config Error] Benders: time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
         }
         if (opt->benders_params.max_iterations == 0) {
-             if_verbose(VERBOSE_INFO, "[Config Error] Benders: max iterations must be > 0.\n");
-             return WRONG_VALUE_TYPE;
+            if_verbose(VERBOSE_INFO, "[Config Error] Benders: max iterations must be > 0.\n");
+            return WRONG_VALUE_TYPE;
         }
     }
 
     if (opt->bc_params.enable) {
         if (opt->bc_params.time_limit < 0.0) {
-             if_verbose(VERBOSE_INFO, "[Config Error] Branch & Cut: time limit cannot be negative.\n");
-             return WRONG_VALUE_TYPE;
+            if_verbose(VERBOSE_INFO, "[Config Error] Branch & Cut: time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
         }
     }
 
     if (opt->hf_params.enable) {
         if (opt->hf_params.time_limit < 0.0) {
-             if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: time limit cannot be negative.\n");
-             return WRONG_VALUE_TYPE;
+            if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
         }
         if (opt->hf_params.fixing_rate < 0.0 || opt->hf_params.fixing_rate > 1.0) {
-             if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: fixing rate must be in [0, 1].\n");
-             return WRONG_VALUE_TYPE;
+            if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: fixing rate must be in [0, 1].\n");
+            return WRONG_VALUE_TYPE;
         }
     }
 
     if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable &&
-        !opt->em_params.enable && !opt->genetic_params.enable && !opt->benders_params.enable && !opt->bc_params.enable &&
+        !opt->em_params.enable && !opt->genetic_params.enable && !opt->benders_params.enable && !opt->bc_params.enable
+        &&
         !opt->hf_params.enable) {
         if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled.\n");
     }
@@ -183,7 +186,7 @@ static void copy_option_value(OptionType type, void *dst, const void *src) {
             break;
 
         case OPT_STRING:
-            free(*(char **) dst);
+            tsp_free(*(char **) dst);
             *(char **) dst = *(char * const *) src
                                  ? strdup(*(char * const *) src)
                                  : NULL;

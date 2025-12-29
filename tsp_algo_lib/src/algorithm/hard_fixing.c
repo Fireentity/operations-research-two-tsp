@@ -10,7 +10,7 @@
 static void free_hf_config(void *cfg_void) {
     HardFixingConfig *cfg = cfg_void;
     matheuristic_free_args(cfg->heuristic_args);
-    free(cfg);
+    tsp_free(cfg);
 }
 
 static void run_hard_fixing(const TspInstance *inst,
@@ -49,8 +49,8 @@ static void run_hard_fixing(const TspInstance *inst,
         return;
     }
 
-    int *tour = malloc((n + 1) * sizeof(int));
-    check_alloc(tour);
+    int *tour = tsp_malloc((n + 1) * sizeof(int));
+
     tsp_solution_get_tour(sol, tour);
 
     cplex_solver_add_mip_start(ctx, n, tour);
@@ -85,14 +85,14 @@ static void run_hard_fixing(const TspInstance *inst,
         if_verbose(VERBOSE_INFO, "HardFixing: CPLEX improved solution to %.2f\n", cost);
     }
 
-    free(tour);
+    tsp_free(tour);
     cplex_solver_destroy(ctx);
 #endif
 }
 
 TspAlgorithm hard_fixing_create(HardFixingConfig config) {
-    HardFixingConfig *c = malloc(sizeof(HardFixingConfig));
-    check_alloc(c);
+    HardFixingConfig *c = tsp_malloc(sizeof(HardFixingConfig));
+
     *c = config;
     return (TspAlgorithm){
         .name = "Hard Fixing Matheuristic",

@@ -46,10 +46,10 @@ void plot_tour(const int *tour, const int number_of_nodes, const Node *nodes, co
     check_popen(gp);
     fprintf(gp, "set terminal png size 800,600\n");
 
-    double *x = malloc(sizeof(double) * (number_of_nodes + 1));
-    check_alloc(x);
-    double *y = malloc(sizeof(double) * (number_of_nodes + 1));
-    check_alloc(y);
+    double *x = tsp_malloc(sizeof(double) * (number_of_nodes + 1));
+
+    double *y = tsp_malloc(sizeof(double) * (number_of_nodes + 1));
+
 
     for (int i = 0; i < number_of_nodes; i++) {
         x[i] = nodes[tour[i]].x;
@@ -60,8 +60,8 @@ void plot_tour(const int *tour, const int number_of_nodes, const Node *nodes, co
     y[number_of_nodes] = nodes[tour[0]].y;
 
     const Bounds bounds = calculate_bounds(x, y, number_of_nodes + 1);
-    free(x);
-    free(y);
+    tsp_free(x);
+    tsp_free(y);
 
     fprintf(gp, "set xrange [%lf:%lf]\n", bounds.min_x, bounds.max_x);
     fprintf(gp, "set yrange [%lf:%lf]\n", bounds.min_y, bounds.max_y);
@@ -89,20 +89,20 @@ void plot_costs_evolution(const double *costs, const size_t length, const char *
     fprintf(gp, "set terminal png size 1920,1080\n");
     fprintf(gp, "set xlabel 'Time'\nset ylabel 'Cost'\n");
 
-    double *time = malloc(sizeof(double) * length);
-    check_alloc(time);
+    double *time = tsp_malloc(sizeof(double) * length);
+
     for (int i = 0; i < length; i++)
         time[i] = (double) i;
 
     const Bounds bounds = calculate_bounds(time, costs, length);
-    free(time);
+    tsp_free(time);
 
     fprintf(gp, "set xrange [%lf:%lf]\n", bounds.min_x, bounds.max_x);
     fprintf(gp, "set yrange [%lf:%lf]\n", bounds.min_y, bounds.max_y);
     fprintf(gp, "set output '%s'\n", output_name);
 
-    double *cum_min = malloc(sizeof(double) * length);
-    check_alloc(cum_min);
+    double *cum_min = tsp_malloc(sizeof(double) * length);
+
     cum_min[0] = costs[0];
     for (int i = 1; i < length; i++)
         cum_min[i] = costs[i] < cum_min[i - 1] ? costs[i] : cum_min[i - 1];
@@ -119,5 +119,5 @@ void plot_costs_evolution(const double *costs, const size_t length, const char *
 
     fflush(gp);
     check_pclose(pclose(gp));
-    free(cum_min);
+    tsp_free(cum_min);
 }

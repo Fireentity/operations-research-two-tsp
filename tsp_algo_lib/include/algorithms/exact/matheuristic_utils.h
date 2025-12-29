@@ -11,7 +11,7 @@ typedef struct {
     double time_limit;
     HeuristicType heuristic_type;
     uint64_t seed;
-    void *heuristic_args; 
+    void *heuristic_args;
 } WarmStartParams;
 
 void matheuristic_run_warm_start(const WarmStartParams *params,

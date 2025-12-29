@@ -5,9 +5,9 @@
 #include "time_limiter.h"
 
 double two_opt(int *tour,
-                      const int number_of_nodes,
-                      const double *edge_cost_array,
-                      const TimeLimiter timer) {
+               const int number_of_nodes,
+               const double *edge_cost_array,
+               const TimeLimiter timer) {
     double cost_improvement = 0;
     bool improved = true;
 

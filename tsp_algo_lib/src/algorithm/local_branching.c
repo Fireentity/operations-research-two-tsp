@@ -9,7 +9,7 @@
 static void free_lb_config(void *cfg_void) {
     LocalBranchingConfig *cfg = cfg_void;
     matheuristic_free_args(cfg->heuristic_args);
-    free(cfg);
+    tsp_free(cfg);
 }
 
 static void run_local_branching(const TspInstance *inst,
@@ -39,8 +39,8 @@ static void run_local_branching(const TspInstance *inst,
     if (time_limiter_is_over(&timer)) return;
 
 #ifdef ENABLE_CPLEX
-    int *current_tour = malloc((n + 1) * sizeof(int));
-    check_alloc(current_tour);
+    int *current_tour = tsp_malloc((n + 1) * sizeof(int));
+
     tsp_solution_get_tour(sol, current_tour);
     double current_cost = tsp_solution_get_cost(sol);
 
@@ -82,13 +82,13 @@ static void run_local_branching(const TspInstance *inst,
         }
         cplex_solver_destroy(ctx);
     }
-    free(current_tour);
+    tsp_free(current_tour);
 #endif
 }
 
 TspAlgorithm local_branching_create(LocalBranchingConfig config) {
-    LocalBranchingConfig *c = malloc(sizeof(LocalBranchingConfig));
-    check_alloc(c);
+    LocalBranchingConfig *c = tsp_malloc(sizeof(LocalBranchingConfig));
+
     *c = config;
     return (TspAlgorithm){
         .name = "Local Branching Matheuristic",

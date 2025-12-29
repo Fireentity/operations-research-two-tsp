@@ -112,7 +112,7 @@ static const OptionMeta options_registry[] = {
     {"--lb-cost", NULL, "LB cost", "lb", "cost_file", OPT_STRING, offsetof(CmdOptions, lb_params.cost_file)},
 };
 
-const OptionMeta* cmd_options_get_metadata(void) {
+const OptionMeta *cmd_options_get_metadata(void) {
     return options_registry;
 }
 
@@ -129,10 +129,12 @@ static void set_tsp_inst_defaults(TspInstanceOptions *opt) {
     opt->generation_area.y_square = 0;
     opt->generation_area.square_side = 1000;
 }
+
 static void set_tsp_sol_defaults(TspSolutionOptions *opt) {
-    opt->load_file=NULL;
-    opt->save_file=NULL;
+    opt->load_file = NULL;
+    opt->save_file = NULL;
 }
+
 static void set_nn_defaults(NNOptions *opt) {
     opt->enable = false;
     opt->plot_file = strdup("NN-plot.png");
@@ -223,8 +225,8 @@ static void set_lb_defaults(LocalBranchingOptions *opt) {
 }
 
 CmdOptions *cmd_options_create_defaults(void) {
-    CmdOptions *opt = calloc(1, sizeof(CmdOptions));
-    check_alloc(opt);
+    CmdOptions *opt = tsp_calloc(1, sizeof(CmdOptions));
+
 
     opt->verbosity = 1;
     opt->config_file = NULL;
@@ -251,46 +253,46 @@ CmdOptions *cmd_options_create_defaults(void) {
 void cmd_options_destroy(CmdOptions *opt) {
     if (!opt) return;
 
-    free(opt->config_file);
-    free(opt->plots_path);
-    free(opt->inst.input_file);
+    tsp_free(opt->config_file);
+    tsp_free(opt->plots_path);
+    tsp_free(opt->inst.input_file);
 
-    free(opt->sol.load_file);
-    free(opt->sol.save_file);
+    tsp_free(opt->sol.load_file);
+    tsp_free(opt->sol.save_file);
 
-    free(opt->nn_params.plot_file);
-    free(opt->nn_params.cost_file);
+    tsp_free(opt->nn_params.plot_file);
+    tsp_free(opt->nn_params.cost_file);
 
-    free(opt->vns_params.plot_file);
-    free(opt->vns_params.cost_file);
+    tsp_free(opt->vns_params.plot_file);
+    tsp_free(opt->vns_params.cost_file);
 
-    free(opt->tabu_params.plot_file);
-    free(opt->tabu_params.cost_file);
+    tsp_free(opt->tabu_params.plot_file);
+    tsp_free(opt->tabu_params.cost_file);
 
-    free(opt->grasp_params.plot_file);
-    free(opt->grasp_params.cost_file);
+    tsp_free(opt->grasp_params.plot_file);
+    tsp_free(opt->grasp_params.cost_file);
 
-    free(opt->em_params.plot_file);
-    free(opt->em_params.cost_file);
+    tsp_free(opt->em_params.plot_file);
+    tsp_free(opt->em_params.cost_file);
 
-    free(opt->genetic_params.plot_file);
-    free(opt->genetic_params.cost_file);
+    tsp_free(opt->genetic_params.plot_file);
+    tsp_free(opt->genetic_params.cost_file);
 
-    free(opt->benders_params.plot_file);
-    free(opt->benders_params.cost_file);
+    tsp_free(opt->benders_params.plot_file);
+    tsp_free(opt->benders_params.cost_file);
 
-    free(opt->bc_params.plot_file);
-    free(opt->bc_params.cost_file);
+    tsp_free(opt->bc_params.plot_file);
+    tsp_free(opt->bc_params.cost_file);
 
-    free(opt->hf_params.plot_file);
-    free(opt->hf_params.cost_file);
-    free(opt->hf_params.heuristic_name);
+    tsp_free(opt->hf_params.plot_file);
+    tsp_free(opt->hf_params.cost_file);
+    tsp_free(opt->hf_params.heuristic_name);
 
-    free(opt->lb_params.plot_file);
-    free(opt->lb_params.cost_file);
-    free(opt->lb_params.heuristic_name);
+    tsp_free(opt->lb_params.plot_file);
+    tsp_free(opt->lb_params.cost_file);
+    tsp_free(opt->lb_params.heuristic_name);
 
-    free(opt);
+    tsp_free(opt);
 
     if_verbose(VERBOSE_DEBUG, "Options destroyed\n");
 }

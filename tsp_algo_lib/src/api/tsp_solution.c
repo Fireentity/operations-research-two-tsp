@@ -31,8 +31,8 @@ static double compute_cost_internal(const TspInstance *instance, const int *tour
 }
 
 static int *allocate_tour(const int n) {
-    int *tour = calloc(n + 1, sizeof(int));
-    check_alloc(tour);
+    int *tour = tsp_calloc(n + 1, sizeof(int));
+
     return tour;
 }
 
@@ -45,8 +45,8 @@ static void initialize_tour_identity(int *tour, const int n) {
 
 TspSolution *tsp_solution_create(const TspInstance *instance) {
     if_verbose(VERBOSE_INFO, "Initializing TSP solution...\n");
-    TspSolution *sol = malloc(sizeof(TspSolution));
-    check_alloc(sol);
+    TspSolution *sol = tsp_malloc(sizeof(TspSolution));
+
 
     int n = tsp_instance_get_num_nodes(instance);
 
@@ -57,9 +57,8 @@ TspSolution *tsp_solution_create(const TspInstance *instance) {
     sol->cost = compute_cost_internal(instance, sol->tour);
 
     if (pthread_mutex_init(&sol->mutex, NULL) != 0) {
-        free(sol->tour);
-        free(sol);
-        check_alloc(NULL);
+        tsp_free(sol->tour);
+        tsp_free(sol);
     }
 
     if_verbose(VERBOSE_DEBUG, "  Solution: Default tour cost calculated: %lf\n", sol->cost);
@@ -82,9 +81,9 @@ void tsp_solution_destroy(TspSolution *self) {
 
     pthread_mutex_destroy(&self->mutex);
     if (self->tour) {
-        free(self->tour);
+        tsp_free(self->tour);
     }
-    free(self);
+    tsp_free(self);
 }
 
 
@@ -92,16 +91,16 @@ FeasibilityResult tsp_solution_check_feasibility(TspSolution *self) {
     if_verbose(VERBOSE_DEBUG, "  Solution: Checking feasibility...\n");
 
     const int n = tsp_instance_get_num_nodes(self->instance);
-    int *tour_copy = malloc((n + 1) * sizeof(int));
-    check_alloc(tour_copy);
+    int *tour_copy = tsp_malloc((n + 1) * sizeof(int));
+
 
     pthread_mutex_lock(&self->mutex);
     memcpy(tour_copy, self->tour, (n + 1) * sizeof(int));
     const double cost_copy = self->cost;
     pthread_mutex_unlock(&self->mutex);
 
-    int *counter = calloc(n, sizeof(int));
-    check_alloc(counter);
+    int *counter = tsp_calloc(n, sizeof(int));
+
     FeasibilityResult result = FEASIBLE;
 
     for (int i = 0; i < n; i++) {
@@ -133,8 +132,8 @@ FeasibilityResult tsp_solution_check_feasibility(TspSolution *self) {
         if_verbose(VERBOSE_DEBUG, "  Solution: Feasibility check PASSED.\n");
     }
 
-    free(counter);
-    free(tour_copy);
+    tsp_free(counter);
+    tsp_free(tour_copy);
     return result;
 }
 

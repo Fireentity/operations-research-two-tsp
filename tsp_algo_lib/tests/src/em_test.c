@@ -19,7 +19,7 @@ void run_em_tests(void) {
     CostRecorder *recorder = cost_recorder_create(100);
 
     // 2. Config
-    EMConfig config = { .time_limit = TIME_LIMIT };
+    EMConfig config = {.time_limit = TIME_LIMIT};
     TspAlgorithm em = em_create(config);
 
     // 3. Run

@@ -177,16 +177,16 @@ int ini_parse_stream(ini_reader reader, void *stream, ini_handler handler,
             /* Start-of-line comment */
         }
 #if INI_ALLOW_MULTILINE
-        else if (*prev_name && *start && start > line) { 
+        else if (*prev_name && *start && start > line) {
 #if INI_ALLOW_INLINE_COMMENTS
-        end = ini_find_chars_or_comment(start, NULL);
-        *end = '\0';
-        ini_rstrip(start, end);
+            end = ini_find_chars_or_comment(start, NULL);
+            *end = '\0';
+            ini_rstrip(start, end);
 #endif
-        /* Non-blank line with leading whitespace, treat as continuation
-               of previous name's value (as per Python configparser). */
-        if (!HANDLER(user, section, prev_name, start) && !error)
-            error = lineno;
+            /* Non-blank line with leading whitespace, treat as continuation
+                   of previous name's value (as per Python configparser). */
+            if (!HANDLER(user, section, prev_name, start) && !error)
+                error = lineno;
         }
 #endif
         else if (*start == '[') {
