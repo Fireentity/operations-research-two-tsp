@@ -12,11 +12,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(ProjectOptions)
 
 add_compile_options(
+        -Wall
+        -Wextra
+        -Wpedantic
         $<$<CONFIG:Debug>:-g>
-        $<$<CONFIG:Debug>:-Wall>
-        $<$<CONFIG:Debug>:-Wextra>
         $<$<CONFIG:Release>:-O3>
 )
+
 
 find_package(CPLEX QUIET)
 

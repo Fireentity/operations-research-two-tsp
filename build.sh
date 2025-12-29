@@ -15,7 +15,6 @@ for arg in "$@"; do
             CPLEX_OPTION="-DCPLEX_ROOT=${arg#*=}"
             ;;
         /*)
-            # path assoluto passato "nudo"
             CPLEX_OPTION="-DCPLEX_ROOT=$arg"
             ;;
     esac
