@@ -1,0 +1,8 @@
+services:
+  latex:
+    image: texlive/texlive:latest
+    volumes:
+      - ./:/data
+    working_dir: /data
+    command: latexmk -pdf -interaction=nonstopmode -outdir=output -pvc report.tex
+    restart: unless-stopped
