@@ -68,7 +68,7 @@ static void run_nn(const TspInstance *instance,
     const double *costs = tsp_instance_get_cost_matrix(instance);
 
     // 0 implies auto-detect, otherwise use user value
-    int num_threads = cfg->num_threads > 0 ? cfg->num_threads : (int)get_max_threads();
+    int num_threads = cfg->num_threads > 0 ? cfg->num_threads : (int) get_max_threads();
     if (num_threads > n) num_threads = n;
 
     if_verbose(VERBOSE_INFO,
