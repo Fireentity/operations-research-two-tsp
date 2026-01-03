@@ -1,5 +1,7 @@
 #include "cost_recorder.h"
 #include <stdlib.h>
+#include <string.h>
+
 #include "c_util.h"
 
 struct CostRecorder {
@@ -64,4 +66,19 @@ void cost_recorder_enable(CostRecorder *r) {
 void cost_recorder_disable(CostRecorder *r) {
     if (!r) return;
     r->enabled = false;
+}
+
+void cost_recorder_merge(CostRecorder *dest, const CostRecorder *src) {
+    if (!dest || !src || src->count == 0) return;
+
+    const size_t required_capacity = dest->count + src->count;
+    size_t new_capacity = dest->capacity ? dest->capacity : 1; // Avoid infinite loop if capacity is 0
+
+    while (required_capacity > new_capacity) new_capacity *= 2;
+
+    double *new_data = tsp_realloc(dest->data, new_capacity * sizeof(double));
+    dest->data = new_data;
+    dest->capacity = new_capacity;
+    memcpy(dest->data + dest->count, src->data, src->count * sizeof(double));
+    dest->count += src->count;
 }

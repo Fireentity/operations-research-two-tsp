@@ -42,4 +42,8 @@ void cost_recorder_enable(CostRecorder *r);
  */
 void cost_recorder_disable(CostRecorder *r);
 
+/**
+ * @brief Merges data from source recorder into destination recorder.
+ */
+void cost_recorder_merge(CostRecorder *dest, const CostRecorder *src);
 #endif // COST_RECORDER_H

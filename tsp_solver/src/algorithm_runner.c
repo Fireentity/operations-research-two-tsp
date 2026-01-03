@@ -27,7 +27,9 @@ typedef struct {
     const TspInstance *instance;
     TspSolution *solution;
     void *local_config;
-    void (*free_config)(void*);
+
+    void (*free_config)(void *);
+
     unsigned int thread_id;
 } WorkerArgs;
 
@@ -44,7 +46,6 @@ static void execute_parallel(const TspAlgorithm *algo,
                              const TspInstance *instance,
                              TspSolution *solution,
                              unsigned int num_threads) {
-
     pthread_t *threads = tsp_malloc(num_threads * sizeof(pthread_t));
     WorkerArgs *args = tsp_malloc(num_threads * sizeof(WorkerArgs));
 
@@ -56,7 +57,7 @@ static void execute_parallel(const TspAlgorithm *algo,
         args[i].solution = solution;
         args[i].free_config = algo->free_config;
         args[i].thread_id = i;
-        args[i].local_config = algo->clone_config(algo->config, 1);
+        args[i].local_config = algo->clone_config(algo->config, i);
 
         if (pthread_create(&threads[i], NULL, worker_thread_func, &args[i]) != 0) {
             fprintf(stderr, "Error creating thread %ld\n", i);
@@ -84,7 +85,8 @@ static void execute_and_report(const TspAlgorithm *algo,
         cost_recorder_add(recorder, tsp_solution_get_cost(solution));
     } else {
         if (num_threads > 1) {
-            if_verbose(VERBOSE_INFO, "[WARN] Algorithm %s does not support multi-threading. Running sequentially.\n", algo->name);
+            if_verbose(VERBOSE_INFO, "[WARN] Algorithm %s does not support multi-threading. Running sequentially.\n",
+                       algo->name);
         }
         tsp_algorithm_run(algo, instance, solution, recorder);
     }
@@ -192,7 +194,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
     if (options->nn_params.enable) {
         NNConfig cfg = {
             .time_limit = options->nn_params.time_limit,
-            .seed = options->inst.seed
+            .seed = options->inst.seed,
+            .num_threads = (int) options->nn_params.num_threads
         };
         TspAlgorithm algo = nn_create(cfg);
         BUILD_PATHS(options->nn_params.plot_file, options->nn_params.cost_file);

@@ -1,0 +1,117 @@
+\section{Project Structure}
+\label{sec:project_structure}
+
+The implementation of the TSP solver is designed as a modular framework written in C. The primary goal of the architecture is to separate the core algorithmic logic from the user interface and system utilities, and to ensure extensibility, maintainability, and ease of testing.
+This section details the software organization, the specific design patterns employed to emulate object-oriented features in C, and the concurrency model adopted to leverage multi-core architectures.
+
+\subsection{Overview and Modules}
+
+The project is structured into four distinct components, each addressing a specific concern.
+This separation of concerns allows for independent development and testing of the algorithmic core, the command-line interface, and the system utilities.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/4-arch_diagram}
+    \caption{High-level architectural diagram showing the dependency hierarchy.}
+    \label{fig:arch_diagram}
+\end{figure}
+
+The build process is managed by \textbf{CMake}, which orchestrates the compilation of these modules and manages conditional dependencies, such as the optional integration with the CPLEX optimization studio.
+At the top of the hierarchy sits the \texttt{tsp\_solver} executable.
+This module acts as the orchestrator: it is responsible for initializing the environment, parsing user input via the \texttt{cflaglib} library, and triggering the selected solution strategy.
+
+Beneath the application layer lies \texttt{tsp\_algo\_lib}, a static library that represents the computational heart of the project.
+It encapsulates the entire business logic, including the definition of problem instances, solution representations, and the implementation of both heuristic and exact solvers.
+Supporting these high-level operations is the \texttt{common} library, a collection of cross-cutting utilities that provide essential services such as high-precision time measurement, thread-safe logging, and memory management wrappers.
+
+\subsection{Data Abstraction and Core Components}
+
+A defining characteristic of the \texttt{tsp\_algo\_lib} design is the strict adherence to data abstraction principles.
+To enforce a clear separation between interface and implementation (mimicking the private encapsulation found in object-oriented languages) the library makes extensive use of \textbf{Opaque Pointers}.
+Structures such as \texttt{TspInstance} and \texttt{TspSolution} are declared in the public header files without their definition.
+This prevents client code from accessing raw data members directly, ensuring that the internal representation can be optimized or refactored without breaking the API contract.
+
+\subsubsection{The Instance and Solution Models}
+The data model distinguishes strictly between the immutable definition of the problem and the mutable state of the search process.
+The \texttt{TspInstance} structure is responsible for holding read-only data, such as node coordinates and problem dimensions. A critical optimization implemented within this module is the pre-computation of the cost matrix at load time. By flattening the $N \times N$ distance matrix into a contiguous memory block, the solver avoids the computational overhead of repeated Euclidean distance calculations (which involve costly square root operations) during the intensive iterative phases of the meta-heuristics.
+
+In contrast, the \texttt{TspSolution} acts as a stateful container for the current tour permutation and its associated objective function value. As shown in Listing \ref{lst:tspsolution}, this structure is designed with concurrency in mind: it includes a native \texttt{pthread\_mutex\_t} to manage concurrent access, ensuring that updates to the global best solution are atomic and thread-safe.
+
+\begin{listing}[H]
+    \begin{minted}[frame=single, framesep=10pt, linenos]{c}
+typedef struct TspSolution {
+    double cost;                // The objective value
+    int *tour;                  // The sequence of visited nodes
+    const TspInstance *instance;// Reference to the problem data
+    pthread_mutex_t mutex;      // Thread-safety mechanism
+} TspSolution;
+    \end{minted}
+    \caption{Internal definition of the TspSolution structure.}
+    \label{lst:tspsolution}
+\end{listing}
+
+\subsection{Algorithmic Polymorphism: The Strategy Pattern}
+
+One of the challenges in implementing a flexible solver in C is the lack of native support for polymorphism.
+To address this, the project implements the \textbf{Strategy Pattern} using function pointers.
+This allows the main solver loop to treat diverse algorithms, ranging from simple constructive heuristics like Nearest Neighbor to complex meta-heuristics like Genetic Algorithms, uniformly.
+
+The \texttt{TspAlgorithm} structure, illustrated in Listing \ref{lst:tspalgorithm}, defines this generic interface.
+It holds pointers to the lifecycle functions (\texttt{run}, \texttt{free\_config}, \texttt{clone\_config}). The key element enabling this flexibility is the \texttt{void *config} pointer.
+This generic pointer allows the structure to carry algorithm-specific configuration objects (e.g., \texttt{TabuConfig} or \texttt{GeneticConfig}) in a type-erased manner.
+When a specific algorithm is instantiated, it casts this pointer back to its concrete configuration type internally, effectively emulating class inheritance and virtual methods.
+
+\begin{listing}[H]
+    \begin{minted}[frame=single, framesep=10pt, linenos]{c}
+typedef struct {
+    const char *name;
+    void *config; // Polymorphic pointer to specific algorithm config
+
+    // Generic execution interface
+    void (*run)(const TspInstance *inst,
+                TspSolution *sol,
+                const void *config,
+                CostRecorder *rec);
+
+    // Virtual destructor and cloning for configs
+    void (*free_config)(void *);
+    void *(*clone_config)(const void *config, uint64_t seed_offset);
+} TspAlgorithm;
+    \end{minted}
+    \caption{The TspAlgorithm structure implementing the Strategy Pattern.}
+    \label{lst:tspalgorithm}
+\end{listing}
+
+\subsection{Utilities and Concurrency Model}
+
+To make the experiments repeatable in a multithreaded environment, the project moves beyond standard library facilities, implementing custom and thread-safe system utilities.
+A critical component in this regard is the source of randomness.
+The standard C \texttt{rand()} function typically relies on a hidden global state protected by a lock, which in a highly parallel application creates a bottleneck due to lock contention and makes it impossible to reproduce specific thread behaviors.
+To resolve this, a re-entrant Linear Congruential Generator (LCG) was implemented within the \texttt{common} library.
+By assigning each thread its own isolated \texttt{RandomState}, initialized with a unique seed derived from the global configuration, the solver ensures that parallel executions (e.g., evaluating a population in a Genetic Algorithm) are entirely lock-free and deterministic: given the same initial seed, the system produces identical results regardless of thread scheduling.
+
+Supporting the execution flow are specific modules for telemetry and control.
+The \texttt{TimeLimiter} serves as an abstraction over the system's monotonic clock.
+Designed as a value type, it encapsulates time-budgeting logic, allowing algorithms to verify timeout conditions from a simple API.
+Simultaneously, the \texttt{CostRecorder} tracks the evolution of the objective function value.
+To avoid the significant performance overhead of synchronization primitives during high-frequency updates, this structure is intentionally designed to be non-thread-safe.
+Instead, the architecture employs a strategy where each thread operates on a private recorder instance.
+These local buffers are efficiently merged into a global record upon completion using memory block copies (`memcpy`), ensuring high-performance telemetry without lock contention.
+
+These utilities underpin a concurrency model designed to maximize parallelism while minimizing synchronization overhead.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/4-concurrency}
+    \caption{Visual representation of thread-local search vs. global solution updates.}
+    \label{fig:concurrency}
+\end{figure}
+
+As depicted in Figure~\ref{fig:concurrency}, algorithms operate primarily on thread-local data structures.
+When an algorithm is launched in parallel, its configuration is cloned via \texttt{clone\_config}, giving each worker its own parameter set and random seed.
+Interaction with the shared state occurs only via the \texttt{TspSolution} object.
+Threads employ a ``check-then-lock'' optimization: they acquire the \texttt{mutex} only when they have found a locally feasible solution that is strictly better than the last known global best.
+
+In this context, the Opaque Pointer design pattern proves fundamental: since the internal layout of \texttt{TspSolution} is hidden from the client code, threads are strictly forced to modify the shared state exclusively through the public API functions.
+This encapsulation guarantees that the underlying locking and unlocking mechanisms are always respected and makes coding less error-prone, preventing race conditions that would arise from manually locking/unlocking the solution.

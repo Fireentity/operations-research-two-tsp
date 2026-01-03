@@ -8,16 +8,16 @@
 
 static const ParsingResult *validate_options(const CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
-
+    const unsigned int max_threads = get_max_threads();
     if (opt->num_threads < 1) {
         if_verbose(VERBOSE_INFO, "[Config Error] Thread count must be >= 1.\n");
         return WRONG_VALUE_TYPE;
     }
 
-    if (opt->num_threads > (unsigned int) get_max_threads()) {
+    if (opt->num_threads > max_threads) {
         if_verbose(VERBOSE_INFO,
-                   "[Config Warning] Thread count (%u) is greater than system cores (%ld). Performance may degrade.\n",
-                   opt->num_threads, get_max_threads());
+                   "[Config Warning] Thread count (%u) is greater than system cores (%u). Performance may degrade.\n",
+                   opt->num_threads, max_threads);
     }
 
     if (opt->inst.mode == TSP_INPUT_MODE_FILE) {
@@ -40,6 +40,11 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         if (opt->nn_params.time_limit < 0.0) {
             if_verbose(VERBOSE_INFO, "[Config Error] NN: time limit cannot be negative.\n");
             return WRONG_VALUE_TYPE;
+        }
+        if (opt->nn_params.num_threads > max_threads) {
+            if_verbose(VERBOSE_INFO,
+                   "[Config Warning] Thread count (%u) is greater than system cores (%u). Performance may degrade.\n",
+                   opt->nn_params.num_threads, max_threads);
         }
     }
 
@@ -278,6 +283,7 @@ void print_configuration(const CmdOptions *options) {
                "  plot:              %s\n"
                "  cost:              %s\n"
                "  time limit:        %.3f\n"
+               "  threads:           %u\n"
                "\n"
                "Extra Mileage:       %s\n"
                "  plot:              %s\n"
@@ -339,6 +345,7 @@ void print_configuration(const CmdOptions *options) {
                options->nn_params.plot_file ? options->nn_params.plot_file : "(none)",
                options->nn_params.cost_file ? options->nn_params.cost_file : "(none)",
                options->nn_params.time_limit,
+               options->nn_params.num_threads,
 
                options->em_params.enable ? "ENABLED" : "DISABLED",
                options->em_params.plot_file ? options->em_params.plot_file : "(none)",
