@@ -2,7 +2,7 @@ import os
 import re
 import argparse
 
-EXCLUDE_PATTERN = re.compile(r"(.*(?:__pycache__|cmake_build_debug|build|target|\.idea|\.venv|\.git|\.svn|\.vscode|TSPLIB95).*)")
+EXCLUDE_PATTERN = re.compile(r"(.*(?:__pycache__|cmake_build_debug|build|target|\.idea|\.venv|\.git|\.svn|\.vscode|TSPLIB95|report).*)")
 
 def print_tree(directory, exclude_pattern=None, prefix="", output_file=None, file=None, only_ext=None):
     if not os.path.isdir(directory):
