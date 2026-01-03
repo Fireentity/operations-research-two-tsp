@@ -1,9 +1,9 @@
-\chapter{Exact Methods}
-\label{chap:exact_methods}
+\section{Exact Methods}
+\label{sec:exact_methods}
 
-While heuristic and meta-heuristic algorithms offer a pragmatic balance between execution speed and solution quality, they cannot provide mathematical guarantees of optimality. To benchmark these approximate methods and to solve smaller instances to proven optimality, this project incorporates exact techniques based on Integer Linear Programming (ILP). This chapter describes the integration of an industrial-grade solver into the framework and the mathematical formulation employed.
+While heuristic and meta-heuristic algorithms offer a pragmatic balance between execution speed and solution quality, they cannot provide mathematical guarantees of optimality. To benchmark these approximate methods and to solve smaller instances to proven optimality, this project incorporates exact techniques based on Integer Linear Programming (ILP). This section describes the integration of an industrial-grade solver into the framework and the mathematical formulation employed.
 
-\section{The Solver: IBM ILOG CPLEX}
+\subsection{The Solver: IBM ILOG CPLEX}
 
 To handle the complexity of solving NP-hard problems exactly, the project leverages **IBM ILOG CPLEX Optimization Studio**. CPLEX is widely regarded as the industry standard for solving large-scale linear and mixed-integer programming problems.
 
@@ -13,14 +13,14 @@ It is worth noting that the landscape of optimization solvers is heavily influen
 
 In the context of the Traveling Salesman Problem, CPLEX is not used as a "black box" that knows what a TSP is. Instead, it serves as a generic MIP engine: it receives a mathematical model defined by variables, objective functions, and linear constraints, and explores the search tree to find the optimal assignment of variables.
 
-\section{Modeling and The CPLEX Wrapper}
-\label{sec:wrapper_modeling}
+\subsection{Modeling and The CPLEX Wrapper}
+\label{subsec:wrapper_modeling}
 
 A key architectural decision in this project was to avoid using specialized TSP solvers like \textit{Concorde}. While Concorde is arguably the fastest TSP solver in existence, relying on it would have externalized the entire solution process. Instead, to maintain educational value and fine-grained control over the cutting planes, we implemented an "ad-hoc" model using the generic CPLEX C API.
 
 To integrate this external dependency without polluting the core logic with IBM-specific data types, the system utilizes a wrapper component, \texttt{cplex\_solver\_wrapper.c}. This wrapper acts as an abstraction layer: the algorithms in \texttt{tsp\_algo\_lib} interact with a generic \texttt{CplexSolverContext}, and the wrapper translates these high-level requests (e.g., "fix this edge", "add this constraint") into low-level CPLEX calls. This design decoupling ensures that the underlying solver could theoretically be swapped (e.g., replacing CPLEX with Gurobi) without rewriting the exact algorithms.
 
-\subsection{Mathematical Formulation}
+\subsubsection{Mathematical Formulation}
 The problem is modeled using the classic Dantzig-Fulkerson-Johnson (DFJ) formulation, which is generally stronger than the compact Miller-Tucker-Zemlin (MTZ) formulation for symmetric TSPs.
 The decision variables are defined as binary variables $x_{ij}$, where $x_{ij} = 1$ if the edge between node $i$ and node $j$ is selected in the tour, and $0$ otherwise. Since the distance matrix is symmetric, the model considers only undirected edges ($i < j$), reducing the number of variables from $N^2$ to $N(N-1)/2$.
 
@@ -35,8 +35,8 @@ Crucially, this base model (often called the \textit{2-matching relaxation}) all
 
 Therefore, our implementation works dynamically: the model starts with only degree constraints. Subtour constraints are identified and added "lazily" during the solution process only when a violation is detected. This dynamic row generation is the foundation of both the Benders Decomposition and the Branch-and-Cut algorithms described in the following sections.
 
-\section{Benders Decomposition}
+\subsection{Benders Decomposition}
 TODO
 
-\section{Branch and Cut}
+\subsection{Branch and Cut}
 TODO
