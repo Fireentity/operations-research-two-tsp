@@ -8,36 +8,147 @@ This chapter presents two construction heuristics (Nearest Neighbor and Extra-Mi
 The Nearest Neighbor (NN) heuristic is a greedy procedure that builds a tour incrementally by repeatedly moving to the closest unvisited node until all nodes have been visited, then closing the cycle.
 Its appeal lies in its extremely low overhead and deterministic behavior for a fixed start node, but solution quality can vary significantly depending on the starting city.
 For this reason, NN is also used in a multi-start fashion, where the algorithm is launched from multiple starting nodes and the best tour found so far is retained.
-
+It is important to note that our project does not provide a standalone implementation of the naive single-start Nearest Neighbor. Instead, we exclusively adopt a \textbf{Multi-Start} strategy combined with local search refinement. This approach mitigates the greedy bias by launching the algorithm from multiple distinct starting nodes and retaining only the best global tour found across all iterations.
 \begin{algorithm}[H]
-\caption{Nearest Neighbor (NN)}
-\begin{algorithmic}[1]
-\Require TSP instance with cost matrix \(c(\cdot,\cdot)\), start node \(s\)
-\Ensure A feasible tour \(\pi\) and its cost
-\State Mark all nodes as unvisited; mark \(s\) as visited.
-\State Set \(\pi_0 \leftarrow s\).
-\For{\(i = 1\) to \(n-1\)}
-    \State Let \(u \leftarrow \pi_{i-1}\).
-    \State Choose \(v\) among unvisited nodes minimizing \(c(u,v)\).
-    \State Set \(\pi_i \leftarrow v\); mark \(v\) as visited.
-\EndFor
-\State Close the tour by returning to \(s\) and compute the total cost.
-\end{algorithmic}
+\caption{Nearest Neighbor Construction (Implementation)}
+\SetAlgoLined
+\KwIn{Distance matrix $C$, number of nodes $n$, starting node $s$}
+\KwOut{Tour array $T$, total cost $cost$}
+
+Initialize $T$ with identity $[0, 1, \dots, n-1]$\;
+Swap $T[0]$ and $T[s]$\;
+$current\_node \leftarrow T[0]$\;
+$cost \leftarrow 0$\;
+
+\For{$i \leftarrow 1$ \KwTo $n-1$}{
+    $best\_dist \leftarrow \infty$\;
+    $best\_idx \leftarrow -1$\;
+
+    \tcp{Scan only the unvisited portion of T}
+    \For{$j \leftarrow i$ \KwTo $n-1$}{
+        $candidate \leftarrow T[j]$\;
+        $d \leftarrow C_{current\_node, candidate}$\;
+        \If{$d < best\_dist$}{
+            $best\_dist \leftarrow d$\;
+            $best\_idx \leftarrow j$\;
+        }
+    }
+
+    $cost \leftarrow cost + best\_dist$\;
+    Swap $T[i]$ and $T[best\_idx]$\;
+    $current\_node \leftarrow T[i]$\;
+}
+
+$cost \leftarrow cost + C_{current\_node, T[0]}$\;
+$T[n] \leftarrow T[0]$ \tcp*{Close the loop}
+\Return $T, cost$\;
 \end{algorithm}
 
 \begin{algorithm}[H]
-\caption{Multi-start Nearest Neighbor}
-\begin{algorithmic}[1]
-\Require TSP instance, global time limit \(T\)
-\Ensure Best tour found within time limit
-\State Initialize best tour cost to \(+\infty\).
-\For{each start node \(s \in V\) (until time limit expires)}
-    \State Run NN starting from \(s\) and obtain tour \(\pi\).
-    \State If \(\pi\) improves the best cost, store it as the incumbent.
-    \State Stop early if elapsed time exceeds \(T\).
-\EndFor
-\end{algorithmic}
+\caption{Multi-Start Nearest Neighbor + 2-OPT}
+\label{alg:multistart_nn}
+\SetAlgoLined
+\DontPrintSemicolon
+
+% Input e Output
+\KwIn{Matrice dei costi $C$, numero di nodi $n$, tempo limite $T_{max}$}
+\KwOut{Miglior tour trovato $T_{best}$, miglior costo $C_{best}$}
+
+\BlankLine
+
+% Inizializzazione
+$S \leftarrow [0, 1, \dots, n-1]$ \tcp*{Lista dei nodi di partenza possibili}
+\textbf{Shuffle} $(S)$ \tcp*{Randomizza l'ordine di esplorazione}
+$C_{best} \leftarrow \infty$\;
+$timer \leftarrow$ StartTimer()\;
+
+\BlankLine
+
+% Ciclo Multi-Start
+\ForEach{start\_node $s$ in $S$}{
+    \If{ElapsedTime($timer$) $> T_{max}$}{
+        \textbf{break} \tcp*{Interrompe se il tempo è scaduto}
+    }
+
+    % Fase 1: Costruzione
+    $T_{curr}, C_{curr} \leftarrow$ \textbf{NearestNeighborConstruct}($C, n, s$)\;
+
+    % Fase 2: Raffinamento (Local Search)
+    $improvement \leftarrow$ \textbf{TwoOpt}($T_{curr}$)\;
+    $C_{curr} \leftarrow C_{curr} + improvement$\;
+
+    % Fase 3: Aggiornamento soluzione globale
+    \If{$C_{curr} < C_{best}$}{
+        $C_{best} \leftarrow C_{curr}$\;
+        $T_{best} \leftarrow$ Clone($T_{curr}$)\;
+    }
+}
+
+\Return $T_{best}, C_{best}$\;
+
 \end{algorithm}
+
+\paragraph*{Parallel Execution Model}
+To exploit multi-threading applied a parallelization at the \textit{Algorithm Runner} level rather than modifying the internal logic of the heuristics.
+The system spawns $N$ worker threads, where each worker executes a cloned instance of the algorithm configuration with a unique random seed. This allows multiple starting points (in Multi-Start NN) or different stochastic paths (in GRASP/VNS) to be explored simultaneously.
+
+\begin{listing}[H]
+    \begin{minted}[frame=single, framesep=10pt, linenos]{c}
+static void execute_parallel(const TspAlgorithm *algo,
+                             const TspInstance *instance,
+                             TspSolution *solution,
+                             unsigned int num_threads) {
+    pthread_t *threads = tsp_malloc(num_threads * sizeof(pthread_t));
+    WorkerArgs *args = tsp_malloc(num_threads * sizeof(WorkerArgs));
+
+    for (size_t i = 0; i < num_threads; i++) {
+        args[i].run_fn = algo->run;
+        args[i].instance = instance;
+        args[i].solution = solution; // Shared solution object
+        // Clone config to ensure thread-safety (e.g. separate RNG seeds)
+        args[i].local_config = algo->clone_config(algo->config, i);
+
+        pthread_create(&threads[i], NULL, worker_thread_func, &args[i]);
+    }
+
+    for (size_t i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+    // Cleanup...
+}
+    \end{minted}
+    \caption{Thread creation logic in \texttt{algorithm\_runner.c} [cite: 93-99].}
+    \label{lst:thread_creation}
+\end{listing}
+
+Since multiple threads attempt to update the global best solution simultaneously, access to the \texttt{TspSolution} object must be synchronized to prevent Race Conditions. We achieved this by embedding a \texttt{pthread\_mutex\_t} within the solution structure.
+The update function employs a locking mechanism to ensure that a new solution is recorded only if it is strictly better than the current global best.
+
+\begin{listing}[H]
+    \begin{minted}[frame=single, framesep=10pt, linenos]{c}
+bool tsp_solution_update_if_better(TspSolution *self,
+                                   const int *new_tour,
+                                   double new_cost) {
+    bool updated = false;
+
+    // Critical Section
+    pthread_mutex_lock(&self->mutex);
+
+    // Check if the new cost is actually better than the global best
+    if (new_cost < self->cost - EPSILON) {
+        self->cost = new_cost;
+        memcpy(self->tour, new_tour, (n + 1) * sizeof(int));
+        updated = true;
+    }
+
+    pthread_mutex_unlock(&self->mutex);
+
+    return updated;
+}
+    \end{minted}
+    \caption{Thread-safe solution update in \texttt{tsp\_solution.c} [cite: 997-999].}
+    \label{lst:thread_safe_update}
+\end{listing}
 
 \subsection{2-OPT local search}
 To improve a feasible tour produced by a construction heuristic, a standard choice is 2-OPT, which iteratively replaces two non-adjacent edges with two different edges whenever the swap reduces total length.

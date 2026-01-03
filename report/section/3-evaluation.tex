@@ -21,7 +21,7 @@ which gives the proportion of instances solved by \(s\) within a factor \(\tau\)
 In particular, \(\rho_s(1)\) is the fraction of instances on which \(s\) is the best, while \(\lim_{\tau \to r_{\max}^{-}}\rho_s(\tau)\) indicates the fraction of instances that \(s\) can handle without failing under the experimental setup.
 A practical advantage is that performance profiles are relatively insensitive to outliers: a single instance can affect \(\rho_s\) by at most \(1/|P|\), making comparisons more stable in the presence of a few anomalous cases.
 
-\section*{Automation and result format}
+\subsection{Automation and result format}
 To automate the generation of performance-profile plots, we rely on the \texttt{perfprof.py} script (developed by prof.\ Domenico Salvagnin, University of Padua), which reads a CSV file containing experimental outcomes and produces a publication-quality PDF plot using Matplotlib.
 The CSV is organized with a header line containing the number of solver columns and their labels,
 \[
