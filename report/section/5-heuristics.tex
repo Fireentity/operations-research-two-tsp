@@ -5,79 +5,62 @@ In this work, heuristics play two roles: they provide fast standalone solvers, a
 This chapter presents two construction heuristics (Nearest Neighbor and Extra-Mileage) and a local-search improvement method (2-OPT), together with a multi-start strategy used to improve robustness.
 
 \subsection{Nearest Neighbor construction}
+
+% Visualizzazione step-by-step del Nearest Neighbor
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/nearest_neighbor_steps.png}
+    \caption{Costruzione step-by-step del tour con l'algoritmo Nearest Neighbor partendo dal nodo 0. Ad ogni passo, il nodo corrente (arancione) seleziona il nodo non visitato più vicino (linea tratteggiata rossa), che viene poi aggiunto al tour (edge verde). I nodi visitati sono evidenziati in verde chiaro.}
+    \label{fig:nn_steps}
+\end{figure}
+
+% Confronto con diversi nodi di partenza
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/nearest_neighbor_comparison.png}
+    \caption{Confronto tra tour costruiti con Nearest Neighbor utilizzando diversi nodi di partenza. L'ordine di costruzione delle edges è indicato dai numeri gialli. Il nodo di partenza è evidenziato in verde. Si noti come la scelta del nodo iniziale influenzi significativamente la qualità della soluzione finale.}
+    \label{fig:nn_comparison}
+\end{figure}
+
 The Nearest Neighbor (NN) heuristic is a greedy procedure that builds a tour incrementally by repeatedly moving to the closest unvisited node until all nodes have been visited, then closing the cycle.
 Its appeal lies in its extremely low overhead and deterministic behavior for a fixed start node, but solution quality can vary significantly depending on the starting city.
 For this reason, NN is also used in a multi-start fashion, where the algorithm is launched from multiple starting nodes and the best tour found so far is retained.
-It is important to note that our project does not provide a standalone implementation of the naive single-start Nearest Neighbor. Instead, we exclusively adopt a \textbf{Multi-Start} strategy combined with local search refinement. This approach mitigates the greedy bias by launching the algorithm from multiple distinct starting nodes and retaining only the best global tour found across all iterations.
-\begin{algorithm}[H]
-\caption{Nearest Neighbor Construction (Implementation)}
-\SetAlgoLined
-\KwIn{Distance matrix $C$, number of nodes $n$, starting node $s$}
-\KwOut{Tour array $T$, total cost $cost$}
+It is important to note that our project does not provide a standalone implementation of the naive single-start Nearest Neighbor. Instead, we exclusively adopt a Multi-Start strategy combined with local search refinement. This approach mitigates the greedy bias by launching the algorithm from multiple distinct starting nodes and retaining only the best global tour found across all iterations.
 
-Initialize $T$ with identity $[0, 1, \dots, n-1]$\;
-Swap $T[0]$ and $T[s]$\;
-$current\_node \leftarrow T[0]$\;
-$cost \leftarrow 0$\;
-
-\For{$i \leftarrow 1$ \KwTo $n-1$}{
-    $best\_dist \leftarrow \infty$\;
-    $best\_idx \leftarrow -1$\;
-
-    \tcp{Scan only the unvisited portion of T}
-    \For{$j \leftarrow i$ \KwTo $n-1$}{
-        $candidate \leftarrow T[j]$\;
-        $d \leftarrow C_{current\_node, candidate}$\;
-        \If{$d < best\_dist$}{
-            $best\_dist \leftarrow d$\;
-            $best\_idx \leftarrow j$\;
-        }
-    }
-
-    $cost \leftarrow cost + best\_dist$\;
-    Swap $T[i]$ and $T[best\_idx]$\;
-    $current\_node \leftarrow T[i]$\;
-}
-
-$cost \leftarrow cost + C_{current\_node, T[0]}$\;
-$T[n] \leftarrow T[0]$ \tcp*{Close the loop}
-\Return $T, cost$\;
-\end{algorithm}
-
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{Multi-Start Nearest Neighbor + 2-OPT}
 \label{alg:multistart_nn}
 \SetAlgoLined
 \DontPrintSemicolon
 
-% Input e Output
-\KwIn{Matrice dei costi $C$, numero di nodi $n$, tempo limite $T_{max}$}
-\KwOut{Miglior tour trovato $T_{best}$, miglior costo $C_{best}$}
+% Input and Output
+\KwIn{Cost matrix $C$, number of nodes $n$, time limit $T_{max}$}
+\KwOut{Best tour found $T_{best}$, best cost $C_{best}$}
 
 \BlankLine
 
-% Inizializzazione
-$S \leftarrow [0, 1, \dots, n-1]$ \tcp*{Lista dei nodi di partenza possibili}
-\textbf{Shuffle} $(S)$ \tcp*{Randomizza l'ordine di esplorazione}
+% Initialization
+$S \leftarrow [0, 1, \dots, n-1]$ \tcp*{List of possible starting nodes}
+\textbf{Shuffle} $(S)$ \tcp*{Randomize exploration order}
 $C_{best} \leftarrow \infty$\;
 $timer \leftarrow$ StartTimer()\;
 
 \BlankLine
 
-% Ciclo Multi-Start
+% Multi-Start Loop
 \ForEach{start\_node $s$ in $S$}{
     \If{ElapsedTime($timer$) $> T_{max}$}{
-        \textbf{break} \tcp*{Interrompe se il tempo è scaduto}
+        \textbf{break} \tcp*{Stop if time limit is reached}
     }
 
-    % Fase 1: Costruzione
+    % Phase 1: Construction
     $T_{curr}, C_{curr} \leftarrow$ \textbf{NearestNeighborConstruct}($C, n, s$)\;
 
-    % Fase 2: Raffinamento (Local Search)
+    % Phase 2: Refinement (Local Search)
     $improvement \leftarrow$ \textbf{TwoOpt}($T_{curr}$)\;
     $C_{curr} \leftarrow C_{curr} + improvement$\;
 
-    % Fase 3: Aggiornamento soluzione globale
+    % Phase 3: Global solution update
     \If{$C_{curr} < C_{best}$}{
         $C_{best} \leftarrow C_{curr}$\;
         $T_{best} \leftarrow$ Clone($T_{curr}$)\;
@@ -85,72 +68,27 @@ $timer \leftarrow$ StartTimer()\;
 }
 
 \Return $T_{best}, C_{best}$\;
-
 \end{algorithm}
 
-\paragraph*{Parallel Execution Model}
-To exploit multi-threading applied a parallelization at the \textit{Algorithm Runner} level rather than modifying the internal logic of the heuristics.
-The system spawns $N$ worker threads, where each worker executes a cloned instance of the algorithm configuration with a unique random seed. This allows multiple starting points (in Multi-Start NN) or different stochastic paths (in GRASP/VNS) to be explored simultaneously.
-
-\begin{listing}[H]
-    \begin{minted}[frame=single, framesep=10pt, linenos]{c}
-static void execute_parallel(const TspAlgorithm *algo,
-                             const TspInstance *instance,
-                             TspSolution *solution,
-                             unsigned int num_threads) {
-    pthread_t *threads = tsp_malloc(num_threads * sizeof(pthread_t));
-    WorkerArgs *args = tsp_malloc(num_threads * sizeof(WorkerArgs));
-
-    for (size_t i = 0; i < num_threads; i++) {
-        args[i].run_fn = algo->run;
-        args[i].instance = instance;
-        args[i].solution = solution; // Shared solution object
-        // Clone config to ensure thread-safety (e.g. separate RNG seeds)
-        args[i].local_config = algo->clone_config(algo->config, i);
-
-        pthread_create(&threads[i], NULL, worker_thread_func, &args[i]);
-    }
-
-    for (size_t i = 0; i < num_threads; i++) {
-        pthread_join(threads[i], NULL);
-    }
-    // Cleanup...
-}
-    \end{minted}
-    \caption{Thread creation logic in \texttt{algorithm\_runner.c} [cite: 93-99].}
-    \label{lst:thread_creation}
-\end{listing}
-
-Since multiple threads attempt to update the global best solution simultaneously, access to the \texttt{TspSolution} object must be synchronized to prevent Race Conditions. We achieved this by embedding a \texttt{pthread\_mutex\_t} within the solution structure.
-The update function employs a locking mechanism to ensure that a new solution is recorded only if it is strictly better than the current global best.
-
-\begin{listing}[H]
-    \begin{minted}[frame=single, framesep=10pt, linenos]{c}
-bool tsp_solution_update_if_better(TspSolution *self,
-                                   const int *new_tour,
-                                   double new_cost) {
-    bool updated = false;
-
-    // Critical Section
-    pthread_mutex_lock(&self->mutex);
-
-    // Check if the new cost is actually better than the global best
-    if (new_cost < self->cost - EPSILON) {
-        self->cost = new_cost;
-        memcpy(self->tour, new_tour, (n + 1) * sizeof(int));
-        updated = true;
-    }
-
-    pthread_mutex_unlock(&self->mutex);
-
-    return updated;
-}
-    \end{minted}
-    \caption{Thread-safe solution update in \texttt{tsp\_solution.c} [cite: 997-999].}
-    \label{lst:thread_safe_update}
-\end{listing}
-
 \subsection{2-OPT local search}
+
+% Per la visualizzazione confronto prima/dopo
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/2opt_explanation.png}
+    \caption{Esempio di 2-OPT: confronto tra il tour iniziale con crossing (sinistra) e il tour ottimizzato dopo l'applicazione della mossa 2-OPT (destra). Le edges in rosso vengono rimosse e sostituite con le edges in blu, eliminando il crossing e riducendo la lunghezza totale del tour.}
+    \label{fig:2opt_explanation}
+\end{figure}
+
+% Per la visualizzazione step-by-step
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/2opt_step_by_step.png}
+    \caption{Processo step-by-step della mossa 2-OPT: (1) identificazione delle edges che si intersecano, (2) rimozione delle edges evidenziate, (3) aggiunta di nuove edges che evitano il crossing, (4) tour finale ottimizzato senza intersezioni.}
+    \label{fig:2opt_steps}
+\end{figure}
+
+
 To improve a feasible tour produced by a construction heuristic, a standard choice is 2-OPT, which iteratively replaces two non-adjacent edges with two different edges whenever the swap reduces total length.
 Given a tour \(\pi\), consider edges \((\pi_i,\pi_{i+1})\) and \((\pi_j,\pi_{j+1})\) with \(0 \le i < j-1 < n\); the 2-OPT move removes them and reconnects using \((\pi_i,\pi_j)\) and \((\pi_{i+1},\pi_{j+1})\), reversing the segment between \(i+1\) and \(j\).
 The gain can be computed with the cost difference
@@ -162,19 +100,66 @@ and the move is performed whenever \(\Delta(i,j) < 0\).
 In our solver, 2-OPT is used as a refinement step after each constructed solution in the multi-start NN procedure, so that diversification is provided by varying the start node while intensification is obtained by local search.
 The algorithm stops when no improving swap exists (local optimality with respect to the 2-OPT neighborhood) or when the global time limit is reached.
 
-\begin{algorithm}[H]
-\caption{2-OPT refinement (best-improving outline)}
-\begin{algorithmic}[1]
-\Require Feasible tour \(\pi\), time limit \(T\)
-\Ensure Locally improved tour
-\Repeat
-    \State Find \((i^\star,j^\star)\) minimizing \(\Delta(i,j)\) over valid pairs.
-    \If{\(\Delta(i^\star,j^\star) < 0\)}
-        \State Reverse the segment \(\pi_{i^\star+1},\dots,\pi_{j^\star}\) and update the cost.
-    \EndIf
-\Until{\(\Delta(i^\star,j^\star) \ge 0\) or elapsed time exceeds \(T\)}
-\end{algorithmic}
+% Requires:
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\begin{algorithm}[h]
+\caption{2-OPT Local Search (First-Improvement)}
+\label{alg:twoopt}
+\SetAlgoLined
+\DontPrintSemicolon
+
+\KwIn{Tour $T$ (array di lunghezza $n+1$ con $T[n]=T[0]$), cost matrix $C$, number of nodes $n$, time limit $T_{max}$, tolerance $\epsilon$}
+\KwOut{Updated tour $T$, total improvement $\Delta_{tot}$}
+
+\BlankLine
+
+$timer \leftarrow$ StartTimer()\;
+$\Delta_{tot} \leftarrow 0$\;
+$improved \leftarrow \textbf{true}$\;
+
+\BlankLine
+
+\While{$improved$}{
+    $improved \leftarrow \textbf{false}$\;
+
+    \For{$i \leftarrow 1$ \KwTo $n-1$}{
+        \If{ElapsedTime($timer$) $> T_{max}$}{
+            \Return $T, \Delta_{tot}$\;
+        }
+
+        \For{$j \leftarrow i+1$ \KwTo $n-1$}{
+
+            \If{$i = 1$ \textbf{and} $j = n-1$}{
+                \textbf{continue} \tcp*{Avoid swapping first and last edge together}
+            }
+
+            $a \leftarrow T[i-1]$\;
+            $b \leftarrow T[i]$\;
+            $c \leftarrow T[j]$\;
+            $d \leftarrow T[j+1]$\;
+
+            $\Delta \leftarrow C_{a,c} + C_{b,d} - C_{a,b} - C_{c,d}$\;
+
+            \If{$\Delta < -\epsilon$}{
+                \textbf{ReverseSegment}$(T, i, j)$ \tcp*{Reverse $T[i..j]$ in-place}
+                $\Delta_{tot} \leftarrow \Delta_{tot} + \Delta$\;
+                $improved \leftarrow \textbf{true}$\;
+                \textbf{break} \tcp*{First-improvement: restart scan}
+            }
+        }
+
+        \If{$improved$}{
+            \textbf{break}\;
+        }
+    }
+}
+
+\Return $T, \Delta_{tot}$\;
 \end{algorithm}
+
+
 
 \subsection{Extra-Mileage construction}
 The Extra-Mileage (cheapest insertion) heuristic constructs a tour by progressively inserting new nodes into the current partial tour at the position that causes the smallest increase in total cost.
@@ -185,19 +170,105 @@ Starting from an initial subtour, at each step it evaluates candidate insertions
 and chooses the node and insertion position minimizing \(\Delta\).
 This approach often produces better initial tours than purely greedy nearest-neighbor choices, at the price of a higher computational cost due to the broader evaluation at each insertion step.
 
-\begin{algorithm}[H]
-\caption{Extra-Mileage (cheapest insertion)}
-\begin{algorithmic}[1]
-\Require TSP instance with cost matrix \(c(\cdot,\cdot)\)
-\Ensure A feasible tour \(\pi\)
-\State Initialize a subtour with two nodes (then iteratively insert remaining nodes).
-\While{not all nodes are inserted}
-    \State Choose insertion \((a,h,b)\) minimizing \(\Delta(a,h,b)\).
-    \State Insert \(h\) between \(a\) and \(b\) in the current tour.
-\EndWhile
-\State Close the tour and compute its cost.
-\end{algorithmic}
+% Extra-Mileage construction (diameter start + cheapest insertion) [file:1]
+\begin{algorithm}[h]
+\caption{Extra-Mileage Construction (Diameter + Cheapest Insertion)}
+\label{alg:extramileage_construction}
+\SetAlgoLined
+\DontPrintSemicolon
+
+\KwIn{Cost matrix $C$ (flattened or $n\times n$), number of nodes $n$}
+\KwOut{Tour $T$ (closed, $T[n]=T[0]$), tour cost $cost$}
+
+\BlankLine
+
+\If{$n < 2$}{
+    \Return \textbf{error}\tcp*{$n$ too small}
+}
+
+% 1) Find diameter (farthest pair)
+$maxDist \leftarrow -\infty$\;
+$a \leftarrow 0,\; b \leftarrow 1$\;
+\For{$i \leftarrow 0$ \KwTo $n-1$}{
+    \For{$j \leftarrow i+1$ \KwTo $n-1$}{
+        \If{$C[i,j] > maxDist$}{
+            $maxDist \leftarrow C[i,j]$\;
+            $a \leftarrow i,\; b \leftarrow j$\;
+        }
+    }
+}
+
+\BlankLine
+
+% 2) Initialize partial tour with the diameter edge
+$T[0] \leftarrow a$\;
+$T[1] \leftarrow b$\;
+$visited[0..n-1] \leftarrow 0$\;
+$visited[a] \leftarrow 1,\; visited[b] \leftarrow 1$\;
+$currentCount \leftarrow 2$\;
+
+\BlankLine
+
+% 3) Complete via cheapest insertion
+$\textbf{ExtraMileageCompleteTour}(T,\; currentCount,\; n,\; C,\; visited)$\;
+
+% 4) Compute final cost (closed tour)
+$T[n] \leftarrow T[0]$\;
+$cost \leftarrow \textbf{CalculateTourCost}(T,\; n,\; C)$\;
+
+\Return $T,\; cost$\;
 \end{algorithm}
+
+
+\begin{algorithm}[h]
+\caption{\textsc{ExtraMileageCompleteTour}}
+\label{alg:extramileage_complete}
+\SetAlgoLined
+\DontPrintSemicolon
+
+\KwIn{Partial tour array $T$, current size $currentCount$, total nodes $n$, costs $C$, visited flags}
+\KwOut{Completed tour in $T$}
+
+\While{$currentCount < n$}{
+    $bestDelta \leftarrow +\infty$\;
+    $bestNode \leftarrow -1$\;
+    $bestPos \leftarrow -1$\;
+
+    % Try inserting every non-visited node in every edge (T[p], T[p+1])
+    \For{$h \leftarrow 0$ \KwTo $n-1$}{
+        \If{$visited[h]=1$}{\textbf{continue}}
+        \For{$p \leftarrow 0$ \KwTo $currentCount-1$}{
+            $i \leftarrow T[p]$\;
+            $j \leftarrow T[(p+1)\bmod currentCount]$\;
+            $\Delta \leftarrow C[i,h] + C[h,j] - C[i,j]$\;
+
+            \If{$\Delta < bestDelta$}{
+                $bestDelta \leftarrow \Delta$\;
+                $bestNode \leftarrow h$\;
+                $bestPos \leftarrow p$\;
+            }
+        }
+    }
+
+    \If{$bestNode = -1$}{
+        \Return \textbf{error}\tcp*{No feasible insertion found}
+    }
+
+    % Insert bestNode after bestPos (shift right)
+    \For{$k \leftarrow currentCount$ \KwDownTo $bestPos+1$}{
+        $T[k+1] \leftarrow T[k]$\;
+    }
+    $T[bestPos+1] \leftarrow bestNode$\;
+    $visited[bestNode] \leftarrow 1$\;
+    $currentCount \leftarrow currentCount + 1$\;
+
+    % Keep tour closed for the next iteration
+    $T[currentCount] \leftarrow T[0]$\;
+}
+
+\Return\;
+\end{algorithm}
+
 
 \subsection{Experimental comparison}
 To compare heuristic variants, we evaluate them on the same benchmark instances and time limits, and we measure performance in terms of the best tour cost returned within the allowed time.
