@@ -1,0 +1,57 @@
+\section{Performance Profiler}
+
+Comparing different TSP algorithms (and, even more importantly, their parameterized variants) requires a benchmarking methodology that accounts for both speed and robustness across multiple instances.
+Simple aggregate statistics (e.g., mean or median runtime/cost) can be misleading because they can be dominated by a small number of particularly hard instances or by failed runs.
+To mitigate these issues, we adopt the \emph{performance profiles} proposed by Dolan and Mor\'e, which summarize each solver's relative performance through a cumulative distribution of performance ratios with respect to the best solver on each instance.
+
+\subsection{Performance profiles: definition and meaning}
+Let \(S\) be the set of solvers (or solver configurations) and let \(P\) be the set of benchmark instances.
+Denote by \(t_{p,s}\) a performance measure of solver \(s \in S\) on instance \(p \in P\); in our setting, \(t_{p,s}\) can represent CPU time or, when dealing with heuristic-type solvers, the cost of the best solution found within a fixed time budget.
+We define the \emph{performance ratio} as
+\[
+r_{p,s}=\frac{t_{p,s}}{\min\{t_{p,s'}: s' \in S\}},
+\]
+so that \(r_{p,s}\ge 1\), and we set \(r_{p,s}=r_{\max}\) if solver \(s\) fails on instance \(p\).
+
+The \emph{performance profile} of solver \(s\) is the function
+\[
+\rho_s(\tau)=\frac{1}{|P|}\,|\{p \in P : r_{p,s}\le \tau\}|,
+\]
+which gives the proportion of instances solved by \(s\) within a factor \(\tau\) of the best solver.
+In particular, \(\rho_s(1)\) is the fraction of instances on which \(s\) is the best, while \(\lim_{\tau \to r_{\max}^{-}}\rho_s(\tau)\) indicates the fraction of instances that \(s\) can handle without failing under the experimental setup.
+A practical advantage is that performance profiles are relatively insensitive to outliers: a single instance can affect \(\rho_s\) by at most \(1/|P|\), making comparisons more stable in the presence of a few anomalous cases.
+
+\section*{Automation and result format}
+To automate the generation of performance-profile plots, we rely on the \texttt{perfprof.py} script (developed by prof.\ Domenico Salvagnin, University of Padua), which reads a CSV file containing experimental outcomes and produces a publication-quality PDF plot using Matplotlib.
+The CSV is organized with a header line containing the number of solver columns and their labels,
+\[
+\langle ncols \rangle, \text{solver}_1, \text{solver}_2, \dots, \text{solver}_n,
+\]
+followed by one row per instance,
+\[
+\text{instance\_name}, t_1, t_2, \dots, t_n.
+\]
+
+To avoid manual editing and to keep the benchmarking pipeline reproducible, we also implemented a custom CSV parser/writer in C.
+In particular, one routine reads an existing CSV into memory (skipping the first column with instance names) and returns the number of data columns, while a second routine appends a new solver/configuration column and writes the updated table back to disk.
+This design makes it straightforward to run parameter sweeps, record results consistently, and immediately generate the corresponding performance profiles.
+
+\subsection{Instances and experimental protocol}
+All solvers were evaluated on a benchmark of 10 pseudo-randomly generated TSP instances.
+Each instance is associated with a fixed random seed, and the same seeds are reused across all solver runs, ensuring that every method is tested on identical inputs and that results are directly comparable.
+Instance generation initializes the pseudo-random generator once via \texttt{srand(inst->seed)}, so that using the same seed reproduces the same sequence of \texttt{rand()} values.
+
+Node coordinates are sampled as \texttt{rand() \% MAX\_COORDINATES}, which yields integer values uniformly distributed in \([0, \texttt{MAX\_COORDINATES}-1]\).
+In our experiments, \texttt{MAX\_COORDINATES = 10000} defines a \(10{,}000 \times 10{,}000\) square region, providing instances with a consistent geometric scale across all runs.
+This setup favors fairness and repeatability: performance differences should primarily reflect algorithmic choices (construction rules, neighborhoods, diversification, cut separation, etc.) rather than uncontrolled variations in the test data.
+
+Because different algorithm families have different goals, we also align metrics and instance sizes with the nature of each approach.
+For heuristic, metaheuristic, and matheuristic methods, the main objective is to obtain the lowest-cost tour under a given time budget, so we record the best tour cost achieved within the time limit.
+For exact methods, the objective is to prove optimality, so we measure the time required to certify optimality (when feasible), and we use smaller instances accordingly.
+
+Concretely, heuristic algorithms are tested on instances with 1000 nodes and a time limit of 60 seconds per instance, recording the best tour cost found within the limit.
+Matheuristics are tested on instances with 1000 nodes but with a longer time limit of 180 seconds per instance, again measuring the best tour cost within the budget.
+Exact algorithms are tested on instances with 300 nodes, using as metric the time needed to prove optimality.
+
+Parameter tuning follows a uniform workflow: for each candidate configuration, the solver is run on the whole benchmark, results are appended to the CSV as a new column, and performance profiles are generated to compare variants.
+Once the best configuration is selected for each method, final experiments are rerun and stored in separate result files (heuristics, metaheuristics, exact methods, and matheuristics) to produce clean and focused comparative plots.

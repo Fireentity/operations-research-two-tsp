@@ -1,0 +1,94 @@
+\section{Heuristic Methods}
+
+Heuristic algorithms for the Traveling Salesman Problem trade optimality guarantees for speed and simplicity, and are therefore useful when instances are large or when solutions are needed under strict time constraints.
+In this work, heuristics play two roles: they provide fast standalone solvers, and they serve as building blocks (e.g., warm starts or initial solutions) for more advanced approaches.
+This chapter presents two construction heuristics (Nearest Neighbor and Extra-Mileage) and a local-search improvement method (2-OPT), together with a multi-start strategy used to improve robustness.
+
+\subsection{Nearest Neighbor construction}
+The Nearest Neighbor (NN) heuristic is a greedy procedure that builds a tour incrementally by repeatedly moving to the closest unvisited node until all nodes have been visited, then closing the cycle.
+Its appeal lies in its extremely low overhead and deterministic behavior for a fixed start node, but solution quality can vary significantly depending on the starting city.
+For this reason, NN is also used in a multi-start fashion, where the algorithm is launched from multiple starting nodes and the best tour found so far is retained.
+
+\begin{algorithm}[H]
+\caption{Nearest Neighbor (NN)}
+\begin{algorithmic}[1]
+\Require TSP instance with cost matrix \(c(\cdot,\cdot)\), start node \(s\)
+\Ensure A feasible tour \(\pi\) and its cost
+\State Mark all nodes as unvisited; mark \(s\) as visited.
+\State Set \(\pi_0 \leftarrow s\).
+\For{\(i = 1\) to \(n-1\)}
+    \State Let \(u \leftarrow \pi_{i-1}\).
+    \State Choose \(v\) among unvisited nodes minimizing \(c(u,v)\).
+    \State Set \(\pi_i \leftarrow v\); mark \(v\) as visited.
+\EndFor
+\State Close the tour by returning to \(s\) and compute the total cost.
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Multi-start Nearest Neighbor}
+\begin{algorithmic}[1]
+\Require TSP instance, global time limit \(T\)
+\Ensure Best tour found within time limit
+\State Initialize best tour cost to \(+\infty\).
+\For{each start node \(s \in V\) (until time limit expires)}
+    \State Run NN starting from \(s\) and obtain tour \(\pi\).
+    \State If \(\pi\) improves the best cost, store it as the incumbent.
+    \State Stop early if elapsed time exceeds \(T\).
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{2-OPT local search}
+To improve a feasible tour produced by a construction heuristic, a standard choice is 2-OPT, which iteratively replaces two non-adjacent edges with two different edges whenever the swap reduces total length.
+Given a tour \(\pi\), consider edges \((\pi_i,\pi_{i+1})\) and \((\pi_j,\pi_{j+1})\) with \(0 \le i < j-1 < n\); the 2-OPT move removes them and reconnects using \((\pi_i,\pi_j)\) and \((\pi_{i+1},\pi_{j+1})\), reversing the segment between \(i+1\) and \(j\).
+The gain can be computed with the cost difference
+\[
+\Delta(i,j) = c(\pi_i,\pi_j) + c(\pi_{i+1},\pi_{j+1}) - c(\pi_i,\pi_{i+1}) - c(\pi_j,\pi_{j+1}),
+\]
+and the move is performed whenever \(\Delta(i,j) < 0\).
+
+In our solver, 2-OPT is used as a refinement step after each constructed solution in the multi-start NN procedure, so that diversification is provided by varying the start node while intensification is obtained by local search.
+The algorithm stops when no improving swap exists (local optimality with respect to the 2-OPT neighborhood) or when the global time limit is reached.
+
+\begin{algorithm}[H]
+\caption{2-OPT refinement (best-improving outline)}
+\begin{algorithmic}[1]
+\Require Feasible tour \(\pi\), time limit \(T\)
+\Ensure Locally improved tour
+\Repeat
+    \State Find \((i^\star,j^\star)\) minimizing \(\Delta(i,j)\) over valid pairs.
+    \If{\(\Delta(i^\star,j^\star) < 0\)}
+        \State Reverse the segment \(\pi_{i^\star+1},\dots,\pi_{j^\star}\) and update the cost.
+    \EndIf
+\Until{\(\Delta(i^\star,j^\star) \ge 0\) or elapsed time exceeds \(T\)}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Extra-Mileage construction}
+The Extra-Mileage (cheapest insertion) heuristic constructs a tour by progressively inserting new nodes into the current partial tour at the position that causes the smallest increase in total cost.
+Starting from an initial subtour, at each step it evaluates candidate insertions of a not-yet-inserted node \(h\) between two consecutive nodes \(a\) and \(b\), using the extra cost
+\[
+\Delta(a,h,b) = c(a,h) + c(h,b) - c(a,b),
+\]
+and chooses the node and insertion position minimizing \(\Delta\).
+This approach often produces better initial tours than purely greedy nearest-neighbor choices, at the price of a higher computational cost due to the broader evaluation at each insertion step.
+
+\begin{algorithm}[H]
+\caption{Extra-Mileage (cheapest insertion)}
+\begin{algorithmic}[1]
+\Require TSP instance with cost matrix \(c(\cdot,\cdot)\)
+\Ensure A feasible tour \(\pi\)
+\State Initialize a subtour with two nodes (then iteratively insert remaining nodes).
+\While{not all nodes are inserted}
+    \State Choose insertion \((a,h,b)\) minimizing \(\Delta(a,h,b)\).
+    \State Insert \(h\) between \(a\) and \(b\) in the current tour.
+\EndWhile
+\State Close the tour and compute its cost.
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Experimental comparison}
+To compare heuristic variants, we evaluate them on the same benchmark instances and time limits, and we measure performance in terms of the best tour cost returned within the allowed time.
+Following the experimental protocol used throughout this project, the heuristic experiments are run on 10 pseudo-random Euclidean instances with 1000 nodes each and a 60-second time limit per instance.
+The comparison includes both construction heuristics alone and the same methods augmented with 2-OPT refinement; under this setup, the multi-start Nearest Neighbor combined with 2-OPT emerges as the best-performing heuristic variant on the tested instances according to the produced performance profiles.

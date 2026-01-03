@@ -1,0 +1,28 @@
+\section{TSP Preliminaries}
+
+\subsection{Problem definition}
+The Traveling Salesman Problem (TSP) can be stated as follows: given a set of \(n\) cities and a distance (or cost) associated with traveling between each pair of cities, the objective is to determine a shortest possible tour that visits every city exactly once and returns to the starting city.
+The problem is well-known to be NP-hard, meaning that no polynomial-time algorithm is known for solving all instances to optimality as \(n\) grows, which motivates the study of approximation methods, heuristics, and more advanced optimization techniques.
+
+In this work, the focus is on the \emph{symmetric} Traveling Salesman Problem, where traveling from city \(i\) to city \(j\) has the same cost as traveling from \(j\) to \(i\), and instances can be modeled on a complete undirected graph.
+Formally, let \(G=(V,E)\) be a complete undirected graph where \(V=\{v_0, v_1, \dots, v_{n-1}\}\) represents the cities and \(E\) contains all unordered pairs of vertices, and let \(c_e\) be the cost associated with edge \(e \in E\); the goal is to find a minimum-cost Hamiltonian cycle.
+
+\subsection{ILP formulation}
+A standard formulation of the symmetric TSP is an Integer Linear Programming (ILP) model based on binary decision variables \(x_e\), where \(x_e=1\) if edge \(e\) is chosen in the tour and \(x_e=0\) otherwise.
+The model minimizes the total travel cost while enforcing degree constraints and subtour elimination constraints to ensure that the selected edges form a single Hamiltonian cycle.
+
+\begin{align}
+\min \quad & \sum_{e \in E} c_e x_e \\
+\text{s.t.} \quad & \sum_{e \in \delta(v)} x_e = 2 \qquad && \forall v \in V \\
+& \sum_{e \in E(S)} x_e \le |S| - 1 \qquad && \forall S \subset V,\; 2 \le |S| \le |V|-1 \\
+& x_e \in \{0,1\} \qquad && \forall e \in E
+\end{align}
+
+In the degree constraints, \(\delta(v)\) denotes the set of edges incident to vertex \(v\), ensuring that exactly two edges touch each city and therefore that the tour enters and leaves each node exactly once.
+The subtour elimination constraints (SEC) prevent the solution from decomposing into multiple disconnected cycles by restricting the number of selected edges inside any proper subset of vertices \(S\), thus enforcing a single global tour over \(V\).
+Finally, integrality constraints on \(x_e\) guarantee a discrete selection of edges rather than fractional values.
+
+\subsection{Historical context}
+Early roots of the TSP can be traced back to Hamilton's 1856 ``Icosian game'', which popularized the idea of finding a Hamiltonian cycle on a graph.
+Scientific interest intensified in the 1930s with Menger's ``messenger-boy problem'' and later with the influential 1954 computational study by Dantzig, Fulkerson, and Johnson based on a cutting-plane approach for a 49-city instance.
+In the modern era, the Concorde solver by Applegate, Bixby, Chv\'atal, and Cook demonstrated the effectiveness of branch-and-cut methods for optimally solving large benchmark instances, and TSPLIB (assembled by Reinelt) became a standard reference set for comparative evaluation of TSP algorithms.
