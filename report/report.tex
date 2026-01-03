@@ -16,7 +16,7 @@
 \usepackage{changepage}
 \usepackage{fancyvrb}
 \DefineVerbatimEnvironment{promptbox}{Verbatim}
-  {frame=single, fontsize=\small}
+{frame=single, fontsize=\small}
 
 \renewcommand{\acffont}[1]{\textsl{#1}}
 %% Minted listings support (already in template – keep it)
@@ -30,19 +30,19 @@
 \begin{document}
 
 %% Rights management information.
-  \copyrightyear{2025}
-  \copyrightclause{Copyright for this paper by its authors.
-  Use permitted under Creative Commons License Attribution~4.0
-  International (CC BY 4.0).}
+    \copyrightyear{2026}
+    \copyrightclause{Copyright for this paper by its authors.
+    Use permitted under Creative Commons License Attribution~4.0
+    International (CC BY 4.0).}
 
 %% Conference information
-  \conference{Graph Databases Course, University of Padua, Padua, Italy}
+    \conference{Operations Research 2, University of Padua, Padua, Italy}
 
 %% -------------------------------------------------
 %% Title & subtitle
 %% -------------------------------------------------
-  \title{TODO}
-  \title[mode=sub]{TODO}
+    \title{TODO}
+    \title[mode=sub]{TODO}
 
 %% (Optional) title note, can be removed if not wanted
 %  \tnotemark[1]
@@ -51,46 +51,37 @@
 %% -------------------------------------------------
 %% Authors and affiliations
 %% -------------------------------------------------
-  \author[1]{Alberto Bottari}[%
-    email=alberto.bottari@studenti.unipd.it
-  ]
+    \author[1]{Alberto Bottari}[%
+        email=alberto.bottari@studenti.unipd.it
+    ]
 
-  \author[1]{Lorenzo Croce}[%
-    email=lorenzo.croce.1@studenti.unipd.it
-  ]\cormark[1]
+    \author[1]{Lorenzo Croce}[%
+        email=lorenzo.croce.1@studenti.unipd.it
+    ]\cormark[1]
 
 %% Affiliations
-  \address[1]{Department of Information Engineering, University of Padua, Via Gradenigo 6/B, 35131 Padova, Italy}
+    \address[1]{Department of Information Engineering, University of Padua, Via Gradenigo 6/B, 35131 Padova, Italy}
 
 %% Footnotes
-  \cortext[1]{Corresponding author.}
+    \cortext[1]{Corresponding author.}
 
 %% -------------------------------------------------
 %% Abstract & keywords
 %% -------------------------------------------------
-  \begin{abstract}
-    This work presents a reproducibility study of Galois, a system that treats large language models (LLMs) as a storage layer queried through SQL and natural language (NL) to obtain fully structured result tables. The study reimplements and extends the baselines and systems variants of Galois in a fully containerized Python stack.
-The reproduced system is evaluated on the official internal-knowledge benchmarks using the same metrics as the original work, including F1-Cell, cardinality, and tuple-level correctness, and is tested across a broader set of modern foundation models than those originally reported.
-Quantitative results show that, while SQL-based strategies do not consistently dominate NL prompting as strongly as in the original paper, the overall quality--cost trends remain comparable and highlight similar trade-offs between completeness and token usage. Beyond reproducing the baseline behavior, the implementation is designed as a modular platform that already anticipates logical and physical optimization hooks, structured schema derivation via DuckDB, and a study on the normalizing of the evaluation datasets.
+    \begin{abstract}
+        TODO
+    \end{abstract}
 
-  \end{abstract}
+    \begin{keywords}
+        TODO \sep TODO
+    \end{keywords}
 
-  \begin{keywords}
-    Information Retrieval \sep Large Language Models  \sep Query Optimization \sep Declarative Querying \sep SQL
-  \end{keywords}
-
-  \maketitle            % build the formatted title block
+    \maketitle            % build the formatted title block
 
 %% -------------------------------------------------
 %%                MAIN  CONTENT
 %% -------------------------------------------------
-  \input{section/introduction}
-  \input{section/methodology}
-  \input{section/setup}
-  \input{section/results}
-  \input{section/conclusion}
-  \input{section/planned-improvements}
-  \input{section/contributions}
+    \input{section/temp.tex}
 
 %% -------------------------------------------------
 %%                BACK  MATTER
@@ -104,13 +95,13 @@ Quantitative results show that, while SQL-based strategies do not consistently d
 %% -------------------------------------------------
 %% Bibliography
 %% -------------------------------------------------
-  \bibliography{bibliography,proceedings}
+    \bibliography{bibliography,proceedings}
 
 %% -------------------------------------------------
 %% Acronyms (optional)
 %% -------------------------------------------------
-  \newpage
-  \input{acronyms}
+    \newpage
+    \input{acronyms}
 
 %% -------------------------------------------------
 %% End of document
