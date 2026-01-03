@@ -32,7 +32,7 @@ To enforce a clear separation between interface and implementation (mimicking th
 Structures such as \texttt{TspInstance} and \texttt{TspSolution} are declared in the public header files without their definition.
 This prevents client code from accessing raw data members directly, ensuring that the internal representation can be optimized or refactored without breaking the API contract.
 
-\subsubsection{The Instance and Solution Models}
+\paragraph*{The Instance and Solution Models}
 The data model distinguishes strictly between the immutable definition of the problem and the mutable state of the search process.
 The \texttt{TspInstance} structure is responsible for holding read-only data, such as node coordinates and problem dimensions. A critical optimization implemented within this module is the pre-computation of the cost matrix at load time. By flattening the $N \times N$ distance matrix into a contiguous memory block, the solver avoids the computational overhead of repeated Euclidean distance calculations (which involve costly square root operations) during the intensive iterative phases of the meta-heuristics.
 

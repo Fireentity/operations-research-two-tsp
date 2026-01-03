@@ -1,40 +1,58 @@
 \section{Exact Methods}
 \label{sec:exact_methods}
 
-While heuristic and meta-heuristic algorithms offer a pragmatic balance between execution speed and solution quality, they cannot provide mathematical guarantees of optimality. To benchmark these approximate methods and to solve smaller instances to proven optimality, this project incorporates exact techniques based on Integer Linear Programming (ILP). This section describes the integration of an industrial-grade solver into the framework and the mathematical formulation employed.
+While heuristic and meta-heuristic algorithms offer a pragmatic balance between execution speed and solution quality, they cannot provide mathematical guarantees of optimality.
+To benchmark these approximate methods and to solve smaller instances to proven optimality, this project incorporates exact techniques based on Integer Linear Programming (ILP). This section describes the integration of an industrial-grade solver into the framework and the mathematical formulation employed.
 
 \subsection{The Solver: IBM ILOG CPLEX}
 
-To handle the complexity of solving NP-hard problems exactly, the project leverages **IBM ILOG CPLEX Optimization Studio**. CPLEX is widely regarded as the industry standard for solving large-scale linear and mixed-integer programming problems.
+To address the complexity of solving NP-hard problems exactly, the project leverages \textbf{IBM ILOG CPLEX Optimization Studio}, widely regarded as the industry standard for large-scale linear and mixed-integer programming.
+In the specific context of this project, CPLEX is not employed as a \("\)black box\("\) solver that inherently understands the Traveling Salesman Problem.
+Instead, it functions as a generic Mixed-Integer Programming (MIP) engine: it receives an abstract mathematical model defined by decision variables, an objective function, and linear constraints, and it explores the search tree to determine the optimal variable assignment.
 
-The history of this tool is deeply rooted in the evolution of computational optimization. It was originally developed in the late 1980s by Robert Bixby, a mathematician often cited as the father of modern commercial optimization. Bixby's work revolutionized the field, transforming linear programming from a theoretical mathematical exercise into a practical tool for solving real-world supply chain and logistics problems. The software was later acquired by ILOG, which was subsequently purchased by IBM in 2009, integrating the solver into its smarter analytics portfolio.
+The choice of a proprietary solver over open-source alternatives (such as SCIP or COIN-OR) is driven by performance considerations.
+The landscape of computational optimization is deeply rooted in the work of Robert Bixby, a mathematician often cited as the father of modern commercial optimization.
+Bixby developed CPLEX in the late 1980s, revolutionizing the field before the software was acquired by ILOG and subsequently by IBM in 2009.
+Bixby's legacy continues to influence the market, as he later co-founded Gurobi Optimization, creating CPLEX's primary competitor.
+While open-source solvers have made significant strides, commercial engines like CPLEX and Gurobi still maintain a decisive performance edge in solving complex MIP problems, thanks to their advanced presolving routines and proprietary cutting-plane heuristics.
 
-It is worth noting that the landscape of optimization solvers is heavily influenced by Bixby's legacy; after leaving IBM, he went on to co-found Gurobi Optimization, creating CPLEX's primary competitor. While numerous open-source alternatives exist (such as SCIP or the COIN-OR project solvers), proprietary solvers like CPLEX and Gurobi still maintain a significant performance edge in solving complex Mixed-Integer Programming (MIP) problems due to their advanced presolving routines and cutting-plane heuristics. Although CPLEX is a high-cost enterprise software, IBM provides the "Academic Initiative," a program that grants students and researchers free access to the full, unlimited version of the solver. This project utilizes the academic license to leverage the full power of the Branch-and-Cut engine without the constraints typically imposed on trial versions.
+Although CPLEX is typically a high-cost enterprise solution, access for this research was granted through the \texttt{IBM Academic Initiative}.
+This program provides students and researchers with a full, unlimited license, allowing the project to leverage the unrestricted power of the Branch-and-Cut engine without the variable or size limits typical of trial versions.
+\subsection{Implementation Strategy}
+\label{subsec:implementation_strategy}
 
-In the context of the Traveling Salesman Problem, CPLEX is not used as a "black box" that knows what a TSP is. Instead, it serves as a generic MIP engine: it receives a mathematical model defined by variables, objective functions, and linear constraints, and explores the search tree to find the optimal assignment of variables.
+The integration of the solver into the C framework required specific architectural choices to balance performance, educational value, and code maintainability.
 
-\subsection{Modeling and The CPLEX Wrapper}
-\label{subsec:wrapper_modeling}
+\paragraph*{The Wrapper Architecture}
+A key design decision was to avoid using specialized TSP solvers like \textit{Concorde}.
+While Concorde is arguably the fastest TSP solver in existence, relying on it would have externalized the entire solution process, hiding the internal mechanics of cutting planes.
+Instead, to maintain fine-grained control, we implemented an \("\)ad-hoc\("\) model using the generic CPLEX C API.
 
-A key architectural decision in this project was to avoid using specialized TSP solvers like \textit{Concorde}. While Concorde is arguably the fastest TSP solver in existence, relying on it would have externalized the entire solution process. Instead, to maintain educational value and fine-grained control over the cutting planes, we implemented an "ad-hoc" model using the generic CPLEX C API.
+To integrate this external dependency without polluting the core logic with IBM-specific data types, the system utilizes a wrapper component, \texttt{cplex\_solver\_wrapper.c}.
+This wrapper acts as an abstraction layer: the algorithms in \texttt{tsp\_algo\_lib} interact with a generic \texttt{CplexSolverContext}, and the wrapper translates high-level requests (e.g., \("\)fix this edge\("\), \("\)add this constraint\("\)) into low-level CPLEX calls.
+This design decoupling ensures that the underlying solver could theoretically be swapped (e.g., replacing CPLEX with Gurobi) without rewriting the exact algorithms.
 
-To integrate this external dependency without polluting the core logic with IBM-specific data types, the system utilizes a wrapper component, \texttt{cplex\_solver\_wrapper.c}. This wrapper acts as an abstraction layer: the algorithms in \texttt{tsp\_algo\_lib} interact with a generic \texttt{CplexSolverContext}, and the wrapper translates these high-level requests (e.g., "fix this edge", "add this constraint") into low-level CPLEX calls. This design decoupling ensures that the underlying solver could theoretically be swapped (e.g., replacing CPLEX with Gurobi) without rewriting the exact algorithms.
+\paragraph*{Mathematical Formulation}
+The problem is modeled as a standard ILP formulation on an undirected graph.
+The decision variables are defined as binary variables $x_{ij}$, where $x_{ij} = 1$ if the edge connecting node $i$ and node $j$ is part of the solution, and $0$ otherwise.
+Since the distance matrix is symmetric, the model considers only undirected edges ($i < j$), effectively reducing the number of variables from $N^2$ to $N(N-1)/2$.
 
-\subsubsection{Mathematical Formulation}
-The problem is modeled using the classic Dantzig-Fulkerson-Johnson (DFJ) formulation, which is generally stronger than the compact Miller-Tucker-Zemlin (MTZ) formulation for symmetric TSPs.
-The decision variables are defined as binary variables $x_{ij}$, where $x_{ij} = 1$ if the edge between node $i$ and node $j$ is selected in the tour, and $0$ otherwise. Since the distance matrix is symmetric, the model considers only undirected edges ($i < j$), reducing the number of variables from $N^2$ to $N(N-1)/2$.
-
-The base model loaded into CPLEX consists of:
+The initial model loaded into the solver includes the following components:
 \begin{enumerate}
-    \item \textbf{Objective Function}: Minimize $\sum d_{ij} x_{ij}$.
-    \item \textbf{Degree Constraints}: $\sum_{j} x_{ij} = 2$ for every node $i$. This ensures that every city is entered exactly once and left exactly once.
+    \item \textbf{Objective Function}: Minimize $\sum d_{ij} x_{ij}$, representing the total cost of the selected edges.
+    \item \textbf{Degree Constraints}: $\sum_{j} x_{ij} = 2$ for every node $i$.
+    This enforces that every city must be connected to exactly two other cities (one arrival, one departure).
     \item \textbf{Integrality Constraints}: $x_{ij} \in \{0, 1\}$.
 \end{enumerate}
 
-Crucially, this base model (often called the \textit{2-matching relaxation}) allows for disconnected subtours (e.g., two disjoint triangles instead of one large loop). The naive approach to fix this would be to add all possible Subtour Elimination Constraints (SECs) at initialization. However, the number of SECs grows exponentially with the number of nodes ($2^N$), making it impossible to enumerate them for any non-trivial instance.
+However, a model containing only these constraints is not sufficient to define a valid TSP tour.
+It constitutes a relaxation that allows for solutions composed of multiple disconnected cycles (subtours) instead of a single Hamiltonian cycle visiting all nodes.
+To force the solution to be connected, one would theoretically need to add constraints explicitly forbidding every possible subtour.
+Unfortunately, the number of such constraints grows exponentially with the number of nodes ($2^N$), making it computationally impossible to generate them all at initialization for non-trivial instances.
 
-Therefore, our implementation works dynamically: the model starts with only degree constraints. Subtour constraints are identified and added "lazily" during the solution process only when a violation is detected. This dynamic row generation is the foundation of both the Benders Decomposition and the Branch-and-Cut algorithms described in the following sections.
-
+Consequently, our implementation adopts a dynamic approach: the solver starts with the \("\)relaxed\("\) model (degree constraints only).
+The missing constraints required to merge subtours are identified and added lazily during the solution process, but only when a specific violation is detected.
+This mechanism of dynamic constraint generation is the core principle behind both the Benders Decomposition and the Branch-and-Cut algorithms described in the following sections.
 \subsection{Benders Decomposition}
 TODO
 
