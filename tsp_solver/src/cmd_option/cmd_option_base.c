@@ -2,9 +2,7 @@
 #include "cmd_option_internal.h"
 #include "c_util.h"
 #include "logger.h"
-#include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
 
 static const OptionMeta options_registry[] = {
     // GENERAL
@@ -28,6 +26,7 @@ static const OptionMeta options_registry[] = {
     // NEAREST NEIGHBOR
     {"--nn", NULL, "Enable Nearest Neighbor", "nn", "enabled", OPT_BOOL, offsetof(CmdOptions, nn_params.enable)},
     {"--nn-seconds", NULL, "Time limit for NN", "nn", "seconds", OPT_UDOUBLE, offsetof(CmdOptions, nn_params.time_limit)},
+    {"--nn-threads", NULL, "NN number of threads", "nn", "threads", OPT_UINT, offsetof(CmdOptions, nn_params.num_threads)},
     {"--nn-plot", NULL, "NN plot filename", "nn", "plot_file", OPT_STRING, offsetof(CmdOptions, nn_params.plot_file)},
     {"--nn-cost", NULL, "NN cost filename", "nn", "cost_file", OPT_STRING, offsetof(CmdOptions, nn_params.cost_file)},
 
@@ -112,6 +111,8 @@ static const OptionMeta options_registry[] = {
     {"--lb-plot", NULL, "LB plot", "lb", "plot_file", OPT_STRING, offsetof(CmdOptions, lb_params.plot_file)},
     {"--lb-cost", NULL, "LB cost", "lb", "cost_file", OPT_STRING, offsetof(CmdOptions, lb_params.cost_file)},
 };
+#include <stddef.h>
+
 
 const OptionMeta *cmd_options_get_metadata(void) {
     return options_registry;
@@ -138,6 +139,7 @@ static void set_tsp_sol_defaults(TspSolutionOptions *opt) {
 
 static void set_nn_defaults(NNOptions *opt) {
     opt->enable = false;
+    opt->num_threads = 1;
     opt->plot_file = strdup("NN-plot.png");
     opt->cost_file = strdup("NN-costs.png");
 }

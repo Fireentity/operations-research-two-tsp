@@ -33,6 +33,7 @@ typedef struct {
     char *plot_file;
     char *cost_file;
     double time_limit;
+    unsigned int num_threads;
 } NNOptions;
 
 typedef struct {

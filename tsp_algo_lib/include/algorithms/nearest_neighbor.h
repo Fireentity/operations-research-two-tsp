@@ -8,6 +8,7 @@
 typedef struct {
     double time_limit;
     uint64_t seed;
+    int num_threads;
 } NNConfig;
 
 /**
