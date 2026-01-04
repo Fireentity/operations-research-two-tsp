@@ -38,18 +38,25 @@ The \texttt{TspInstance} structure is responsible for holding read-only data, su
 
 In contrast, the \texttt{TspSolution} acts as a stateful container for the current tour permutation and its associated objective function value. As shown in Listing \ref{lst:tspsolution}, this structure is designed with concurrency in mind: it includes a native \texttt{pthread\_mutex\_t} to manage concurrent access, ensuring that updates to the global best solution are atomic and thread-safe.
 
-\begin{listing}[H]
+\begin{listing}[h]
     \begin{minted}[frame=single, framesep=10pt, linenos]{c}
 typedef struct TspSolution {
-    double cost;                // The objective value
-    int *tour;                  // The sequence of visited nodes
-    const TspInstance *instance;// Reference to the problem data
-    pthread_mutex_t mutex;      // Thread-safety mechanism
+    double cost;                 // The objective value
+    int *tour;                   // The sequence of visited nodes (size n+1, closed tour)
+    const TspInstance *instance; // Reference to the problem data
+    pthread_mutex_t mutex;       // Thread-safety mechanism
 } TspSolution;
+
+typedef struct TspInstance {
+    int number_of_nodes;     // Number of nodes (n)
+    Node *nodes;             // Node coordinates (size n)
+    double *edge_cost_array; // Flattened cost matrix (size n*n)
+} TspInstance;
     \end{minted}
-    \caption{Internal definition of the TspSolution structure.}
-    \label{lst:tspsolution}
+    \caption{Internal definitions of the \texttt{TspSolution} and \texttt{TspInstance} structures.}
+    \label{lst:tspstructs}
 \end{listing}
+
 
 \subsection{Algorithmic Polymorphism: The Strategy Pattern}
 
@@ -62,7 +69,7 @@ It holds pointers to the lifecycle functions (\texttt{run}, \texttt{free\_config
 This generic pointer allows the structure to carry algorithm-specific configuration objects (e.g., \texttt{TabuConfig} or \texttt{GeneticConfig}) in a type-erased manner.
 When a specific algorithm is instantiated, it casts this pointer back to its concrete configuration type internally, effectively emulating class inheritance and virtual methods.
 
-\begin{listing}[H]
+\begin{listing}[h]
     \begin{minted}[frame=single, framesep=10pt, linenos]{c}
 typedef struct {
     const char *name;

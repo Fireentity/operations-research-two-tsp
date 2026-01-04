@@ -64,7 +64,7 @@ The Benders Decomposition approach implemented in \texttt{benders\_loop.c} treat
 The process begins by building a relaxed version of the model containing only the objective function, binary variables $x_{ij}$, and degree constraints ($\sum x_{ij} = 2$). The algorithm then enters a loop where the master problem is solved to optimality. The resulting integer solution $x^*$ is interpreted as a graph, and a separation routine (based on Depth First Search) checks for connectivity.
 If the graph is connected (i.e., a single component covering all $N$ nodes), the solution is optimal. If, however, the graph is fragmented into disjoint components $C_1, \dots, C_k$, the solution is infeasible for the TSP. In this case, specific SECs are generated for each component to forbid these subtours, added to the master problem, and the solver is restarted.
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{Benders Decomposition Loop}
 \label{alg:benders}
 \SetAlgoLined
@@ -104,7 +104,7 @@ The implementation leverages the CPLEX Generic Callback mechanism. We define a c
 \paragraph*{Separation Logic}
 Inside the callback, the candidate solution is extracted and checked for connectivity using the same logic as the Benders decomposition. If the graph is disconnected, the candidate is rejected, and SECs corresponding to the connected components are injected immediately into the solver's cut pool. CPLEX then prunes the current node and continues the search, guaranteeing that any accepted integer solution is a valid Hamiltonian tour.
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{Branch-and-Cut Callback Logic}
 \label{alg:branch_cut}
 \SetAlgoLined
@@ -132,7 +132,7 @@ Before the optimization begins, the solver is provided with a feasible, high-qua
 \paragraph*{Impact on Solving}
 This heuristic tour is converted into variable assignments ($x_{ij} = 1$ for edges in the tour) and passed to CPLEX via the \texttt{CPXaddmipstarts} function. Providing a "cutoff" value early in the process allows the Branch-and-Bound algorithm to prune strictly inferior branches of the tree immediately, focusing the search effort on proving optimality rather than finding the first feasible solution.
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{Warm Start Initialization}
 \label{alg:warm_start}
 \SetAlgoLined

@@ -28,7 +28,7 @@ Since Hard Fixing relies on random variable fixing, it acts as a \textit{stochas
 Even if a specific iteration fails to improve the objective function, the subsequent iteration generates (with high probability) a completely different sub-problem by fixing a new random subset of edges.
 This characteristic allows the algorithm to potentially escape local optima by \("\)hopping\("\) between different subspaces, resulting in a continuous stream of potential improvements deep into the execution time.
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{Hard Fixing Loop}
 \label{alg:hard_fixing}
 \SetAlgoLined
@@ -87,7 +87,7 @@ In this scenario, the algorithm has reached a local optimum with respect to the 
 Unlike Hard Fixing, repeating the iteration would be futile as the sub-problem remains identical.
 To proceed further, one would need to dynamically increase $k$, but in the standard fixed-$k$ implementation, early termination serves as a proof of local optimality.
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{Local Branching Loop}
 \label{alg:local_branching}
 \SetAlgoLined
