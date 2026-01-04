@@ -27,7 +27,6 @@ void matheuristic_run_warm_start(const WarmStartParams *params,
             c.time_limit = time;
             c.seed = seed;
             algo = nn_create(c);
-            //TODO needs num of threads?
             break;
         }
         case EM: {

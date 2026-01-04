@@ -6,6 +6,8 @@
 #include "time_limiter.h"
 #include <stdlib.h>
 
+//TODO warm start from loading solution or heuristic?
+
 static void run_benders(const TspInstance *inst,
                         TspSolution *sol,
                         const void *cfg_void,

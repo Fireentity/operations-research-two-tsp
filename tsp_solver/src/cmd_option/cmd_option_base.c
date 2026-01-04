@@ -101,6 +101,8 @@ static const OptionMeta options_registry[] = {
     {"--hf-heuristic", NULL, "Heuristic (nn, em, vns, tabu, grasp)", "hf", "heuristic", OPT_STRING, offsetof(CmdOptions, hf_params.heuristic_name)},
     {"--hf-plot", NULL, "HF plot filename", "hf", "plot_file", OPT_STRING, offsetof(CmdOptions, hf_params.plot_file)},
     {"--hf-cost", NULL, "HF cost filename", "hf", "cost_file", OPT_STRING, offsetof(CmdOptions, hf_params.cost_file)},
+    {"--hf-slice", NULL, "Time slice factor (0.0-1.0)", "hf", "slice_factor", OPT_UDOUBLE, offsetof(CmdOptions, hf_params.time_slice_factor)},
+    {"--hf-min-slice", NULL, "Min time per iteration (s)", "hf", "min_slice", OPT_UDOUBLE, offsetof(CmdOptions, hf_params.min_time_slice)},
 
     // LOCAL BRANCHING (MATHEURISTIC)
     {"--lb", NULL, "Enable Local Branching", "lb", "enabled", OPT_BOOL, offsetof(CmdOptions, lb_params.enable)},
@@ -212,6 +214,8 @@ static void set_hf_defaults(HardFixingOptions *opt) {
     opt->fixing_rate = 0.9;
     opt->heuristic_ratio = 0.2;
     opt->time_limit = 60.0;
+    opt->time_slice_factor = 0.1;
+    opt->min_time_slice = 5.0;
     opt->plot_file = strdup("HF-plot.png");
     opt->cost_file = strdup("HF-costs.png");
     opt->heuristic_name = strdup("vns");

@@ -66,7 +66,15 @@ static void run_local_branching(const TspInstance *inst,
         double remaining = time_limiter_get_remaining(&timer);
         cplex_solver_set_time_limit(ctx, remaining);
 
-        if (cplex_solver_optimize(ctx) == 0 && cplex_solver_has_solution(ctx)) {
+        // Track CPLEX time
+        double start_opt = time_limiter_get_remaining(&timer);
+        int status = cplex_solver_optimize(ctx);
+        double end_opt = time_limiter_get_remaining(&timer);
+
+        if_verbose(VERBOSE_DEBUG, "LB [Iter %d]: CPLEX finished in %.3fs (Limit: %.2fs)\n",
+                   iter, (start_opt - end_opt), remaining);
+
+        if (status == 0 && cplex_solver_has_solution(ctx)) {
             double cost = 0.0;
             cplex_solver_extract_solution(ctx, &cost);
 
@@ -78,8 +86,14 @@ static void run_local_branching(const TspInstance *inst,
                 current_cost = cost;
                 improved = true;
                 if_verbose(VERBOSE_INFO, "LB [Iter %d]: Improved to %.2f\n", iter, cost);
+            } else {
+                if_verbose(VERBOSE_DEBUG, "LB [Iter %d]: No improvement found (Cost: %.2f >= Current: %.2f)\n",
+                           iter, cost, current_cost);
             }
+        } else {
+             if_verbose(VERBOSE_DEBUG, "LB [Iter %d]: No solution or CPLEX error.\n", iter);
         }
+
         cplex_solver_destroy(ctx);
     }
     tsp_free(current_tour);
@@ -95,6 +109,6 @@ TspAlgorithm local_branching_create(LocalBranchingConfig config) {
         .run = run_local_branching,
         .config = c,
         .free_config = free_lb_config,
-        .clone_config = NULL // TODO
+        .clone_config = NULL
     };
 }

@@ -171,6 +171,7 @@ static void *create_heuristic_config(HeuristicType type, const CmdOptions *optio
             return ga;
         }
         case NN:
+            // TODO return config with num_thread
         case EM:
         default:
             return NULL;
@@ -297,6 +298,8 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
             .time_limit = options->hf_params.time_limit,
             .fixing_rate = options->hf_params.fixing_rate,
             .heuristic_time_ratio = options->hf_params.heuristic_ratio,
+            .time_slice_factor = options->hf_params.time_slice_factor,
+            .min_time_slice = options->hf_params.min_time_slice,
             .heuristic_type = parse_warm_start_heuristic(options->hf_params.heuristic_name),
             .seed = options->inst.seed,
             .heuristic_args = NULL

@@ -7,6 +7,7 @@
 #ifdef ENABLE_CPLEX
 #include <ilcplex/cplex.h>
 
+//TODO warm start from loading solution or heuristic?
 static void run_bc(const TspInstance *inst,
                    TspSolution *sol,
                    const void *cfg_void,
@@ -53,10 +54,7 @@ static void run_bc(const TspInstance *inst,
 #else
 
 static void run_bc(const TspInstance *i, TspSolution *s, const void *c, CostRecorder *r) {
-    (void) i;
-    (void) s;
-    (void) c;
-    (void) r;
+    (void) i; (void) s; (void) c; (void) r;
     if_verbose(VERBOSE_INFO, "[ERROR] Branch & Cut unavailable (no CPLEX)\n");
 }
 

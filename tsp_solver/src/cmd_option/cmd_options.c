@@ -167,12 +167,38 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
             if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: fixing rate must be in [0, 1].\n");
             return WRONG_VALUE_TYPE;
         }
+        if (opt->hf_params.heuristic_ratio < 0.0 || opt->hf_params.heuristic_ratio > 1.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: heuristic ratio must be in [0, 1].\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->hf_params.time_slice_factor < 0.0 || opt->hf_params.time_slice_factor > 1.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: time slice factor must be in [0, 1].\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->hf_params.min_time_slice < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Hard Fixing: min time slice cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+    }
+
+    if (opt->lb_params.enable) {
+        if (opt->lb_params.time_limit < 0.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Local Branching: time limit cannot be negative.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->lb_params.k == 0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Local Branching: k must be > 0.\n");
+            return WRONG_VALUE_TYPE;
+        }
+        if (opt->lb_params.heuristic_ratio < 0.0 || opt->lb_params.heuristic_ratio > 1.0) {
+            if_verbose(VERBOSE_INFO, "[Config Error] Local Branching: heuristic ratio must be in [0, 1].\n");
+            return WRONG_VALUE_TYPE;
+        }
     }
 
     if (!opt->nn_params.enable && !opt->vns_params.enable && !opt->tabu_params.enable && !opt->grasp_params.enable &&
         !opt->em_params.enable && !opt->genetic_params.enable && !opt->benders_params.enable && !opt->bc_params.enable
-        &&
-        !opt->hf_params.enable) {
+        && !opt->hf_params.enable && !opt->lb_params.enable) {
         if_verbose(VERBOSE_INFO, "[Warning] No algorithms enabled.\n");
     }
 
@@ -320,6 +346,22 @@ void print_configuration(const CmdOptions *options) {
                "  elite count:       %d\n"
                "  mutation rate:     %.3f\n"
                "  cut ratio MIN-MAX: %d-%d\n"
+               "  tournament size:   %d\n"
+               "  init GRASP RCL:    %d\n"
+               "  init GRASP prob:   %.3f\n"
+               "  init GRASP %%:      %d\n"
+               "  time limit:        %.3f\n"
+               "\n"
+               "Benders Decomp:      %s\n"
+               "  plot:              %s\n"
+               "  cost:              %s\n"
+               "  max iterations:    %d\n"
+               "  time limit:        %.3f\n"
+               "\n"
+               "Branch & Cut:        %s\n"
+               "  plot:              %s\n"
+               "  cost:              %s\n"
+               "  threads:           %u\n"
                "  time limit:        %.3f\n"
                "\n"
                "Hard Fixing:         %s\n"
@@ -327,6 +369,17 @@ void print_configuration(const CmdOptions *options) {
                "  cost:              %s\n"
                "  time limit:        %.3f\n"
                "  fixing rate:       %.3f\n"
+               "  heuristic ratio:   %.3f\n"
+               "  slice factor:      %.3f\n"
+               "  min slice:         %.3f\n"
+               "  heuristic:         %s\n"
+               "\n"
+               "Local Branching:     %s\n"
+               "  plot:              %s\n"
+               "  cost:              %s\n"
+               "  time limit:        %.3f\n"
+               "  k-OPT size:        %d\n"
+               "  heuristic ratio:   %.3f\n"
                "  heuristic:         %s\n"
                "--------------\n",
                (options->inst.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
@@ -385,13 +438,41 @@ void print_configuration(const CmdOptions *options) {
                options->genetic_params.mutation_rate,
                options->genetic_params.crossover_cut_min_ratio,
                options->genetic_params.crossover_cut_max_ratio,
+               options->genetic_params.tournament_size,
+               options->genetic_params.init_grasp_rcl_size,
+               options->genetic_params.init_grasp_prob,
+               options->genetic_params.init_grasp_percent,
                options->genetic_params.time_limit,
+
+               options->benders_params.enable ? "ENABLED" : "DISABLED",
+               options->benders_params.plot_file ? options->benders_params.plot_file : "(none)",
+               options->benders_params.cost_file ? options->benders_params.cost_file : "(none)",
+               options->benders_params.max_iterations,
+               options->benders_params.time_limit,
+
+               options->bc_params.enable ? "ENABLED" : "DISABLED",
+               options->bc_params.plot_file ? options->bc_params.plot_file : "(none)",
+               options->bc_params.cost_file ? options->bc_params.cost_file : "(none)",
+               options->bc_params.num_threads,
+               options->bc_params.time_limit,
 
                options->hf_params.enable ? "ENABLED" : "DISABLED",
                options->hf_params.plot_file ? options->hf_params.plot_file : "(none)",
                options->hf_params.cost_file ? options->hf_params.cost_file : "(none)",
                options->hf_params.time_limit,
                options->hf_params.fixing_rate,
-               options->hf_params.heuristic_name ? options->hf_params.heuristic_name : "(none)"
+               options->hf_params.heuristic_ratio,
+               options->hf_params.time_slice_factor,
+               options->hf_params.min_time_slice,
+               options->hf_params.heuristic_name ? options->hf_params.heuristic_name : "(none)",
+
+               options->lb_params.enable ? "ENABLED" : "DISABLED",
+               options->lb_params.plot_file ? options->lb_params.plot_file : "(none)",
+               options->lb_params.cost_file ? options->lb_params.cost_file : "(none)",
+               options->lb_params.time_limit,
+               options->lb_params.k,
+               options->lb_params.heuristic_ratio,
+               options->lb_params.heuristic_name ? options->lb_params.heuristic_name : "(none)"
     );
 }
+

@@ -113,6 +113,8 @@ typedef struct {
     double time_limit;
     double fixing_rate;
     double heuristic_ratio;
+    double time_slice_factor;
+    double min_time_slice;
     char *heuristic_name;
 } HardFixingOptions;
 
