@@ -60,7 +60,7 @@ static void run_grasp(const TspInstance *instance,
 
             cost_recorder_add(recorder, current_cost);
 
-            // 3. Update Global Solution
+            //  Update Global Solution
             if (tsp_solution_update_if_better(solution, current_tour, current_cost)) {
                 if_verbose(VERBOSE_DEBUG, "\tGRASP [Iter %d, Start %d]: New best cost: %.2f\n", iter, start_node,
                            current_cost);

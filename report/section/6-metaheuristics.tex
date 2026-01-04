@@ -1,0 +1,201 @@
+\section{Metaheuristics}
+\label{sec:metaheuristics}
+
+While constructive heuristics and local search methods like 2-OPT provide rapid solutions, they often become trapped in local optima, unable to reach the global minimum of the objective function. Metaheuristics are higher-level algorithmic frameworks designed to guide these subordinate heuristics, introducing mechanisms to escape local valleys and explore the solution space more thoroughly.
+This chapter details the implementation of four distinct metaheuristic paradigms included in our solver: the Greedy Randomized Adaptive Search Procedure (GRASP), Variable Neighborhood Search (VNS), Tabu Search, and a Genetic Algorithm.
+
+\subsection{Greedy Randomized Adaptive Search Procedure (GRASP)}
+
+GRASP is a multi-start metaheuristic that iteratively constructs solutions using a randomized greedy approach and subsequently improves them via local search. The core idea is to introduce variability in the construction phase: instead of always choosing the absolute best candidate (as in the deterministic Nearest Neighbor), the algorithm samples from a set of high-quality candidates known as the Restricted Candidate List (RCL). This stochastic component allows the solver to generate diverse starting solutions—even when starting from the same node—thereby exploring different regions of the search space and increasing the probability of discovering a basin of attraction that leads to a superior local optimum.
+
+\paragraph{Implementation Strategy and Hyperparameters}
+Our implementation, detailed in Algorithm~\ref{alg:grasp}, orchestrates the search as a multi-start loop. To ensure a diverse coverage of the solution space, the algorithm generates a list of all possible starting nodes $[0, \dots, N-1]$ and shuffles it randomly before execution. This ensures that, even if the time limit prevents iterating through all nodes, the subset of starting points tested is uniformly distributed across the graph.
+
+The core constructive phase is handled by the \texttt{grasp\_nearest\_neighbor\_tour} routine. Its behavior is governed by two key configuration parameters: \texttt{rcl\_size} and \texttt{probability}. The \texttt{rcl\_size} defines the size of the window of the best available neighbors to consider at each step. The \texttt{probability} parameter determines the selection bias: with the specified probability, the algorithm chooses a random node from the RCL; otherwise, it falls back to the greedy choice (the best node).
+Immediately after construction, every solution is refined using the 2-OPT local search. The algorithm tracks the global best solution found across all iterations. To optimize the computational budget, a \texttt{max\_stagnation} parameter is employed: if the algorithm fails to improve the global best for a specified number of consecutive iterations, the search is terminated early, assuming that the potential of the current search strategy has been exhausted.
+
+\begin{algorithm}[H]
+\caption{GRASP Loop}
+\label{alg:grasp}
+\SetAlgoLined
+\DontPrintSemicolon
+\KwIn{Instance $I$, RCL Params ($s, p$), Max Stagnation $S_{\max}$}
+\KwOut{Best Tour $T_{\text{best}}$}
+
+$StartNodes \leftarrow [0, 1, \dots, N-1]$\;
+\textbf{Shuffle}($StartNodes$)\;
+$stagnation \leftarrow 0$\;
+
+\ForEach{$start\_node \in StartNodes$}{
+    \If{Time $\ge T_{\max}$ \textbf{or} $stagnation \ge S_{\max}$}{
+        \textbf{break}\;
+    }
+
+    $T_{\text{curr}} \leftarrow$ \textbf{RandomizedNNConstruct}($I, start\_node, s, p$)\;
+    $T_{\text{curr}} \leftarrow$ \textbf{TwoOpt}($T_{\text{curr}}$)\;
+
+    $C_{\text{curr}} \leftarrow$ Cost($T_{\text{curr}}$)\;
+
+    \If{$C_{\text{curr}} < C_{\text{best}}$}{
+        $T_{\text{best}} \leftarrow T_{\text{curr}}$\;
+        $stagnation \leftarrow 0$\;
+    }
+    \Else{
+        $stagnation \leftarrow stagnation + 1$\;
+    }
+}
+\Return $T_{\text{best}}$\;
+\end{algorithm}
+
+\subsection{Variable Neighborhood Search (VNS)}
+
+Variable Neighborhood Search relies on the systematic change of neighborhood structures to escape local optima. The central observation is that a solution locally optimal with respect to a specific neighborhood structure (e.g., the 2-OPT swap) is not necessarily optimal with respect to another (e.g., a larger $k$-OPT perturbation). By alternating between a "shaking" phase to move the solution to a new basin of attraction and a "descent" phase to find the local optimum within that basin, VNS effectively balances diversification and intensification.
+
+\paragraph{Implementation Strategy and Hyperparameters}
+Our implementation, detailed in Algorithm~\ref{alg:vns}, utilizes a dynamic neighborhood size $k$ that scales from a lower bound $k_{\min}$ to an upper bound $k_{\max}$. The core of the diversification strategy is the "shaking" phase, implemented via the \texttt{compute\_n\_opt\_move} function. This procedure introduces a random perturbation by selecting $k$ cut positions in the tour and reconnecting the resulting segments in a scrambled order. This effectively modifies $k$ edges simultaneously, jumping to a random point in a larger neighborhood defined by the parameter $k$.
+
+To balance exploration with the computational cost of local search, the algorithm employs a \texttt{kick\_repetition} mechanism. Instead of refining the solution after every single perturbation, a sequence of $k$-OPT kicks is applied consecutively. Only after this batch of stochastic moves is the computationally expensive 2-OPT local search executed.
+The acceptance criterion is strict to ensure high-quality convergence: if the new local optimum improves the global best solution found so far, the search centers on this new solution, and the neighborhood size $k$ is immediately reset to $k_{\min}$ to intensify the search around the new promising area. Conversely, if no improvement is found, the algorithm discards the changes, reverts to the best known solution, and increments $k$. This progressive enlargement of the neighborhood size ($k \leftarrow k+1$) allows the solver to attempt stronger and more disruptive perturbations to escape deep local optima when smaller shakes fail.
+
+\begin{algorithm}[H]
+\caption{Variable Neighborhood Search}
+\label{alg:vns}
+\SetAlgoLined
+\DontPrintSemicolon
+\KwIn{Instance $I$, $k_{\min}$, $k_{\max}$, Kicks $R$, Max Stagnation $S_{\max}$}
+\KwOut{Best Tour $T_{\text{best}}$}
+
+$T_{\text{curr}} \leftarrow$ ConstructInitialSolution($I$)\;
+$T_{\text{curr}} \leftarrow$ TwoOpt($T_{\text{curr}}$)\;
+$T_{\text{best}} \leftarrow T_{\text{curr}}$\;
+$k \leftarrow k_{\min}$\;
+$stagnation \leftarrow 0$\;
+
+\While{Time $< T_{\max}$ \textbf{and} $stagnation < S_{\max}$}{
+    \For{$i \leftarrow 1$ \KwTo $R$}{
+        $T_{\text{curr}} \leftarrow$ RandomKOptKick($T_{\text{curr}}, k$)\;
+    }
+
+    $T_{\text{curr}} \leftarrow$ TwoOpt($T_{\text{curr}}$)\;
+
+    \If{Cost($T_{\text{curr}}$) $< \text{Cost}(T_{\text{best}})$}{
+        $T_{\text{best}} \leftarrow T_{\text{curr}}$\;
+        $k \leftarrow k_{\min}$ \tcp*{Success: reset neighborhood}
+        $stagnation \leftarrow 0$\;
+    }
+    \Else{
+        $T_{\text{curr}} \leftarrow T_{\text{best}}$ \tcp*{Fail: revert to incumbent}
+        $k \leftarrow k + 1$\;
+        \If{$k > k_{\max}$}{
+            $k \leftarrow k_{\min}$ \tcp*{Reset cycle}
+            $stagnation \leftarrow stagnation + 1$\;
+        }
+    }
+}
+\Return $T_{\text{best}}$\;
+\end{algorithm}
+
+\subsection{Tabu Search}
+
+Tabu Search enhances local search performance by allowing non-improving moves to escape local optima. To prevent cycling (immediately reversing a move to return to the previous local optimum), the algorithm maintains a short-term memory, known as the Tabu List, that forbids specific attributes of recent moves for a certain number of iterations.
+
+\paragraph{Implementation Strategy and Hyperparameters}
+Our implementation, outlined in Algorithm~\ref{alg:tabu}, explores the full 2-OPT neighborhood at every iteration, evaluating all possible swaps to select the absolute best move, even if it degrades the objective function. To manage the prohibition logic efficiently, we employ a matrix structure of size $N \times N$, where each entry $(i, j)$ records the iteration number until which the edge connecting nodes $i$ and $j$ remains forbidden.
+The duration of this prohibition is governed by the \texttt{min\_tenure} and \texttt{max\_tenure} hyperparameters; at each step, a specific tenure is chosen randomly within this range to prevent synchronization with cycle lengths.
+It is worth noting that these tenure values are fixed integer counts; in large instances where the neighborhood size scales quadratically ($O(N^2)$), a constant tenure might be insufficient to effectively prevent cycling, potentially requiring manual scaling by the user.
+Finally, to ensure that the tabu mechanism does not hinder convergence toward optimality, an \textit{aspiration criterion} is implemented: a move classified as tabu is overridden and accepted if it produces a solution strictly better than the best tour found so far.
+
+\begin{algorithm}[H]
+\caption{Tabu Search}
+\label{alg:tabu}
+\SetAlgoLined
+\DontPrintSemicolon
+\KwIn{Instance $I$, Tenure Range $[min, max]$, Time Limit $T_{\max}$}
+\KwOut{Best Tour $T_{\text{best}}$}
+
+$T_{\text{curr}} \leftarrow$ InitialSolution($I$)\;
+$TabuMatrix \leftarrow$ ZeroMatrix($N \times N$)\;
+$iter \leftarrow 0$\;
+
+\While{Time $< T_{\max}$}{
+    $iter \leftarrow iter + 1$\;
+    $BestMove \leftarrow \emptyset, \Delta_{best} \leftarrow \infty$\;
+
+    \ForEach{2-OPT move $(i, j)$}{
+        $\Delta \leftarrow$ CalcDelta($T_{\text{curr}}, i, j$)\;
+        $is\_tabu \leftarrow$ CheckTabu($TabuMatrix, i, j, iter$)\;
+
+        \If{not $is\_tabu$ \textbf{or} ($C_{\text{curr}} + \Delta < C_{\text{best}}$)}{
+            \If{$\Delta < \Delta_{best}$}{
+                $BestMove \leftarrow (i, j), \Delta_{best} \leftarrow \Delta$\;
+            }
+        }
+    }
+
+    \If{$BestMove \neq \emptyset$}{
+        ApplyMove($T_{\text{curr}}, BestMove$)\;
+        $tenure \leftarrow$ Random($min, max$)\;
+        UpdateTabuMatrix($TabuMatrix, BestMove, iter + tenure$)\;
+
+        \If{$C_{\text{curr}} < C_{\text{best}}$}{
+            $T_{\text{best}} \leftarrow T_{\text{curr}}$\;
+        }
+    }
+}
+\Return $T_{\text{best}}$\;
+\end{algorithm}
+
+\subsection{Genetic Algorithm}
+
+The Genetic Algorithm (GA) approaches the TSP from an evolutionary perspective, mimicking the process of natural selection. Instead of improving a single trajectory, the algorithm evolves a population of solutions over multiple generations. By combining genetic material from different parents (Crossover) and introducing random variations (Mutation), the GA explores the solution space globally. To ensure feasibility in permutation problems like TSP, specific repair mechanisms are required to handle structural violations introduced by standard genetic operators.
+
+\paragraph{Implementation Strategy and Hyperparameters}
+Our implementation, detailed in Algorithm~\ref{alg:genetic}, follows the \texttt{Memetic Algorithm} paradigm. Unlike standard GAs where local search is applied rarely or not at all, our solver applies 2-OPT local search to \textit{every} individual in the initial population and to \textit{every} offspring generated during evolution. This ensures that the evolutionary operators work exclusively within the space of local optima, significantly increasing convergence speed at the cost of higher computation per generation.
+
+The initialization phase employs a hybrid strategy governed by the \texttt{init\_grasp\_percent} parameter: a portion of the population is generated using the GRASP construction to inject high-quality starting traits, while the remainder is generated randomly to ensure diversity.
+For reproduction, we use \textbf{Tournament Selection} (controlled by \texttt{tournament\_size}) to choose parents. The crossover operator creates a child by copying a segment from the first parent and filling the remaining slots with cities in the order they appear in the second parent. Since this process can create duplicates or missing nodes, a two-phase repair mechanism is applied: first, duplicates are removed (Shortcut), and then missing nodes are re-inserted using the Cheapest Insertion heuristic (Extra Mileage logic).
+Finally, the \texttt{mutation\_rate} parameter controls the probability of applying a random swap mutation to an offspring. To prevent regression, we implement \textit{Elitism}: the top \texttt{elite\_count} individuals are strictly preserved and copied unchanged into the next generation.
+
+\begin{algorithm}[H]
+\caption{Memetic Genetic Algorithm}
+\label{alg:genetic}
+\SetAlgoLined
+\DontPrintSemicolon
+\KwIn{Population $P$, Mutation Rate $\mu$, Elite $E$, GRASP \% $\gamma$}
+\KwOut{Best Tour $T_{\text{best}}$}
+
+\tcp{Hybrid Initialization}
+$Pop \leftarrow \emptyset$\;
+\While{$|Pop| < P$}{
+    \If{$|Pop| < P \cdot \gamma$}{
+        $Ind \leftarrow$ GRASP\_Construction($I$)\;
+    }
+    \Else{
+        $Ind \leftarrow$ RandomPermutation($I$)\;
+    }
+    TwoOpt($Ind$)\;
+    Add($Pop, Ind$)\;
+}
+
+\While{Time $< T_{\max}$}{
+    SortByCost($Pop$)\;
+    $NextPop \leftarrow$ SelectBest($Pop, E$) \tcp*{Elitism}
+
+    \While{$|NextPop| < P$}{
+        $p_1, p_2 \leftarrow$ TournamentSelection($Pop$)\;
+        $child \leftarrow$ Crossover($p_1, p_2$)\;
+
+        \tcp{Repair: Shortcut + Cheapest Insertion}
+        Repair($child$)\;
+
+        \If{Random(0, 1) $< \mu$}{
+            Mutate($child$)\;
+        }
+
+        TwoOpt($child$) \tcp*{Memetic Refinement}
+        Add($NextPop, child$)\;
+    }
+    $Pop \leftarrow NextPop$\;
+}
+\Return Best($Pop$)\;
+\end{algorithm}

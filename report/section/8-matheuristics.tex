@@ -23,7 +23,6 @@ CPLEX explores this sub-problem using a time slice determined by \texttt{slice\_
 If a better solution is found, it becomes the new incumbent, shifting the center of the fixing procedure for the next iteration.
 The algorithm is controlled by a few key hyperparameters: \texttt{heuristic} for the initial warm-start, \texttt{ratio} for the warm-start time fraction, \texttt{rate} for edge-fixing probability, \texttt{slice\_factor} for the fraction of remaining time per iteration, and \texttt{min\_slice} to ensure a minimum runtime for each CPLEX call.
 
-
 \paragraph*{Convergence Behavior (Stochastic)}
 Since Hard Fixing relies on random variable fixing, it acts as a \textit{stochastic search process}: the algorithm continues to iterate until the global time limit is strictly exhausted.
 Even if a specific iteration fails to improve the objective function, the subsequent iteration generates (with high probability) a completely different sub-problem by fixing a new random subset of edges.
@@ -79,7 +78,6 @@ The procedure enters a main loop that continues as long as improvements are foun
 In each iteration, the Local Branching constraint is added relative to the current best tour $T_{curr}$, and CPLEX is invoked to explore this restricted neighborhood.
 If an improving solution is found, it becomes the new reference point, centering the neighborhood on it for the next iteration.
 The strategy is tuned through a few key hyperparameters: the \texttt{heuristic} for generating the initial solution, the \texttt{ratio} of execution time allocated to the warm-start, and \texttt{k}, the neighborhood size limiting the number of edges that can be swapped.
-
 
 \paragraph*{Convergence Behavior (Deterministic)}
 In contrast to Hard Fixing, Local Branching defines a \textit{deterministic neighborhood} based on the Hamming distance ($k$) from the incumbent.

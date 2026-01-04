@@ -9,13 +9,13 @@ Let \(S\) be the set of solvers (or solver configurations) and let \(P\) be the 
 Denote by \(t_{p,s}\) a performance measure of solver \(s \in S\) on instance \(p \in P\); in our setting, \(t_{p,s}\) can represent CPU time or, when dealing with heuristic-type solvers, the cost of the best solution found within a fixed time budget.
 We define the \emph{performance ratio} as
 \[
-r_{p,s}=\frac{t_{p,s}}{\min\{t_{p,s'}: s' \in S\}},
+    r_{p,s}=\frac{t_{p,s}}{\min\{t_{p,s'}: s' \in S\}},
 \]
 so that \(r_{p,s}\ge 1\), and we set \(r_{p,s}=r_{\max}\) if solver \(s\) fails on instance \(p\).
 
 The \emph{performance profile} of solver \(s\) is the function
 \[
-\rho_s(\tau)=\frac{1}{|P|}\,|\{p \in P : r_{p,s}\le \tau\}|,
+    \rho_s(\tau)=\frac{1}{|P|}\,|\{p \in P : r_{p,s}\le \tau\}|,
 \]
 which gives the proportion of instances solved by \(s\) within a factor \(\tau\) of the best solver.
 In particular, \(\rho_s(1)\) is the fraction of instances on which \(s\) is the best, while \(\lim_{\tau \to r_{\max}^{-}}\rho_s(\tau)\) indicates the fraction of instances that \(s\) can handle without failing under the experimental setup.
@@ -25,11 +25,11 @@ A practical advantage is that performance profiles are relatively insensitive to
 To automate the generation of performance-profile plots, we rely on the \texttt{perfprof.py} script (developed by prof.\ Domenico Salvagnin, University of Padua), which reads a CSV file containing experimental outcomes and produces a publication-quality PDF plot using Matplotlib.
 The CSV is organized with a header line containing the number of solver columns and their labels,
 \[
-\langle ncols \rangle, \text{solver}_1, \text{solver}_2, \dots, \text{solver}_n,
+    \langle ncols \rangle, \text{solver}_1, \text{solver}_2, \dots, \text{solver}_n,
 \]
 followed by one row per instance,
 \[
-\text{instance\_name}, t_1, t_2, \dots, t_n.
+    \text{instance\_name}, t_1, t_2, \dots, t_n.
 \]
 
 To avoid manual editing and to keep the benchmarking pipeline reproducible, we also implemented a custom CSV parser/writer in C.

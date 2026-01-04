@@ -1,21 +1,21 @@
 \section{Heuristic Methods}
 
-Heuristic algorithms for the Traveling Salesman Problem (TSP) trade optimality guarantees for speed and simplicity, and are therefore useful when instances are large or when solutions are needed under strict time constraints.
+Heuristic algorithms for the TSP trade optimality guarantees for speed and simplicity, and are therefore useful when instances are large or when solutions are needed under strict time constraints.
 In this work, heuristics play two roles: they provide fast standalone solvers, and they serve as building blocks (e.g., warm starts or initial solutions) for more advanced approaches.
 This chapter presents two construction heuristics (Nearest Neighbor and Extra-Mileage) and a local-search improvement method (2-OPT), together with a multi-start strategy used to improve robustness.
 
 \subsection{Nearest Neighbor construction}
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/nearest_neighbor_steps.png}
+    \includegraphics[width=\textwidth]{figures/nearest_neighbor_steps}
     \caption{Step-by-step construction of a tour with the Nearest Neighbor algorithm starting from node 0. At each step, the current node (orange) selects the closest unvisited node (red dashed line), which is then added to the tour (green edge). Visited nodes are highlighted in light green.}
     \label{fig:nn_steps}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/nearest_neighbor_comparison.png}
+    \includegraphics[width=\textwidth]{figures/nearest_neighbor_comparison}
     \caption{Comparison of tours constructed by Nearest Neighbor using different starting nodes. The order in which edges are added is shown by yellow numbers. The starting node is highlighted in green. Note that the choice of the initial node can significantly affect the final solution quality.}
     \label{fig:nn_comparison}
 \end{figure}
@@ -28,55 +28,43 @@ It is important to note that this project does not provide a standalone implemen
 Instead, it exclusively adopts a multi-start strategy combined with local search refinement.
 This approach mitigates the greedy bias by exploring multiple distinct starting nodes and retaining only the best tour found across all runs under a global time limit.
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{Multi-Start Nearest Neighbor + 2-OPT}
 \label{alg:multistart_nn}
 \SetAlgoLined
 \DontPrintSemicolon
 
-\KwIn{Cost matrix $C$, number of nodes $n$, time limit $T_{\max}$}
-\KwOut{Best tour found $T_{\text{best}}$, best cost $C_{\text{best}}$}
+\KwIn{Graph $G=(V,E)$, Time Limit $T_{\max}$}
+\KwOut{Best Tour $T^*$}
 
-\BlankLine
+$S \leftarrow \text{Shuffle}(V)$ \tcp*{Randomize start nodes}
+$T^* \leftarrow \emptyset, \quad C^* \leftarrow \infty$\;
 
-$S \leftarrow [0, 1, \dots, n-1]$ \tcp*{List of possible starting nodes}
-\textbf{Shuffle}$(S)$ \tcp*{Randomize exploration order}
-$C_{\text{best}} \leftarrow \infty$\;
-$timer \leftarrow$ StartTimer()\;
+\ForEach{$start\_node \in S$}{
+    \If{Time $> T_{\max}$}{ \textbf{break} }
 
-\BlankLine
+    $T \leftarrow \text{NearestNeighbor}(G, start\_node)$\;
+    $T \leftarrow \text{TwoOpt}(T)$ \tcp*{Local Search Refinement}
 
-\ForEach{start\_node $s$ in $S$}{
-    \If{ElapsedTime($timer$) $> T_{\max}$}{
-        \textbf{break} \tcp*{Stop if the time limit is reached}
-    }
-
-    $T_{\text{curr}}, C_{\text{curr}} \leftarrow$ \textbf{NearestNeighborConstruct}($C, n, s$)\;
-
-    $\Delta_{\text{ls}} \leftarrow$ \textbf{TwoOpt}($T_{\text{curr}}$)\;
-    $C_{\text{curr}} \leftarrow C_{\text{curr}} + \Delta_{\text{ls}}$\;
-
-    \If{$C_{\text{curr}} < C_{\text{best}}$}{
-        $C_{\text{best}} \leftarrow C_{\text{curr}}$\;
-        $T_{\text{best}} \leftarrow$ Clone($T_{\text{curr}}$)\;
+    \If{Cost($T$) $< C^*$}{
+        $T^* \leftarrow T, \quad C^* \leftarrow \text{Cost}(T)$\;
     }
 }
-
-\Return $T_{\text{best}}, C_{\text{best}}$\;
+\Return $T^*$\;
 \end{algorithm}
 
 \subsection{2-OPT local search}
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=0.85\textwidth]{figures/2opt_explanation.png}
+    \includegraphics[width=0.85\textwidth]{figures/2opt_explanation}
     \caption{Example of 2-OPT: comparison between an initial tour with a crossing (left) and the optimized tour after applying a 2-OPT move (right). The red edges are removed and replaced by the blue edges, eliminating the crossing and reducing the total tour length.}
     \label{fig:2opt_explanation}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/2opt_step_by_step.png}
+    \includegraphics[width=\textwidth]{figures/2opt_step_by_step}
     \caption{Step-by-step 2-OPT move: (1) detection of intersecting edges, (2) removal of the highlighted edges, (3) insertion of new edges that avoid the crossing, (4) final optimized tour without intersections.}
     \label{fig:2opt_steps}
 \end{figure}
@@ -87,7 +75,7 @@ Given a tour \(\pi\), consider edges \((\pi_i,\pi_{i+1})\) and \((\pi_j,\pi_{j+1
 
 The gain can be computed with the cost difference
 \[
-\Delta(i,j) = c(\pi_i,\pi_j) + c(\pi_{i+1},\pi_{j+1}) - c(\pi_i,\pi_{i+1}) - c(\pi_j,\pi_{j+1}),
+    \Delta(i,j) = c(\pi_i,\pi_j) + c(\pi_{i+1},\pi_{j+1}) - c(\pi_i,\pi_{i+1}) - c(\pi_j,\pi_{j+1}),
 \]
 and the move is performed whenever \(\Delta(i,j) < 0\).
 
@@ -98,79 +86,53 @@ The algorithm stops when no improving swap exists (local optimality with respect
 % Make sure you load algorithm2e (and avoid mixing it with algorithmic/algpseudocode).
 % \usepackage[ruled,vlined]{algorithm2e}
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
 \caption{2-OPT Local Search (First-Improvement)}
 \label{alg:twoopt}
 \SetAlgoLined
 \DontPrintSemicolon
 
-\KwIn{Tour $T$ (array of length $n{+}1$ with $T[n]=T[0]$), cost matrix $C$, number of nodes $n$, time limit $T_{\max}$, tolerance $\epsilon$}
-\KwOut{Updated tour $T$, total improvement $\Delta_{\text{tot}}$}
+\KwIn{Tour $T$, Cost Matrix $C$}
+\KwOut{Optimized Tour $T$}
 
-\BlankLine
-
-$timer \leftarrow$ StartTimer()\;
-$\Delta_{\text{tot}} \leftarrow 0$\;
 $improved \leftarrow \textbf{true}$\;
-
-\BlankLine
-
-\While{$improved$}{
+\While{$improved$ \textbf{and} Time $< T_{\max}$}{
     $improved \leftarrow \textbf{false}$\;
-
-    \For{$i \leftarrow 1$ \KwTo $n-1$}{
-        \If{ElapsedTime($timer$) $> T_{\max}$}{
-            \Return $T, \Delta_{\text{tot}}$\;
-        }
-
+    \For{$i \leftarrow 0$ \KwTo $n-2$}{
         \For{$j \leftarrow i+1$ \KwTo $n-1$}{
-
-            \If{$i = 1$ \textbf{and} $j = n-1$}{
-                \textbf{continue} \tcp*{Avoid swapping the first and last edge together}
-            }
-
-            $a \leftarrow T[i-1]$\;
-            $b \leftarrow T[i]$\;
-            $c \leftarrow T[j]$\;
-            $d \leftarrow T[j+1]$\;
-
-            $\Delta \leftarrow C_{a,c} + C_{b,d} - C_{a,b} - C_{c,d}$\;
+            \tcp{Calculate gain for swapping edges $(i, i+1)$ and $(j, j+1)$}
+            $\Delta \leftarrow C_{i,j} + C_{i+1,j+1} - C_{i,i+1} - C_{j,j+1}$\;
 
             \If{$\Delta < -\epsilon$}{
-                \textbf{ReverseSegment}$(T, i, j)$ \tcp*{Reverse $T[i..j]$ in-place}
-                $\Delta_{\text{tot}} \leftarrow \Delta_{\text{tot}} + \Delta$\;
+                \textbf{ReverseSegment}($T, i+1, j$)\;
                 $improved \leftarrow \textbf{true}$\;
-                \textbf{break} \tcp*{First-improvement: restart scan}
+                \textbf{break} \tcp*{Restart scan on first improvement}
             }
         }
-
-        \If{$improved$}{
-            \textbf{break}\;
-        }
+        \If{$improved$}{\textbf{break}}
     }
 }
-
-\Return $T, \Delta_{\text{tot}}$\;
+\Return $T$\;
 \end{algorithm}
 
 \subsection{Extra-Mileage construction}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/extra_mileage_before_after.png}
-    \caption{Extra-Mileage heuristic for the Traveling Salesman Problem.
+    \includegraphics[width=\textwidth]{figures/extra_mileage_before_after}
+    \caption{Extra-Mileage heuristic for the TSP.
     The left panel shows the initialization from the diameter edge (the farthest pair of nodes),
-    while the right panel shows the final tour obtained by repeatedly inserting the node with the minimum insertion cost.}
+        while the right panel shows the final tour obtained by repeatedly inserting the node with the minimum insertion cost.}
     \label{fig:extra_mileage_before_after}
 \end{figure}
 
 % Step-by-step Extra-Mileage visualization
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/extra_mileage_steps.png}
+    \includegraphics[width=\textwidth]{figures/extra_mileage_steps}
     \caption{Step-by-step illustration of the Extra-Mileage construction.
     Starting from the diameter edge, each panel shows how a new node is inserted between two consecutive nodes of the current tour,
-    choosing at each step the insertion that produces the smallest increase in total tour length.}
+        choosing at each step the insertion that produces the smallest increase in total tour length.}
     \label{fig:extra_mileage_steps}
 \end{figure}
 
@@ -178,101 +140,46 @@ $improved \leftarrow \textbf{true}$\;
 The Extra-Mileage (cheapest insertion) heuristic constructs a tour by progressively inserting new nodes into the current partial tour at the position that causes the smallest increase in total cost.
 Starting from an initial subtour, at each step it evaluates candidate insertions of a not-yet-inserted node \(h\) between two consecutive nodes \(a\) and \(b\), using the extra cost
 \[
-\Delta(a,h,b) = c(a,h) + c(h,b) - c(a,b),
+    \Delta(a,h,b) = c(a,h) + c(h,b) - c(a,b),
 \]
 and chooses the node and insertion position minimizing \(\Delta\).
 This approach often produces better initial tours than purely greedy nearest-neighbor choices, at the price of a higher computational cost due to the broader evaluation performed at each insertion step.
 
-\begin{algorithm}[H]
-\caption{Extra-Mileage Construction (Diameter + Cheapest Insertion)}
-\label{alg:extramileage_construction}
+\begin{algorithm}[h]
+\caption{Extra-Mileage Construction}
+\label{alg:extramileage}
 \SetAlgoLined
 \DontPrintSemicolon
 
-\KwIn{Cost matrix $C$ (flattened or $n\times n$), number of nodes $n$}
-\KwOut{Tour $T$ (closed, $T[n]=T[0]$), tour cost $cost$}
+\KwIn{Nodes $V$, Cost Matrix $C$}
+\KwOut{Tour $T$}
+
+\tcp{Phase 1: Initialize with diameter}
+$(u, v) \leftarrow \arg \max_{i,j \in V} C_{i,j}$\;
+$T \leftarrow [u, v, u]$\;
+$V_{rem} \leftarrow V \setminus \{u, v\}$\;
 
 \BlankLine
+\tcp{Phase 2: Cheapest Insertion}
+\While{$V_{rem} \neq \emptyset$}{
+    $min\_delta \leftarrow \infty$\;
+    $best\_node \leftarrow \emptyset, \quad best\_pos \leftarrow -1$\;
 
-\If{$n < 2$}{
-    \Return \textbf{error}\tcp*{$n$ too small}
-}
-
-$maxDist \leftarrow -\infty$\;
-$a \leftarrow 0,\; b \leftarrow 1$\;
-\For{$i \leftarrow 0$ \KwTo $n-1$}{
-    \For{$j \leftarrow i+1$ \KwTo $n-1$}{
-        \If{$C[i,j] > maxDist$}{
-            $maxDist \leftarrow C[i,j]$\;
-            $a \leftarrow i,\; b \leftarrow j$\;
-        }
-    }
-}
-
-\BlankLine
-
-$T[0] \leftarrow a$\;
-$T[1] \leftarrow b$\;
-$visited[0..n-1] \leftarrow 0$\;
-$visited[a] \leftarrow 1,\; visited[b] \leftarrow 1$\;
-$currentCount \leftarrow 2$\;
-
-\BlankLine
-
-$\textbf{ExtraMileageCompleteTour}(T,\; currentCount,\; n,\; C,\; visited)$\;
-
-$T[n] \leftarrow T[0]$\;
-$cost \leftarrow \textbf{CalculateTourCost}(T,\; n,\; C)$\;
-
-\Return $T,\; cost$\;
-\end{algorithm}
-
-\begin{algorithm}[H]
-\caption{\textsc{ExtraMileageCompleteTour}}
-\label{alg:extramileage_complete}
-\SetAlgoLined
-\DontPrintSemicolon
-
-\KwIn{Partial tour array $T$, current size $currentCount$, total nodes $n$, costs $C$, visited flags}
-\KwOut{Completed tour in $T$}
-
-\While{$currentCount < n$}{
-    $bestDelta \leftarrow +\infty$\;
-    $bestNode \leftarrow -1$\;
-    $bestPos \leftarrow -1$\;
-
-    \For{$h \leftarrow 0$ \KwTo $n-1$}{
-        \If{$visited[h]=1$}{\textbf{continue}}
-        \For{$p \leftarrow 0$ \KwTo $currentCount-1$}{
-            $i \leftarrow T[p]$\;
-            $j \leftarrow T[(p+1)\bmod currentCount]$\;
-            $\Delta \leftarrow C[i,h] + C[h,j] - C[i,j]$\;
-
-            \If{$\Delta < bestDelta$}{
-                $bestDelta \leftarrow \Delta$\;
-                $bestNode \leftarrow h$\;
-                $bestPos \leftarrow p$\;
+    \ForEach{$h \in V_{rem}$}{
+        \ForEach{edge $(i,j)$ in $T$}{
+            $\Delta \leftarrow C_{i,h} + C_{h,j} - C_{i,j}$\;
+            \If{$\Delta < min\_delta$}{
+                $min\_delta \leftarrow \Delta$\;
+                $best\_node \leftarrow h, \quad best\_pos \leftarrow \text{index of } (i,j)$\;
             }
         }
     }
 
-    \If{$bestNode = -1$}{
-        \Return \textbf{error}\tcp*{No feasible insertion found}
-    }
-
-    \For{$k \leftarrow currentCount$ \KwDownTo $bestPos+1$}{
-        $T[k+1] \leftarrow T[k]$\;
-    }
-    $T[bestPos+1] \leftarrow bestNode$\;
-    $visited[bestNode] \leftarrow 1$\;
-    $currentCount \leftarrow currentCount + 1$\;
-
-    $T[currentCount] \leftarrow T[0]$\;
+    \textbf{Insert} $best\_node$ into $T$ at $best\_pos$\;
+    Remove $best\_node$ from $V_{rem}$\;
 }
-
-\Return\;
+\Return $T$\;
 \end{algorithm}
-
 
 \subsection{Experimental comparison}
 To compare heuristic variants, we evaluate them on the same benchmark instances and time limits, and we measure performance in terms of the best tour cost returned within the allowed time.

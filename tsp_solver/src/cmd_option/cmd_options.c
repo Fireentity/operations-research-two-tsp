@@ -6,14 +6,14 @@
 #include <string.h>
 #include "c_util.h"
 
-static const ParsingResult *validate_options(const CmdOptions *opt) {
+static const ParsingResult *validate_options(CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
     const unsigned int max_threads = get_max_threads();
-    if (opt->num_threads < 1) {
-        if_verbose(VERBOSE_INFO, "[Config Error] Thread count must be >= 1.\n");
+    if (opt->num_threads == 0) opt->num_threads = max_threads;
+    if (opt->num_threads < 0) {
+        if_verbose(VERBOSE_INFO, "[Config Error] Thread count must be >= 0.\n");
         return WRONG_VALUE_TYPE;
     }
-
     if (opt->num_threads > max_threads) {
         if_verbose(VERBOSE_INFO,
                    "[Config Warning] Thread count (%u) is greater than system cores (%u). Performance may degrade.\n",
@@ -43,8 +43,8 @@ static const ParsingResult *validate_options(const CmdOptions *opt) {
         }
         if (opt->nn_params.num_threads > max_threads) {
             if_verbose(VERBOSE_INFO,
-                   "[Config Warning] Thread count (%u) is greater than system cores (%u). Performance may degrade.\n",
-                   opt->nn_params.num_threads, max_threads);
+                       "[Config Warning] Thread count (%u) is greater than system cores (%u). Performance may degrade.\n",
+                       opt->nn_params.num_threads, max_threads);
         }
     }
 
@@ -475,4 +475,3 @@ void print_configuration(const CmdOptions *options) {
                options->lb_params.heuristic_name ? options->lb_params.heuristic_name : "(none)"
     );
 }
-

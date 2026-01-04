@@ -35,7 +35,7 @@ typedef struct {
 
 static void *worker_thread_func(void *arg) {
     WorkerArgs *w = arg;
-    w->run_fn(w->instance, w->solution, w->local_config, NULL);
+    w->run_fn(w->instance, w->solution, w->local_config, NULL); // TODO nessuna regitrazione costi multithread
     if (w->free_config && w->local_config) {
         w->free_config(w->local_config);
     }
@@ -171,7 +171,7 @@ static void *create_heuristic_config(HeuristicType type, const CmdOptions *optio
             return ga;
         }
         case NN:
-            // TODO return config with num_thread
+        // TODO return config with num_thread
         case EM:
         default:
             return NULL;

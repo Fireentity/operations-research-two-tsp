@@ -15,13 +15,9 @@ static double vns_kick(int *tour, int n, const double *costs, int k_opt, RandomS
 
     int *edges = tsp_malloc(k_opt * sizeof(int));
 
-
     const int low = 0;
-
     const int m = n - k_opt + 1;
-
     int s_prev = 0;
-
 
     int bound = m - (k_opt - 1);
     if (bound < 1) bound = 1;

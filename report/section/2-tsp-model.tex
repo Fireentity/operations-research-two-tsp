@@ -1,10 +1,10 @@
 \section{TSP Preliminaries}
 
 \subsection{Problem definition}
-The Traveling Salesman Problem (TSP) can be stated as follows: given a set of \(n\) cities and a distance (or cost) associated with traveling between each pair of cities, the objective is to determine a shortest possible tour that visits every city exactly once and returns to the starting city.
+The TSP can be stated as follows: given a set of \(n\) cities and a distance (or cost) associated with traveling between each pair of cities, the objective is to determine a shortest possible tour that visits every city exactly once and returns to the starting city.
 The problem is well-known to be NP-hard, meaning that no polynomial-time algorithm is known for solving all instances to optimality as \(n\) grows, which motivates the study of approximation methods, heuristics, and more advanced optimization techniques.
 
-In this work, the focus is on the \emph{symmetric} Traveling Salesman Problem, where traveling from city \(i\) to city \(j\) has the same cost as traveling from \(j\) to \(i\), and instances can be modeled on a complete undirected graph.
+In this work, the focus is on the \emph{symmetric} TSP, where traveling from city \(i\) to city \(j\) has the same cost as traveling from \(j\) to \(i\), and instances can be modeled on a complete undirected graph.
 Formally, let \(G=(V,E)\) be a complete undirected graph where \(V=\{v_0, v_1, \dots, v_{n-1}\}\) represents the cities and \(E\) contains all unordered pairs of vertices, and let \(c_e\) be the cost associated with edge \(e \in E\); the goal is to find a minimum-cost Hamiltonian cycle.
 
 \subsection{ILP formulation}
@@ -12,10 +12,10 @@ A standard formulation of the symmetric TSP is an Integer Linear Programming (IL
 The model minimizes the total travel cost while enforcing degree constraints and subtour elimination constraints to ensure that the selected edges form a single Hamiltonian cycle.
 
 \begin{align}
-\min \quad & \sum_{e \in E} c_e x_e \\
-\text{s.t.} \quad & \sum_{e \in \delta(v)} x_e = 2 \qquad && \forall v \in V \\
-& \sum_{e \in E(S)} x_e \le |S| - 1 \qquad && \forall S \subset V,\; 2 \le |S| \le |V|-1 \\
-& x_e \in \{0,1\} \qquad && \forall e \in E
+    \min \quad & \sum_{e \in E} c_e x_e \\
+    \text{s.t.} \quad & \sum_{e \in \delta(v)} x_e = 2 \qquad && \forall v \in V \\
+    & \sum_{e \in E(S)} x_e \le |S| - 1 \qquad && \forall S \subset V,\; 2 \le |S| \le |V|-1 \\
+    & x_e \in \{0,1\} \qquad && \forall e \in E
 \end{align}
 
 In the degree constraints, \(\delta(v)\) denotes the set of edges incident to vertex \(v\), ensuring that exactly two edges touch each city and therefore that the tour enters and leaves each node exactly once.

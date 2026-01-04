@@ -7,7 +7,7 @@ To benchmark these approximate methods and to solve smaller instances to proven 
 \subsection{The Solver: IBM ILOG CPLEX}
 
 To address the complexity of solving NP-hard problems exactly, the project leverages \textbf{IBM ILOG CPLEX Optimization Studio}, widely regarded as the industry standard for large-scale linear and mixed-integer programming.
-In the specific context of this project, CPLEX is not employed as a \("\)black box\("\) solver that inherently understands the Traveling Salesman Problem.
+In the specific context of this project, CPLEX is not employed as a \("\)black box\("\) solver that inherently understands the TSP.
 Instead, it functions as a generic Mixed-Integer Programming (MIP) engine: it receives an abstract mathematical model defined by decision variables, an objective function, and linear constraints, and it explores the search tree to determine the optimal variable assignment.
 
 The choice of a proprietary solver over open-source alternatives (such as SCIP or COIN-OR) is driven by performance considerations.
@@ -18,6 +18,7 @@ While open-source solvers have made significant strides, commercial engines like
 
 Although CPLEX is typically a high-cost enterprise solution, access for this research was granted through the \texttt{IBM Academic Initiative}.
 This program provides students and researchers with a full, unlimited license, allowing the project to leverage the unrestricted power of the Branch-and-Cut engine without the variable or size limits typical of trial versions.
+
 \subsection{Implementation Strategy}
 \label{subsec:implementation_strategy}
 
@@ -53,8 +54,6 @@ Unfortunately, the number of such constraints grows exponentially with the numbe
 Consequently, our implementation adopts a dynamic approach: the solver starts with the \("\)relaxed\("\) model (degree constraints only).
 The missing constraints required to merge subtours are identified and added lazily during the solution process, but only when a specific violation is detected.
 This mechanism of dynamic constraint generation is the core principle behind both the Benders Decomposition and the Branch-and-Cut algorithms described in the following sections.
-
-
 
 \subsection{Benders Decomposition}
 \label{subsec:benders}
