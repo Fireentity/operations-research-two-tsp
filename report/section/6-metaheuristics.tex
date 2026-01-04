@@ -63,14 +63,14 @@ Although this new candidate initially has a worse objective function value, it p
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/6-3opt-procedure}
+    \includegraphics[width=\textwidth]{figures/6-3opt-graph}
     \caption{Visual effect of a 3-OPT Kick. Left: The current local optimum features a clean, crossing-free geometry. Right: The kick perturbs the solution by randomly reconnecting segments, creating a "crossed" structure that degrades the cost but allows exploration of new subspaces.}
     \label{fig:vns_kick_explanation}
 \end{figure}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{figures/6-3opt-graph}
+    \includegraphics[width=\textwidth]{figures/6-3opt-procedure}
     \caption{Logical mechanics of the Kick operator. (1) $k$ edges (green) are selected for removal. (2) The tour is decomposed into independent segments. (3) The segments are reconnected using new edges (red dashed lines) to form a valid, perturbed tour.}
     \label{fig:vns_kick_steps}
 \end{figure}
