@@ -53,8 +53,95 @@ Unfortunately, the number of such constraints grows exponentially with the numbe
 Consequently, our implementation adopts a dynamic approach: the solver starts with the \("\)relaxed\("\) model (degree constraints only).
 The missing constraints required to merge subtours are identified and added lazily during the solution process, but only when a specific violation is detected.
 This mechanism of dynamic constraint generation is the core principle behind both the Benders Decomposition and the Branch-and-Cut algorithms described in the following sections.
-\subsection{Benders Decomposition}
-TODO
 
-\subsection{Branch and Cut}
-TODO
+
+
+\subsection{Benders Decomposition}
+\label{subsec:benders}
+
+The Benders Decomposition approach implemented in \texttt{benders\_loop.c} treats the TSP as a problem with a "master" component containing only degree constraints and a "subproblem" responsible for identifying connectivity violations. Since the number of SECs is exponential ($2^N - 2$), generating all of them a priori is computationally infeasible. Instead, the algorithm operates iteratively.
+
+\paragraph*{Algorithmic Workflow}
+The process begins by building a relaxed version of the model containing only the objective function, binary variables $x_{ij}$, and degree constraints ($\sum x_{ij} = 2$). The algorithm then enters a loop where the master problem is solved to optimality. The resulting integer solution $x^*$ is interpreted as a graph, and a separation routine (based on Depth First Search) checks for connectivity.
+If the graph is connected (i.e., a single component covering all $N$ nodes), the solution is optimal. If, however, the graph is fragmented into disjoint components $C_1, \dots, C_k$, the solution is infeasible for the TSP. In this case, specific SECs are generated for each component to forbid these subtours, added to the master problem, and the solver is restarted.
+
+\begin{algorithm}[H]
+\caption{Benders Decomposition Loop}
+\label{alg:benders}
+\SetAlgoLined
+\DontPrintSemicolon
+\KwIn{Instance $I$, Time Limit $T_{max}$}
+\KwOut{Optimal Tour $T^*$}
+
+$M \leftarrow$ BuildBaseModel($I$) \tcp*{Degree constraints only}
+\While{Time $< T_{max}$}{
+    $x^* \leftarrow$ SolveMIP($M$)\;
+    \If{No solution found}{
+        \textbf{break}\;
+    }
+
+    $Components \leftarrow$ FindConnectedComponents($x^*$)\;
+
+    \If{$|Components| == 1$}{
+        \Return ReconstructTour($x^*$)\tcp*{Optimal solution found}
+    }
+
+    \ForEach{$C_k \in Components$}{
+        AddConstraint($M, \sum_{i,j \in C_k} x_{ij} \le |C_k| - 1$)\;
+    }
+}
+\Return BestFeasibleSolution\;
+\end{algorithm}
+
+This method, effectively a cutting-plane algorithm, is viable for small instances. However, solving the MIP from scratch at every iteration becomes inefficient as the problem size increases, necessitating the more integrated approach described below.
+
+\subsection{Branch-and-Cut}
+\label{subsec:branch_and_cut}
+
+The Branch-and-Cut algorithm represents the state-of-the-art for solving TSP instances. Unlike the iterative Benders approach, Branch-and-Cut maintains a single Branch-and-Bound tree. The crucial difference lies in how constraints are handled: violated SECs are detected and added dynamically within the search tree as \textit{lazy constraints}, without restarting the optimization process.
+
+The implementation leverages the CPLEX Generic Callback mechanism. We define a custom callback function (in \texttt{cplex\_solver\_wrapper.c}) registered with the \texttt{CPX\_CALLBACKCONTEXT\_CANDIDATE} context. This allows our code to intervene whenever the solver identifies a candidate integer solution that satisfies all current constraints (degree and integrality).
+
+\paragraph*{Separation Logic}
+Inside the callback, the candidate solution is extracted and checked for connectivity using the same logic as the Benders decomposition. If the graph is disconnected, the candidate is rejected, and SECs corresponding to the connected components are injected immediately into the solver's cut pool. CPLEX then prunes the current node and continues the search, guaranteeing that any accepted integer solution is a valid Hamiltonian tour.
+
+\begin{algorithm}[H]
+\caption{Branch-and-Cut Callback Logic}
+\label{alg:branch_cut}
+\SetAlgoLined
+\DontPrintSemicolon
+\KwIn{Candidate solution $x^*$}
+
+$Components \leftarrow$ FindConnectedComponents($x^*$)\;
+
+\If{$|Components| > 1$}{
+    \ForEach{$C_k \in Components$}{
+        $Cut \leftarrow \sum_{i,j \in C_k} x_{ij} \le |C_k| - 1$\;
+        CPXcallbackrejectcandidate(Context, $Cut$)\;
+    }
+}
+\end{algorithm}
+
+This approach is significantly more efficient than Benders decomposition because it allows the solver to utilize its internal presolving, heuristics, and branching history continuously.
+
+\subsection{Warm Start Initialization}
+\label{subsec:warm_start}
+
+To further accelerate the convergence of the exact methods, specifically Branch-and-Cut, we implemented a Warm Start mechanism (often referred to as MIP Start).
+Before the optimization begins, the solver is provided with a feasible, high-quality initial solution. In our implementation, this solution is generated using a heuristic combination: a Multi-Start Nearest Neighbor construction followed by a 2-OPT local search refinement.
+
+\paragraph*{Impact on Solving}
+This heuristic tour is converted into variable assignments ($x_{ij} = 1$ for edges in the tour) and passed to CPLEX via the \texttt{CPXaddmipstarts} function. Providing a "cutoff" value early in the process allows the Branch-and-Bound algorithm to prune strictly inferior branches of the tree immediately, focusing the search effort on proving optimality rather than finding the first feasible solution.
+
+\begin{algorithm}[H]
+\caption{Warm Start Initialization}
+\label{alg:warm_start}
+\SetAlgoLined
+\DontPrintSemicolon
+\KwIn{Instance $I$, Solver Model $M$}
+
+$T_{init} \leftarrow$ NearestNeighbor($I$)\;
+$T_{refined} \leftarrow$ TwoOpt($T_{init}$)\;
+$x_{start} \leftarrow$ ConvertToVariables($T_{refined}$)\;
+CPXaddmipstarts($M, x_{start}$)\;
+\end{algorithm}
