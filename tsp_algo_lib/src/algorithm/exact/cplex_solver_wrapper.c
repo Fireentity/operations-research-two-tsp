@@ -11,23 +11,56 @@ int xpos(int i, int j, int num_nodes) {
     return i * num_nodes + j - (i + 1) * (i + 2) / 2;
 }
 
+/**
+ * Robust tour reconstruction:
+ * If the graph defined by x contains subtours (disconnected components),
+ * this function will extract the component containing 'current', and then
+ * simply jump to the next unvisited node to continue building a valid (but likely non-optimal) tour.
+ * This effectively performs a "Naive Merge" of components.
+ */
 void cplex_solver_reconstruct_tour(int n, const double *x, int *tour) {
     int *vis = tsp_calloc(n, sizeof(int));
+    int count = 0;
+    int current = 0;
 
-    tour[0] = 0;
-    vis[0] = 1;
-    int cur = 0;
-    for (int k = 1; k < n; k++) {
+    // Start with node 0
+    tour[count++] = current;
+    vis[current] = 1;
+
+    while (count < n) {
+        int next = -1;
+
+        // 1. Try to find a valid edge from 'current' in the CPLEX solution
         for (int j = 0; j < n; j++) {
-            if (!vis[j] && x[xpos(cur, j, n)] > 0.5) {
-                tour[k] = j;
-                vis[j] = 1;
-                cur = j;
+            if (!vis[j] && x[xpos(current, j, n)] > 0.5) {
+                next = j;
                 break;
             }
         }
+
+        // 2. If no edge found (subtour closed prematurely), perform NAIVE MERGE.
+        //    Jump to the first available unvisited node.
+        if (next == -1) {
+            for (int j = 0; j < n; j++) {
+                if (!vis[j]) {
+                    next = j;
+                    break;
+                }
+            }
+        }
+
+        // 3. Update state
+        if (next != -1) {
+            tour[count++] = next;
+            vis[next] = 1;
+            current = next;
+        } else {
+            // Should theoretically not happen if count < n and logic is correct
+            break;
+        }
     }
-    tour[n] = tour[0];
+
+    tour[n] = tour[0]; // Close the loop
     tsp_free(vis);
 }
 

@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h> // Recommended for thread safety in Phase 6
+#include <pthread.h>
 #if defined(_WIN32)
 #include <windows.h>
 #else

@@ -240,7 +240,8 @@ static void run_genetic(const TspInstance *instance,
 
     int generation = 0;
     while (!time_limiter_is_over(&timer)) {
-        if_verbose(VERBOSE_DEBUG, "GA: Generation %d\n", generation);
+        // Lowered verbosity: Per-generation spam moves to VERBOSE_DEBUG (Level 2)
+        if_verbose(VERBOSE_ALL, "GA: Generation %d\n", generation);
 
         // Elitism: move best individuals to the beginning
         for (int k = 0; k < cfg->elite_count && k < cfg->population_size; k++) {
@@ -255,7 +256,9 @@ static void run_genetic(const TspInstance *instance,
         }
 
         double best_gen_cost = current_pop.costs[0];
-        if_verbose(VERBOSE_INFO, "GA: Gen %d best=%.2f\n", generation, best_gen_cost);
+
+        // Lowered verbosity: Result of generation moves to VERBOSE_DEBUG (Level 2)
+        if_verbose(VERBOSE_DEBUG, "GA: Gen %d best=%.2f\n", generation, best_gen_cost);
 
         // Update solution (index 0 is the best after elitism swap)
         tsp_solution_update_if_better(solution,

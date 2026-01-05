@@ -10,10 +10,6 @@ static const ParsingResult *validate_options(CmdOptions *opt) {
     if_verbose(VERBOSE_DEBUG, "Starting configuration validation...\n");
     const unsigned int max_threads = get_max_threads();
     if (opt->num_threads == 0) opt->num_threads = max_threads;
-    if (opt->num_threads < 0) {
-        if_verbose(VERBOSE_INFO, "[Config Error] Thread count must be >= 0.\n");
-        return WRONG_VALUE_TYPE;
-    }
     if (opt->num_threads > max_threads) {
         if_verbose(VERBOSE_INFO,
                    "[Config Warning] Thread count (%u) is greater than system cores (%u). Performance may degrade.\n",

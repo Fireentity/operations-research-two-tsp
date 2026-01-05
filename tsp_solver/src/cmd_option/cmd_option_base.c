@@ -149,7 +149,7 @@ static void set_nn_defaults(NNOptions *opt) {
 static void set_vns_defaults(VnsOptions *opt) {
     opt->enable = false;
     opt->min_k = 3;
-    opt->max_k = 10;
+    opt->max_k = 5;
     opt->kick_repetitions = 1;
     opt->plot_file = strdup("VNS-plot.png");
     opt->cost_file = strdup("VNS-costs.png");

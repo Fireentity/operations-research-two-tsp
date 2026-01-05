@@ -10,31 +10,44 @@
 #include "random.h"
 #include "tsp_tour.h"
 
+// Helper function for qsort to sort edge indices
+static int compare_ints(const void *a, const void *b) {
+    return (*(int *) a - *(int *) b);
+}
+
 static double vns_kick(int *tour, int n, const double *costs, int k_opt, RandomState *rng) {
+    // Safety check: cannot cut more edges than nodes available.
     if (k_opt > n) k_opt = n;
+
+    // k < 2 implies no change or invalid move structure for n-opt logic
+    if (k_opt < 2) return 0.0;
 
     int *edges = tsp_malloc(k_opt * sizeof(int));
 
-    const int low = 0;
-    const int m = n - k_opt + 1;
-    int s_prev = 0;
 
-    int bound = m - (k_opt - 1);
-    if (bound < 1) bound = 1;
-
-    int s_curr = random_int(rng, 0, bound - 1);
-    edges[0] = low + s_curr;
-    s_prev = s_curr;
-
-    for (int i = 1; i < k_opt; i++) {
-        bound = m - s_prev - (k_opt - i);
-        if (bound < 1) bound = 1;
-
-        s_curr = s_prev + 1 + random_int(rng, 0, bound - 1);
-        edges[i] = low + s_curr + i;
-        s_prev = s_curr;
+    // we use a partial Fisher-Yates shuffle to pick exactly k unique indices from [0, n-1].
+    int *candidates = tsp_malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++) {
+        candidates[i] = i;
     }
 
+    // Pick k_opt random unique indices
+    for (int i = 0; i < k_opt; i++) {
+        int j = random_int(rng, i, n - 1);
+
+        // Swap candidates[i] and candidates[j]
+        int temp = candidates[i];
+        candidates[i] = candidates[j];
+        candidates[j] = temp;
+
+        edges[i] = candidates[i];
+    }
+    tsp_free(candidates);
+
+    // The N-Opt move logic requires indices to be sorted to handle segments correctly
+    qsort(edges, k_opt, sizeof(int), compare_ints);
+
+    // Calculate delta and perform the move
     const double delta = compute_n_opt_cost(k_opt, tour, edges, costs, n);
     compute_n_opt_move(k_opt, tour, edges, n);
 
@@ -75,9 +88,11 @@ static void run_vns(const TspInstance *instance,
     int stagnation = 0;
 
     while (!time_limiter_is_over(&timer) && stagnation < cfg->max_stagnation) {
-        for (int i = 0; i < cfg->kick_repetition; i++)
+        for (int i = 0; i < cfg->kick_repetition; i++) {
             current_cost += vns_kick(current_tour, n, costs, current_k, &rng);
+        }
 
+        // Local Search after kick
         current_cost += two_opt(current_tour, n, costs, timer);
 
         if (current_cost < best_cost - EPSILON) {
@@ -90,9 +105,11 @@ static void run_vns(const TspInstance *instance,
             current_k = cfg->min_k;
             stagnation = 0;
         } else {
+            // Restore best solution
             memcpy(current_tour, best_tour, (n + 1) * sizeof(int));
             current_cost = best_cost;
 
+            // Increase perturbation strength
             current_k++;
             if (current_k > cfg->max_k) {
                 current_k = cfg->min_k;

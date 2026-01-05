@@ -1,4 +1,4 @@
-#include "../include/plot_util.h"
+#include "plot_util.h"
 #include <stdio.h>
 #include <c_util.h>
 #include <sys/stat.h>

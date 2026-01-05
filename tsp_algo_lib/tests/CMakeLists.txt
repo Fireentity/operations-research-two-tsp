@@ -2,21 +2,21 @@ cmake_minimum_required(VERSION 3.16)
 project(tsp_algo_lib_tests C)
 
 set(TEST_SOURCES
-        src/grasp_test.c
-        src/ts_test.c
-        src/vns_test.c
-        src/em_test.c
-        src/genetic_test.c
-        src/n_opt_test.c
-        src/nn_test.c
-        src/grasp_nn_helpers_test.c
-        src/parser_test.c
-        src/local_search_test.c
-        src/utility_test.c
-        src/exact_test.c
-        src/subtour_separator_test.c
-        src/hard_fixing_test.c
-        src/local_branching_test.c
+        src/heuristics/grasp_test.c
+        src/heuristics/ts_test.c
+        src/heuristics/vns_test.c
+        src/heuristics/em_test.c
+        src/heuristics/genetic_test.c
+        src/components/n_opt_test.c
+        src/heuristics/nn_test.c
+        src/infrastructure/grasp_nn_helpers_test.c
+        src/infrastructure/parser_test.c
+        src/components/local_search_test.c
+        src/infrastructure/utility_test.c
+        src/exacts/exact_test.c
+        src/components/subtour_separator_test.c
+        src/exacts/hard_fixing_test.c
+        src/exacts/local_branching_test.c
 )
 
 add_executable(tsp_alg_tests src/main.c ${TEST_SOURCES})

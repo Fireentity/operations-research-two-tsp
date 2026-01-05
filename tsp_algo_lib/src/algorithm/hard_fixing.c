@@ -21,7 +21,6 @@ static void run_hard_fixing(const TspInstance *inst,
                             CostRecorder *rec) {
     const HardFixingConfig *cfg = cfg_void;
     int n = tsp_instance_get_num_nodes(inst);
-
     if_verbose(VERBOSE_INFO, "HardFixing: FixRate=%.2f, Time=%.2f, SliceFactor=%.2f\n",
                cfg->fixing_rate, cfg->time_limit, cfg->time_slice_factor);
 

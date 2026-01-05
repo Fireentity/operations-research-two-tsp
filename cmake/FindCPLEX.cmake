@@ -9,7 +9,8 @@ if(DEFINED ENV{CPLEX_ROOT})
 endif()
 
 list(APPEND _CPLEX_ROOT_HINTS
-        /opt/ibm/ILOG
+        /opt/ibm/ILOG/
+        /opt/ibm/ILOG/CPLEX_Studio2211/
         /Applications
         "C:/IBM/ILOG"
         "C:/Program Files/IBM/ILOG"
