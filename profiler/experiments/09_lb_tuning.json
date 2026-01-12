@@ -1,0 +1,13 @@
+{
+  "description": "Grid Search Local Branching: K-Size & Warm Start",
+  "instances": ["a280.tsp", "p654.tsp"],
+  "seeds": [42],
+  "grid": {
+    "algo_prefix": "lb",
+    "base_flags": "--lb --lb-seconds 60",
+    "params": {
+      "--lb-k": [10, 20, 30, 50],
+      "--lb-heuristic": ["nn", "vns"]
+    }
+  }
+}

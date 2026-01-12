@@ -1,0 +1,31 @@
+{
+  "description": "FINAL COMPARISON: Best Heuristic vs Meta vs Math (Large Instances)",
+  "instances": ["a280.tsp", "p654.tsp", "vm1084.tsp", "u1060.tsp"],
+  "seeds": [42, 123],
+  "experiments": [
+    {
+      "name": "01_Baseline_NN_2opt",
+      "flags": "--nn --nn-seconds 20"
+    },
+    {
+      "name": "02_Meta_VNS_Best",
+      "flags": "--vns --vns-min-k 3 --vns-max-k 20 --vns-stagnation 500 --vns-seconds 120"
+    },
+    {
+      "name": "03_Meta_Tabu_Best",
+      "flags": "--ts --ts-min-tenure 20 --ts-max-tenure 60 --ts-stagnation 500 --ts-seconds 120"
+    },
+    {
+      "name": "04_Meta_GA_Memetic",
+      "flags": "--ga --ga-pop-size 200 --ga-elite 1 --ga-seconds 120"
+    },
+    {
+      "name": "05_Math_HardFixing",
+      "flags": "--hf --hf-rate 0.90 --hf-heuristic vns --hf-seconds 180"
+    },
+    {
+      "name": "06_Math_LocalBranching",
+      "flags": "--lb --lb-k 20 --lb-heuristic vns --lb-seconds 180"
+    }
+  ]
+}

@@ -76,7 +76,8 @@ static void execute_and_report(const TspAlgorithm *algo,
                                const TspInstance *instance,
                                const char *plot_file,
                                const char *costs_file,
-                               unsigned int num_threads) {
+                               unsigned int num_threads,
+                               bool plots_enable) {
     CostRecorder *recorder = cost_recorder_create(RECORDER_INITIAL_CAPACITY);
     TspSolution *solution = tsp_solution_create(instance);
 
@@ -96,9 +97,10 @@ static void execute_and_report(const TspAlgorithm *algo,
 
     tsp_solution_get_tour(solution, tour_buffer);
     const double cost = tsp_solution_get_cost(solution);
-
-    plot_tour(tour_buffer, n, tsp_instance_get_nodes(instance), plot_file);
-    plot_costs_evolution(cost_recorder_get_costs(recorder), cost_recorder_get_count(recorder), costs_file);
+    if (plots_enable) {
+        plot_tour(tour_buffer, n, tsp_instance_get_nodes(instance), plot_file);
+        plot_costs_evolution(cost_recorder_get_costs(recorder), cost_recorder_get_count(recorder), costs_file);
+    }
 
     if_verbose(VERBOSE_INFO, "%s solution: %lf\n", algo->name, cost);
 
@@ -200,7 +202,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = nn_create(cfg);
         BUILD_PATHS(options->nn_params.plot_file, options->nn_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->vns_params.enable) {
@@ -214,7 +216,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = vns_create(cfg);
         BUILD_PATHS(options->vns_params.plot_file, options->vns_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->tabu_params.enable) {
@@ -227,7 +229,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = tabu_create(cfg);
         BUILD_PATHS(options->tabu_params.plot_file, options->tabu_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->grasp_params.enable) {
@@ -240,7 +242,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = grasp_create(cfg);
         BUILD_PATHS(options->grasp_params.plot_file, options->grasp_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->em_params.enable) {
@@ -250,7 +252,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = em_create(cfg);
         BUILD_PATHS(options->em_params.plot_file, options->em_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->genetic_params.enable) {
@@ -270,7 +272,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
         TspAlgorithm algo = genetic_create(cfg);
         BUILD_PATHS(options->genetic_params.plot_file, options->genetic_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->benders_params.enable) {
@@ -280,7 +282,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = benders_create(cfg);
         BUILD_PATHS(options->benders_params.plot_file, options->benders_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->bc_params.enable) {
@@ -290,7 +292,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
         };
         TspAlgorithm algo = branch_and_cut_create(cfg);
         BUILD_PATHS(options->bc_params.plot_file, options->bc_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->hf_params.enable) {
@@ -309,7 +311,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
         TspAlgorithm algo = hard_fixing_create(cfg);
         BUILD_PATHS(options->hf_params.plot_file, options->hf_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
     if (options->lb_params.enable) {
@@ -326,7 +328,7 @@ void run_selected_algorithms(const TspInstance *instance, const CmdOptions *opti
 
         TspAlgorithm algo = local_branching_create(cfg);
         BUILD_PATHS(options->lb_params.plot_file, options->lb_params.cost_file);
-        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads);
+        execute_and_report(&algo, instance, full_plot_path, full_costs_path, threads, options->plots_enable);
     }
 
 #undef BUILD_PATHS

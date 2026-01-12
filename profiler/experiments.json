@@ -1,0 +1,70 @@
+{
+  "description": "Benchmark Completo per il Report: Tuning e Confronto",
+  "instances": [
+    "berlin52.tsp",
+    "eil76.tsp",
+    "ch130.tsp",
+    "a280.tsp",
+    "p654.tsp",
+    "vm1084.tsp"
+  ],
+  "seeds": [42, 123, 999],
+  "experiments": [
+    {
+      "name": "01_NN_Baseline",
+      "flags": "--nn --nn-seconds 10"
+    },
+    {
+      "name": "02_EM_Baseline",
+      "flags": "--em --em-seconds 20"
+    },
+    {
+      "name": "03_VNS_Small_Nb",
+      "flags": "--vns --vns-min-k 2 --vns-max-k 5 --vns-stagnation 500 --vns-seconds 60"
+    },
+    {
+      "name": "04_VNS_Large_Nb",
+      "flags": "--vns --vns-min-k 10 --vns-max-k 30 --vns-stagnation 500 --vns-seconds 60"
+    },
+    {
+      "name": "05_Tabu_Short_Mem",
+      "flags": "--ts --ts-min-tenure 5 --ts-max-tenure 20 --ts-stagnation 500 --ts-seconds 60"
+    },
+    {
+      "name": "06_Tabu_Long_Mem",
+      "flags": "--ts --ts-min-tenure 50 --ts-max-tenure 100 --ts-stagnation 500 --ts-seconds 60"
+    },
+    {
+      "name": "07_GRASP_Greedy",
+      "flags": "--grasp --grasp-rcl-size 3 --grasp-probability 0.9 --grasp-stagnation 500 --grasp-seconds 60"
+    },
+    {
+      "name": "08_GRASP_Diverse",
+      "flags": "--grasp --grasp-rcl-size 15 --grasp-probability 0.4 --grasp-stagnation 500 --grasp-seconds 60"
+    },
+    {
+      "name": "09_GA_Standard",
+      "flags": "--ga --ga-pop-size 200 --ga-mutation 0.1 --ga-seconds 60"
+    },
+    {
+      "name": "10_Exact_BranchCut",
+      "flags": "--bc --bc-seconds 60"
+    },
+    {
+      "name": "11_HF_Conservative",
+      "flags": "--hf --hf-rate 0.9 --hf-heuristic vns --hf-seconds 60"
+    },
+    {
+      "name": "12_HF_Aggressive",
+      "flags": "--hf --hf-rate 0.7 --hf-heuristic vns --hf-seconds 60"
+    },
+    {
+      "name": "13_LB_Small_K",
+      "flags": "--lb --lb-k 15 --lb-heuristic vns --lb-seconds 60"
+    },
+    {
+      "name": "14_LB_Large_K",
+      "flags": "--lb --lb-k 40 --lb-heuristic vns --lb-seconds 60"
+    }
+  ]
+}

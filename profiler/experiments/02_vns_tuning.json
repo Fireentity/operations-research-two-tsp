@@ -1,0 +1,14 @@
+{
+  "description": "VNS Tuning: Neighborhood & Stagnation",
+  "instances": ["ch130.tsp", "a280.tsp", "p654.tsp"],
+  "seeds": [42, 123],
+  "grid": {
+    "algo_prefix": "vns",
+    "base_flags": "--vns --vns-seconds 30",
+    "params": {
+      "--vns-min-k": [2, 3, 5, 10],
+      "--vns-max-k": [5, 10, 20, 30],
+      "--vns-stagnation": [200, 500]
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "description": "GRASP Tuning: Greediness vs Randomness",
+  "instances": ["ch130.tsp", "a280.tsp", "p654.tsp"],
+  "seeds": [42, 123],
+  "grid": {
+    "algo_prefix": "grasp",
+    "base_flags": "--grasp --grasp-stagnation 500 --grasp-seconds 30",
+    "params": {
+      "--grasp-rcl-size": [2, 5, 10, 20],
+      "--grasp-probability": [0.2, 0.5, 0.8, 0.95]
+    }
+  }
+}

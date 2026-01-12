@@ -8,6 +8,7 @@ static const OptionMeta options_registry[] = {
     // GENERAL
     {"--verbosity", "-v", "Verbosity level (0-3)", "general", "verbosity", OPT_UINT, offsetof(CmdOptions, verbosity)},
     {"--plot-path", "-p", "Output directory for plots", "general", "plots_path", OPT_STRING, offsetof(CmdOptions, plots_path)},
+    {"--plots", NULL, "Enable plots", "general", "plots_enable", OPT_BOOL, offsetof(CmdOptions, plots_enable)},
     {"--threads", "-t", "Number of threads (default 1)", "general", "threads", OPT_UINT, offsetof(CmdOptions, num_threads)},
 
     // TSP INSTANCE
@@ -142,6 +143,7 @@ static void set_tsp_sol_defaults(TspSolutionOptions *opt) {
 static void set_nn_defaults(NNOptions *opt) {
     opt->enable = false;
     opt->num_threads = 1;
+    opt->time_limit = 10.0;
     opt->plot_file = strdup("NN-plot.png");
     opt->cost_file = strdup("NN-costs.png");
 }
@@ -151,6 +153,8 @@ static void set_vns_defaults(VnsOptions *opt) {
     opt->min_k = 3;
     opt->max_k = 5;
     opt->kick_repetitions = 1;
+    opt->max_stagnation = 200;
+    opt->time_limit = 10.0;
     opt->plot_file = strdup("VNS-plot.png");
     opt->cost_file = strdup("VNS-costs.png");
 }
@@ -160,6 +164,7 @@ static void set_tabu_defaults(TabuOptions *opt) {
     opt->min_tenure = 5;
     opt->max_tenure = 30;
     opt->max_stagnation = 200;
+    opt->time_limit = 10.0;
     opt->plot_file = strdup("TS-plot.png");
     opt->cost_file = strdup("TS-costs.png");
 }
@@ -169,12 +174,14 @@ static void set_grasp_defaults(GraspOptions *opt) {
     opt->rcl_size = 10;
     opt->probability = 0.3;
     opt->max_stagnation = 200;
+    opt->time_limit = 10.0;
     opt->plot_file = strdup("GR-plot.png");
     opt->cost_file = strdup("GR-costs.png");
 }
 
 static void set_em_defaults(EMOptions *opt) {
     opt->enable = false;
+    opt->time_limit = 10.0;
     opt->plot_file = strdup("EM-plot.png");
     opt->cost_file = strdup("EM-costs.png");
 }
@@ -186,6 +193,7 @@ static void set_genetic_defaults(GeneticOptions *opt) {
     opt->mutation_rate = 0.1;
     opt->crossover_cut_min_ratio = 25;
     opt->crossover_cut_max_ratio = 75;
+    opt->time_limit = 20.0;
     opt->plot_file = strdup("GA-plot.png");
     opt->cost_file = strdup("GA-costs.png");
     opt->tournament_size = 5;
@@ -197,6 +205,7 @@ static void set_genetic_defaults(GeneticOptions *opt) {
 static void set_benders_defaults(BendersOptions *opt) {
     opt->enable = false;
     opt->max_iterations = 200;
+    opt->time_limit = 60.0;
     opt->plot_file = strdup("Benders-plot.png");
     opt->cost_file = strdup("Benders-costs.png");
 }
@@ -234,8 +243,8 @@ static void set_lb_defaults(LocalBranchingOptions *opt) {
 CmdOptions *cmd_options_create_defaults(void) {
     CmdOptions *opt = tsp_calloc(1, sizeof(CmdOptions));
 
-
     opt->verbosity = 1;
+    opt->plots_enable = true;
     opt->config_file = NULL;
     opt->plots_path = NULL;
     opt->num_threads = 1;

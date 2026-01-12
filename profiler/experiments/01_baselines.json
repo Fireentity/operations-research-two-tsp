@@ -1,0 +1,9 @@
+{
+  "description": "Baseline: Constructive Heuristics",
+  "instances": ["berlin52.tsp", "ch130.tsp", "a280.tsp", "p654.tsp"],
+  "seeds": [42, 123],
+  "experiments": [
+    { "name": "NN_Baseline", "flags": "--nn --nn-seconds 10" },
+    { "name": "EM_Baseline", "flags": "--em --em-seconds 20" }
+  ]
+}

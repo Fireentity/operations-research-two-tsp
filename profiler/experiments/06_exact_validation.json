@@ -1,0 +1,15 @@
+{
+  "description": "Validation: Exact Methods (CPLEX) on Small Instances",
+  "instances": ["berlin52.tsp", "eil76.tsp", "ch130.tsp"],
+  "seeds": [42],
+  "experiments": [
+    {
+      "name": "Exact_Benders_Decomposition",
+      "flags": "--benders --benders-seconds 120"
+    },
+    {
+      "name": "Exact_Branch_And_Cut",
+      "flags": "--bc --bc-seconds 120"
+    }
+  ]
+}

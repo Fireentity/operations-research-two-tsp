@@ -1,0 +1,13 @@
+{
+  "description": "Tabu Search Tuning: Memory (Tenure)",
+  "instances": ["ch130.tsp", "a280.tsp", "p654.tsp"],
+  "seeds": [42, 123],
+  "grid": {
+    "algo_prefix": "ts",
+    "base_flags": "--ts --ts-stagnation 500 --ts-seconds 30",
+    "params": {
+      "--ts-min-tenure": [5, 10, 20, 50],
+      "--ts-max-tenure": [10, 20, 50, 100, 150]
+    }
+  }
+}

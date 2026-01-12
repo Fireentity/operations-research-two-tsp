@@ -1,0 +1,12 @@
+{
+  "description": "Hard Fixing Tuning: Variable Fixing Rate",
+  "instances": ["a280.tsp", "p654.tsp", "vm1084.tsp"],
+  "seeds": [42],
+  "grid": {
+    "algo_prefix": "hf",
+    "base_flags": "--hf --hf-heuristic vns --hf-seconds 60 --hf-slice 0.1",
+    "params": {
+      "--hf-rate": [0.70, 0.80, 0.90, 0.95]
+    }
+  }
+}

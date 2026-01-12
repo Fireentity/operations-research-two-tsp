@@ -131,6 +131,7 @@ typedef struct {
 typedef struct {
     char *config_file;
     char *plots_path;
+    bool plots_enable; //TODO does this works?
     bool help;
     unsigned int verbosity;
     unsigned int num_threads;

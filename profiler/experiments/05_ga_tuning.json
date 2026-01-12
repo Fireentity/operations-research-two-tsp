@@ -1,0 +1,14 @@
+{
+  "description": "Grid Search GA: Population, Mutation & Elitism",
+  "instances": ["ch130.tsp", "a280.tsp", "p654.tsp"],
+  "seeds": [42],
+  "grid": {
+    "algo_prefix": "ga",
+    "base_flags": "--ga --ga-seconds 60",
+    "params": {
+      "--ga-pop-size": [100, 500, 1000],
+      "--ga-mutation": [0.01, 0.1, 0.2],
+      "--ga-elite": [1, 5]
+    }
+  }
+}
