@@ -1,10 +1,10 @@
-\section{Project Structure}
+\section{Methodology}
 \label{sec:project_structure}
 
 The implementation of the TSP solver is designed as a modular framework written in C. The primary goal of the architecture is to separate the core algorithmic logic from the user interface and system utilities, and to ensure extensibility, maintainability, and ease of testing.
 This section details the software organization, the specific design patterns employed to emulate object-oriented features in C, and the concurrency model adopted to leverage multi-core architectures.
 
-\subsection{Overview and Modules}
+\subsection{Modules}
 
 The project is structured into four distinct components, each addressing a specific concern.
 This separation of concerns allows for independent development and testing of the algorithmic core, the command-line interface, and the system utilities.
@@ -17,7 +17,7 @@ This separation of concerns allows for independent development and testing of th
     \label{fig:arch_diagram}
 \end{figure}
 
-The build process is managed by \textbf{CMake}, which orchestrates the compilation of these modules and manages conditional dependencies, such as the optional integration with the CPLEX optimization studio.
+The build process is managed by CMake, which orchestrates the compilation of these modules and manages conditional dependencies, such as the optional integration with the CPLEX optimization studio.
 At the top of the hierarchy sits the \texttt{tsp\_solver} executable.
 This module acts as the orchestrator: it is responsible for initializing the environment, parsing user input via the \texttt{cflaglib} library, and triggering the selected solution strategy.
 
@@ -25,10 +25,10 @@ Beneath the application layer lies \texttt{tsp\_algo\_lib}, a static library tha
 It encapsulates the entire business logic, including the definition of problem instances, solution representations, and the implementation of both heuristic and exact solvers.
 Supporting these high-level operations is the \texttt{common} library, a collection of cross-cutting utilities that provide essential services such as high-precision time measurement, thread-safe logging, and memory management wrappers.
 
-\subsection{Data Abstraction and Core Components}
+\subsection{Encapsulation and Core Components}
 
 A defining characteristic of the \texttt{tsp\_algo\_lib} design is the strict adherence to data abstraction principles.
-To enforce a clear separation between interface and implementation (mimicking the private encapsulation found in object-oriented languages) the library makes extensive use of \textbf{Opaque Pointers}.
+To enforce a clear separation between interface and implementation (mimicking the private encapsulation found in object-oriented languages) the library makes extensive use of Opaque Pointers.
 Structures such as \texttt{TspInstance} and \texttt{TspSolution} are declared in the public header files without their definition.
 This prevents client code from accessing raw data members directly, ensuring that the internal representation can be optimized or refactored without breaking the API contract.
 
@@ -36,21 +36,21 @@ This prevents client code from accessing raw data members directly, ensuring tha
 The data model distinguishes strictly between the immutable definition of the problem and the mutable state of the search process.
 The \texttt{TspInstance} structure is responsible for holding read-only data, such as node coordinates and problem dimensions. A critical optimization implemented within this module is the pre-computation of the cost matrix at load time. By flattening the $N \times N$ distance matrix into a contiguous memory block, the solver avoids the computational overhead of repeated Euclidean distance calculations (which involve costly square root operations) during the intensive iterative phases of the meta-heuristics.
 
-In contrast, the \texttt{TspSolution} acts as a stateful container for the current tour permutation and its associated objective function value. As shown in Listing \ref{lst:tspsolution}, this structure is designed with concurrency in mind: it includes a native \texttt{pthread\_mutex\_t} to manage concurrent access, ensuring that updates to the global best solution are atomic and thread-safe.
+In contrast, the \texttt{TspSolution} acts as a stateful container for the current tour permutation and its associated objective function value. As shown in Listing \ref{lst:tspstructs}, this structure is designed with concurrency in mind: it includes a native \texttt{pthread\_mutex\_t} to manage concurrent access, ensuring that updates to the global best solution are atomic and thread-safe.
 
 \begin{listing}[h]
     \begin{minted}[frame=single, framesep=10pt, linenos]{c}
 typedef struct TspSolution {
-    double cost;                 // The objective value
-    int *tour;                   // The sequence of visited nodes (size n+1, closed tour)
-    const TspInstance *instance; // Reference to the problem data
-    pthread_mutex_t mutex;       // Thread-safety mechanism
+    double cost;                 // Objective value
+    int *tour;                   // Node sequence (size n+1, closed)
+    const TspInstance *instance; // Problem data reference
+    pthread_mutex_t mutex;       // Synchronization lock
 } TspSolution;
 
 typedef struct TspInstance {
     int number_of_nodes;     // Number of nodes (n)
     Node *nodes;             // Node coordinates (size n)
-    double *edge_cost_array; // Flattened cost matrix (size n*n)feat: report section 6 and small general improvements
+    double *edge_cost_array; // Flattened distance matrix
 } TspInstance;
     \end{minted}
     \caption{Internal definitions of the \texttt{TspSolution} and \texttt{TspInstance} structures.}
@@ -73,7 +73,7 @@ When a specific algorithm is instantiated, it casts this pointer back to its con
     \begin{minted}[frame=single, framesep=10pt, linenos]{c}
 typedef struct {
     const char *name;
-    void *config; // Polymorphic pointer to specific algorithm config
+    void *config; // Polymorphic algorithm config
 
     // Generic execution interface
     void (*run)(const TspInstance *inst,

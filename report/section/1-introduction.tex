@@ -12,9 +12,9 @@ The implementation focuses on making these approaches comparable by enforcing co
 
 The project employs a dual-layer evaluation framework to ensure both algorithmic correctness and performance efficiency. Correctness is strictly validated through a \texttt{CTest} suite located in \texttt{tsp\_algo\_lib/tests}, which verifies the feasibility of tours and compares exact algorithm results against known optima (e.g., the \texttt{burma14} instance). Parallel to this, performance tuning is automated by a custom profiling infrastructure in the \texttt{profiler/} directory; a Python script orchestrates solver execution across a parameter grid defined in \texttt{config.json}, while a companion Bash analyzer aggregates the output CSVs to identify the most effective heuristic configurations.
 
-This thesis is structured to guide the from theoretical foundations to the algorithmic implementations.
+This thesis is structured to guide from theoretical foundations to the algorithmic implementations.
 We begin by establishing the formal context in the next section, which defines the TSP and its standard mathematical formulation, followed by a description of the benchmarking methodology and performance profiling framework used to validate all subsequent experiments.
-Building on these preliminaries, we detail the core architecture of the solver, specifically the unified data structures that ensure efficient information sharing across different modules.
+Building on these preliminaries, we detail the core architecture of the solver, specifically the unified data structures that ensure information sharing across different modules.
 
 The central part of the thesis explores three distinct algorithmic paradigms.
 First, we discuss heuristic and metaheuristic approaches, analyzing their design choices, parameter tuning, and ability to balance exploration with exploitation.
