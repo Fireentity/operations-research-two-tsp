@@ -32,9 +32,7 @@ followed by one row per instance,
     \text{instance\_name}, t_1, t_2, \dots, t_n.
 \]
 
-To avoid manual editing and to keep the benchmarking pipeline reproducible, we also implemented a custom CSV parser/writer in C.
-In particular, one routine reads an existing CSV into memory (skipping the first column with instance names) and returns the number of data columns, while a second routine appends a new solver/configuration column and writes the updated table back to disk.
-This design makes it straightforward to run parameter sweeps, record results consistently, and immediately generate the corresponding performance profiles.
+To avoid manual editing and to keep the benchmarking pipeline reproducible, we implemented an automated data recording system. This system programmatically aggregates results from multiple solver executions into a unified dataset, avoiding error-prone manual entry. This design makes it straightforward to run parameter sweeps, record results consistently, and immediately generate the corresponding performance profiles. For example, when tuning the Tabu Search, distinct columns are automatically generated for each configuration (e.g., \texttt{TS\_tenure10}, \texttt{TS\_tenure20}), allowing for a direct side-by-side comparison of solution quality across all benchmark instances.
 
 \subsection{Instances and experimental protocol}
 All solvers were evaluated on a benchmark of 10 pseudo-randomly generated TSP instances.
