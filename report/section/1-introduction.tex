@@ -7,12 +7,10 @@ This thesis presents the design, implementation, and experimental evaluation of 
 In particular, the solver includes multiple families of approaches: constructive and improvement heuristics, metaheuristics, exact methods based on integer linear programming, and matheuristic hybrids that combine mathematical programming with heuristic guidance.
 The implementation focuses on making these approaches comparable by enforcing consistent data handling, identical benchmark instances, and fixed computational budgets, so that the observed differences reflect algorithmic behavior rather than engineering artifacts.
 
-A key part of this work is the benchmarking methodology.
 
-\subsection{Evaluation Methodology}
+\subsection{Evaluation}
 
 The project employs a dual-layer evaluation framework to ensure both algorithmic correctness and performance efficiency. Correctness is strictly validated through a \texttt{CTest} suite located in \texttt{tsp\_algo\_lib/tests}, which verifies the feasibility of tours and compares exact algorithm results against known optima (e.g., the \texttt{burma14} instance). Parallel to this, performance tuning is automated by a custom profiling infrastructure in the \texttt{profiler/} directory; a Python script orchestrates solver execution across a parameter grid defined in \texttt{config.json}, while a companion Bash analyzer aggregates the output CSVs to identify the most effective heuristic configurations.
-All algorithms operate on shared data structures representing instances and tours, which simplifies integration, enables systematic tuning, and supports additional analysis such as solution-history tracking during execution.
 
 This thesis is structured to guide the from theoretical foundations to the algorithmic implementations.
 We begin by establishing the formal context in the next section, which defines the TSP and its standard mathematical formulation, followed by a description of the benchmarking methodology and performance profiling framework used to validate all subsequent experiments.
