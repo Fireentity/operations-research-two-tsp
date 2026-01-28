@@ -294,6 +294,7 @@ void print_configuration(const CmdOptions *options) {
                "Input file:          %s\n"
                "Config file:         %s\n"
                "Verbosity:           %u\n"
+               "Plots enabled:       %s\n"
                "Nr of Threads:       %u\n"
                "Plot path:           %s\n"
                "Nodes:               %u\n"
@@ -378,10 +379,11 @@ void print_configuration(const CmdOptions *options) {
                "  heuristic ratio:   %.3f\n"
                "  heuristic:         %s\n"
                "--------------\n",
-               (options->inst.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM"),
+               options->inst.mode == TSP_INPUT_MODE_FILE ? "FILE" : "RANDOM",
                options->inst.input_file ? options->inst.input_file : "(none)",
                options->config_file ? options->config_file : "(none)",
                options->verbosity,
+               options->plots_enable ? "ENABLED" : "DISABLED",
                options->num_threads,
                options->plots_path ? options->plots_path : "./",
                options->inst.number_of_nodes,
